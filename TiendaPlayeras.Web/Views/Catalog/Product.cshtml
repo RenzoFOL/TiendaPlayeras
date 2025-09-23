@@ -1,0 +1,23 @@
+@model TiendaPlayeras.Web.Models.Product
+@{
+ViewData["Title"] = Model.Name;
+}
+<h3>@Model.Name</h3>
+<p>@Model.Description</p>
+<form asp-controller="Cart" asp-action="Add" method="post" class="row gy-2">
+<div class="col-12">
+<label class="form-label">Variante</label>
+<select name="variantId" class="form-select" required>
+@foreach (var v in Model.Variants) {
+<option value="@v.Id">@v.Fit - @v.Color - @v.Size — $@v.Price</option>
+}
+</select>
+</div>
+<div class="col-4">
+<input type="number" name="qty" value="1" min="1" class="form-control" />
+</div>
+<div class="col-12">
+<button class="btn btn-primary" type="submit">Agregar al carrito</button>
+</div>
+@Html.AntiForgeryToken()
+</form>

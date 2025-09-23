@@ -1,0 +1,20 @@
+@model TiendaPlayeras.Web.Models.Product
+@{
+ViewData["Title"] = "Crear Producto";
+}
+<h2>Nuevo Producto</h2>
+<form asp-action="Create" method="post">
+<div class="mb-3">
+<label asp-for="Name" class="form-label"></label>
+<input asp-for="Name" class="form-control" />
+</div>
+<div class="mb-3">
+<label asp-for="Description" class="form-label"></label>
+<textarea asp-for="Description" class="form-control"></textarea>
+</div>
+<div class="form-check">
+<input asp-for="IsCustomizable" class="form-check-input" />
+<label asp-for="IsCustomizable" class="form-check-label">Personalizable</label>
+</div>
+<button type="submit" class="btn btn-success">Guardar</button>
+</form>

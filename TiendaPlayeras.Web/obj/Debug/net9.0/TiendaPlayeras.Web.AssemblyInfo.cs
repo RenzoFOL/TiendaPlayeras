@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TiendaPlayeras.Web")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+860e1a4bd3d3b65133342a0589784b9c06dc6f9a")]
 [assembly: System.Reflection.AssemblyProductAttribute("TiendaPlayeras.Web")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TiendaPlayeras.Web")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -9,34 +9,67 @@ public static class IdentitySeed
 /// <summary>
 /// Crea roles base y un usuario administrador si no existen.
 /// </summary>
-public static async Task SeedAsync(IServiceProvider sp)
+public static async Task SeedAsync(IServiceProvider services)
 {
-var roleMgr = sp.GetRequiredService<RoleManager<IdentityRole>>();
-var userMgr = sp.GetRequiredService<UserManager<ApplicationUser>>();
+    using var scope = services.CreateScope();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
+    // Roles
+    foreach (var role in new[] { "Admin", "Employee", "Customer" })
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+            await roleManager.CreateAsync(new IdentityRole(role));
+    }
 
-string[] roles = new[] { "Admin", "Employee", "Customer" };
-foreach (var r in roles)
-if (!await roleMgr.RoleExistsAsync(r))
-await roleMgr.CreateAsync(new IdentityRole(r));
+    // Admin
+    if (await userManager.FindByEmailAsync("admin@test.com") == null)
+    {
+        var u = new ApplicationUser
+        {
+            UserName = "admin@test.com",
+            Email = "admin@test.com",
+            FirstName = "Admin",
+            LastName = "Prueba",
+            EmailConfirmed = true,
+            IsActive = true
+        };
+        await userManager.CreateAsync(u, "Admin#123");
+        await userManager.AddToRoleAsync(u, "Admin");
+    }
 
+    // Employee
+    if (await userManager.FindByEmailAsync("empleado@test.com") == null)
+    {
+        var u = new ApplicationUser
+        {
+            UserName = "empleado@test.com",
+            Email = "empleado@test.com",
+            FirstName = "Empleado",
+            LastName = "Prueba",
+            EmailConfirmed = true,
+            IsActive = true
+        };
+        await userManager.CreateAsync(u, "Empleado#123");
+        await userManager.AddToRoleAsync(u, "Employee");
+    }
 
-var adminEmail = "admin@tiendaplayeras.local";
-var admin = await userMgr.FindByEmailAsync(adminEmail);
-if (admin == null)
-{
-admin = new ApplicationUser
-{
-UserName = "admin",
-Email = adminEmail,
-EmailConfirmed = true,
-FirstName = "Admin",
-LastName = "Principal",
-IsActive = true
-};
-await userMgr.CreateAsync(admin, "Admin#12345"); // cambia en producción
-await userMgr.AddToRoleAsync(admin, "Admin");
+    // Customer
+    if (await userManager.FindByEmailAsync("cliente@test.com") == null)
+    {
+        var u = new ApplicationUser
+        {
+            UserName = "cliente@test.com",
+            Email = "cliente@test.com",
+            FirstName = "Cliente",
+            LastName = "Prueba",
+            EmailConfirmed = true,
+            IsActive = true
+        };
+        await userManager.CreateAsync(u, "Cliente#123");
+        await userManager.AddToRoleAsync(u, "Customer");
+    }
 }
-}
+
 }
 }

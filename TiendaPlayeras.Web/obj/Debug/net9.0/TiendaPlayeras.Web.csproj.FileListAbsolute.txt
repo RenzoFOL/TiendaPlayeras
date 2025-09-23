@@ -250,6 +250,7 @@ C:\Procesos de desarollo\Tienda\TiendaPlayeras\TiendaPlayeras.Web\obj\Debug\net9
 C:\Procesos de desarollo\Tienda\TiendaPlayeras\TiendaPlayeras.Web\obj\Debug\net9.0\TiendaPlayeras.Web.MvcApplicationPartsAssemblyInfo.cache
 C:\Procesos de desarollo\Tienda\TiendaPlayeras\TiendaPlayeras.Web\obj\Debug\net9.0\TiendaPlayeras.Web.RazorAssemblyInfo.cache
 C:\Procesos de desarollo\Tienda\TiendaPlayeras\TiendaPlayeras.Web\obj\Debug\net9.0\TiendaPlayeras.Web.RazorAssemblyInfo.cs
+C:\Procesos de desarollo\Tienda\TiendaPlayeras\TiendaPlayeras.Web\obj\Debug\net9.0\TiendaPlayeras.Web.sourcelink.json
 C:\Procesos de desarollo\Tienda\TiendaPlayeras\TiendaPlayeras.Web\obj\Debug\net9.0\rjimswa.dswa.cache.json
 C:\Procesos de desarollo\Tienda\TiendaPlayeras\TiendaPlayeras.Web\obj\Debug\net9.0\rjsmrazor.dswa.cache.json
 C:\Procesos de desarollo\Tienda\TiendaPlayeras\TiendaPlayeras.Web\obj\Debug\net9.0\rjsmcshtml.dswa.cache.json
@@ -320,7 +321,7 @@ C:\Procesos de desarollo\Tienda\TiendaPlayeras\TiendaPlayeras.Web\obj\Debug\net9
 C:\Procesos de desarollo\Tienda\TiendaPlayeras\TiendaPlayeras.Web\obj\Debug\net9.0\compressed\21397w5wmh-slvnx0qqwo.gz
 C:\Procesos de desarollo\Tienda\TiendaPlayeras\TiendaPlayeras.Web\obj\Debug\net9.0\compressed\t9pu9x9j1q-zz23da8bgb.gz
 C:\Procesos de desarollo\Tienda\TiendaPlayeras\TiendaPlayeras.Web\obj\Debug\net9.0\compressed\9s3o4rs0si-61n19gt1b8.gz
-C:\Procesos de desarollo\Tienda\TiendaPlayeras\TiendaPlayeras.Web\obj\Debug\net9.0\compressed\7v9ei9e66l-q30s0h9hbd.gz
+C:\Procesos de desarollo\Tienda\TiendaPlayeras\TiendaPlayeras.Web\obj\Debug\net9.0\compressed\rpkf99nbnf-q30s0h9hbd.gz
 C:\Procesos de desarollo\Tienda\TiendaPlayeras\TiendaPlayeras.Web\obj\Debug\net9.0\compressed\wt0bq1ni5w-zhb9c0ftwe.gz
 C:\Procesos de desarollo\Tienda\TiendaPlayeras\TiendaPlayeras.Web\obj\Debug\net9.0\compressed\pgwi3sui96-7rukwvdrpd.gz
 C:\Procesos de desarollo\Tienda\TiendaPlayeras\TiendaPlayeras.Web\obj\Debug\net9.0\compressed\bk34p17udp-1m15uo4p9w.gz

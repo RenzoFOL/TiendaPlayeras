@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<title>Kairassa - Mi Cuenta</title>
+<meta charset="utf-8"/>
+<meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="telephone=no" name="format-detection"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="TemplatesJungle" name="author"/>
+<meta content="ecommerce,fashion,store" name="keywords"/>
+<meta content="Bootstrap 5 Fashion Store HTML CSS Template" name="description"/>
+<link crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" rel="stylesheet"/>
+<link href="css/kaira/vendor.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" rel="stylesheet">
+<link href="style.css" rel="stylesheet" type="text/css"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&amp;family=Marcellus&amp;display=swap" rel="stylesheet"/>
+<style>
+    .account-container {
+      min-height: 70vh;
+      display: flex;
+      align-items: center;
+    }
+    
+    .account-card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    
+    .account-tabs {
+      background: #f8f9fa;
+      border-bottom: 1px solid #dee2e6;
+    }
+    
+    .account-tabs .nav-link {
+      border: none;
+      background: transparent;
+      color: #6c757d;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 1.5rem 2rem;
+      transition: all 0.3s ease;
+    }
+    
+    .account-tabs .nav-link.active {
+      background: #fff;
+      color: #111;
+      border-bottom: 3px solid #111;
+    }
+    
+    .account-tabs .nav-link:hover {
+      color: #111;
+    }
+    
+    .form-container {
+      padding: 3rem 2rem;
+    }
+    
+    .form-title {
+      font-family: 'Marcellus', serif;
+      font-size: 2rem;
+      color: #111;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    
+    .form-subtitle {
+      color: #6c757d;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+      font-weight: 500;
+      color: #111;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      font-size: 0.875rem;
+      letter-spacing: 0.5px;
+    }
+    
+    .form-control {
+      border: 2px solid #e9ecef;
+      border-radius: 0;
+      padding: 1rem;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      background: #fff;
+    }
+    
+    .form-control:focus {
+      border-color: #111;
+      box-shadow: none;
+      background: #fff;
+    }
+    
+    .btn-account {
+      background: #111;
+      border: 2px solid #111;
+      color: #fff;
+      padding: 1rem 2rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+      width: 100%;
+      border-radius: 0;
+    }
+    
+    .btn-account:hover {
+      background: #fff;
+      color: #111;
+      border-color: #111;
+    }
+    
+    .btn-secondary-account {
+      background: transparent;
+      border: 2px solid #6c757d;
+      color: #6c757d;
+      padding: 1rem 2rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+      width: 100%;
+      border-radius: 0;
+    }
+    
+    .btn-secondary-account:hover {
+      background: #6c757d;
+      color: #fff;
+      border-color: #6c757d;
+    }
+    
+    .divider {
+      text-align: center;
+      margin: 2rem 0;
+      position: relative;
+    }
+    
+    .divider::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: #dee2e6;
+    }
+    
+    .divider span {
+      background: #fff;
+      padding: 0 1rem;
+      color: #6c757d;
+      text-transform: uppercase;
+      font-size: 0.875rem;
+      letter-spacing: 0.5px;
+    }
+    
+    .social-login {
+      margin-top: 2rem;
+    }
+    
+    .btn-social {
+      border: 2px solid #dee2e6;
+      background: #fff;
+      color: #6c757d;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.5rem;
+      transition: all 0.3s ease;
+      width: 100%;
+      border-radius: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    
+    .btn-social:hover {
+      border-color: #111;
+      color: #111;
+    }
+    
+    .forgot-password {
+      text-align: center;
+      margin-top: 1rem;
+    }
+    
+    .forgot-password a {
+      color: #6c757d;
+      text-decoration: none;
+      font-size: 0.875rem;
+      transition: color 0.3s ease;
+    }
+    
+    .forgot-password a:hover {
+      color: #111;
+    }
+    
+    .form-check-input:checked {
+      background-color: #111;
+      border-color: #111;
+    }
+    
+    .form-check-input:focus {
+      border-color: #111;
+      outline: 0;
+      box-shadow: 0 0 0 0.25rem rgba(17, 17, 17, 0.25);
+    }
+    
+    (max-width: 768px) {
+      .form-container {
+        padding: 2rem 1rem;
+      }
+      
+      .account-tabs .nav-link {
+        padding: 1rem;
+        font-size: 0.875rem;
+      }
+    }
+  </style>
+</link></head>
+<body>
+<svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<symbol id="user" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M15.71 12.71a6 6 0 1 0-7.42 0a10 10 0 0 0-6.22 8.18a1 1 0 0 0 2 .22a8 8 0 0 1 15.9 0a1 1 0 0 0 1 .89h.11a1 1 0 0 0 .88-1.1a10 10 0 0 0-6.25-8.19ZM12 12a4 4 0 1 1 4-4a4 4 0 0 1-4 4Z" fill="currentColor"></path>
+</symbol>
+<symbol id="search" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M21.71 20.29L18 16.61A9 9 0 1 0 16.61 18l3.68 3.68a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.39ZM11 18a7 7 0 1 1 7-7a7 7 0 0 1-7 7Z" fill="currentColor"></path>
+</symbol>
+<symbol id="cart" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M8.5 19a1.5 1.5 0 1 0 1.5 1.5A1.5 1.5 0 0 0 8.5 19ZM19 16H7a1 1 0 0 1 0-2h8.491a3.013 3.013 0 0 0 2.885-2.176l1.585-5.55A1 1 0 0 0 19 5H6.74a3.007 3.007 0 0 0-2.82-2H3a1 1 0 0 0 0 2h.921a1.005 1.005 0 0 1 .962.725l.155.545v.005l1.641 5.742A3 3 0 0 0 7 18h12a1 1 0 0 0 0-2Zm-1.326-9l-1.22 4.274a1.005 1.005 0 0 1-.963.726H8.754l-.255-.892L7.326 7ZM16.5 19a1.5 1.5 0 1 0 1.5 1.5a1.5 1.5 0 0 0-1.5-1.5Z" fill="currentColor"></path>
+</symbol>
+<symbol id="heart" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M20.16 4.61A6.27 6.27 0 0 0 12 4a6.27 6.27 0 0 0-8.16 9.48l7.45 7.45a1 1 0 0 0 1.42 0l7.45-7.45a6.27 6.27 0 0 0 0-8.87Zm-1.41 7.46L12 18.81l-6.75-6.74a4.28 4.28 0 0 1 3-7.3a4.25 4.25 0 0 1 3 1.25a1 1 0 0 0 1.42 0a4.27 4.27 0 0 1 6 6.05Z" fill="currentColor"></path>
+</symbol>
+</defs>
+</svg>
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg bg-light text-uppercase fs-6 p-3 border-bottom align-items-center">
+<div class="container-fluid">
+<div class="row justify-content-between align-items-center w-100">
+<div class="col-auto">
+<a class="navbar-brand text-white" href="/Home">
+<svg fill="#111" height="45" viewbox="0 0 112 45" width="112" xmlns="http://www.w3.org/2000/svg">
+<path d="M2.51367 34.9297C2.58398 34.6836 2.64844 34.3789 2.70703 34.0156C2.77734 33.6523 2.83594 33.2012 2.88281 32.6621C2.92969 32.123 2.96484 31.4844 2.98828 30.7461C3.01172 29.9961 3.02344 29.123 3.02344 28.127V16.6836C3.02344 15.6875 3.01172 14.8203 2.98828 14.082C2.96484 13.332 2.92969 12.6875 2.88281 12.1484C2.83594 11.5977 2.77734 11.1406 2.70703 10.7773C2.64844 10.4141 2.58398 10.1094 2.51367 9.86328V9.79297H6.73242V9.86328C6.66211 10.1094 6.5918 10.4141 6.52148 10.7773C6.46289 11.1406 6.41016 11.5977 6.36328 12.1484C6.32812 12.6875 6.29297 13.332 6.25781 14.082C6.23438 14.8203 6.22266 15.6875 6.22266 16.6836V20.6035L16.4883 12.2188C17.6367 11.2813 18.2109 10.4727 18.2109 9.79297H23.1504V9.86328C22.459 10.0273 21.7559 10.3437 21.041 10.8125C20.3379 11.2695 19.5879 11.832 18.791 12.5L9.7207 20.0938L20.6367 32.082C21.0938 32.5508 21.4805 32.9434 21.7969 33.2598C22.125 33.5645 22.4121 33.8223 22.6582 34.0332C22.9043 34.2324 23.127 34.4023 23.3262 34.543C23.5371 34.6719 23.7539 34.8008 23.9766 34.9297V35H18.8262C18.7793 34.8945 18.6973 34.7598 18.5801 34.5957C18.4746 34.4316 18.3457 34.2617 18.1934 34.0859C18.0527 33.9102 17.8945 33.7285 17.7188 33.541C17.5547 33.3535 17.3965 33.1777 17.2441 33.0137L6.22266 20.9199V28.127C6.22266 29.123 6.23438 29.9961 6.25781 30.7461C6.29297 31.4844 6.32812 32.123 6.36328 32.6621C6.41016 33.2012 6.46289 33.6523 6.52148 34.0156C6.5918 34.3789 6.66211 34.6836 6.73242 34.9297V35H2.51367V34.9297ZM45.3846 35V34.9297C45.408 34.8711 45.4256 34.7832 45.4373 34.666C45.4491 34.5488 45.4549 34.4434 45.4549 34.3496C45.4549 33.9863 45.4022 33.5879 45.2967 33.1543C45.203 32.709 45.0155 32.1582 44.7342 31.502L42.6073 26.7207C41.951 26.6973 41.078 26.6855 39.9881 26.6855C38.8983 26.6855 37.7205 26.6855 36.4549 26.6855C35.5291 26.6855 34.6327 26.6855 33.7655 26.6855C32.91 26.6855 32.1366 26.6973 31.4452 26.7207L29.4237 31.3613C29.2479 31.7949 29.0604 32.2695 28.8612 32.7852C28.662 33.3008 28.5623 33.8223 28.5623 34.3496C28.5623 34.502 28.5741 34.6309 28.5975 34.7363C28.6209 34.8301 28.6444 34.8945 28.6678 34.9297V35H25.0819V34.9297C25.2928 34.707 25.5565 34.3145 25.8729 33.752C26.1893 33.1777 26.535 32.4629 26.91 31.6074L36.9823 9.26562H38.3885L47.9334 30.7461C48.1561 31.25 48.3846 31.7422 48.619 32.2227C48.8651 32.6914 49.0936 33.1133 49.3045 33.4883C49.5155 33.8633 49.703 34.1797 49.867 34.4375C50.0311 34.6953 50.1424 34.8594 50.201 34.9297V35H45.3846ZM33.994 25.1738C34.6737 25.1738 35.3709 25.1738 36.0858 25.1738C36.8006 25.1621 37.4979 25.1562 38.1776 25.1562C38.869 25.1445 39.5311 25.1387 40.1639 25.1387C40.7967 25.127 41.3709 25.1152 41.8866 25.1035L36.9471 13.9414L32.0955 25.1738H33.994ZM54.6989 34.9297C54.7692 34.6836 54.8337 34.3789 54.8923 34.0156C54.9509 33.6523 55.0036 33.2012 55.0505 32.6621C55.0973 32.123 55.1325 31.4844 55.1559 30.7461C55.1794 29.9961 55.1911 29.123 55.1911 28.127V16.6836C55.1911 15.6875 55.1794 14.8203 55.1559 14.082C55.1325 13.332 55.0973 12.6875 55.0505 12.1484C55.0036 11.5977 54.9509 11.1406 54.8923 10.7773C54.8337 10.4141 54.7692 10.1094 54.6989 9.86328V9.79297H58.9001V9.86328C58.8298 10.1094 58.7595 10.4141 58.6891 10.7773C58.6305 11.1406 58.5778 11.5977 58.5309 12.1484C58.4958 12.6875 58.4606 13.332 58.4255 14.082C58.402 14.8203 58.3903 15.6875 58.3903 16.6836V28.127C58.3903 29.123 58.402 29.9961 58.4255 30.7461C58.4606 31.4844 58.4958 32.123 58.5309 32.6621C58.5778 33.2012 58.6305 33.6523 58.6891 34.0156C58.7595 34.3789 58.8298 34.6836 58.9001 34.9297V35H54.6989V34.9297ZM69.9722 28.127C69.9722 29.123 69.9839 29.9961 70.0073 30.7461C70.0425 31.4844 70.0777 32.123 70.1128 32.6621C70.1597 33.2012 70.2124 33.6523 70.271 34.0156C70.3413 34.3789 70.4116 34.6836 70.482 34.9297V35H66.2632V34.9297C66.3335 34.6836 66.398 34.3789 66.4566 34.0156C66.5269 33.6523 66.5796 33.2012 66.6148 32.6621C66.6616 32.123 66.6968 31.4844 66.7202 30.7461C66.7554 30.0078 66.773 29.1348 66.773 28.127V16.6836C66.773 15.6875 66.7554 14.8203 66.7202 14.082C66.6968 13.332 66.6616 12.6875 66.6148 12.1484C66.5796 11.6094 66.5269 11.1582 66.4566 10.7949C66.398 10.4199 66.3335 10.1094 66.2632 9.86328V9.79297L67.0015 9.86328C67.2241 9.88672 67.4702 9.9043 67.7398 9.91602C68.021 9.91602 68.3081 9.91602 68.6011 9.91602C69.0581 9.91602 69.6734 9.86328 70.4468 9.75781C71.232 9.64062 72.228 9.58203 73.4351 9.58203C74.5601 9.58203 75.5972 9.73438 76.5464 10.0391C77.5073 10.3437 78.3394 10.7891 79.0425 11.375C79.7456 11.9609 80.2905 12.6816 80.6773 13.5371C81.0757 14.3809 81.2749 15.3418 81.2749 16.4199C81.2749 17.2637 81.1636 18.0488 80.9409 18.7754C80.73 19.4902 80.4253 20.1406 80.0269 20.7266C79.6402 21.3125 79.1714 21.834 78.6206 22.291C78.0698 22.7363 77.4546 23.1113 76.7749 23.416L82.9448 32.082C83.2495 32.5156 83.5308 32.8906 83.7886 33.207C84.0581 33.5234 84.3101 33.7988 84.5445 34.0332C84.7905 34.2559 85.0249 34.4434 85.2476 34.5957C85.4702 34.7363 85.6987 34.8477 85.9331 34.9297V35H80.853C80.8179 34.7773 80.7007 34.4844 80.5015 34.1211C80.314 33.7461 80.0913 33.377 79.8335 33.0137L73.6109 24.2422C73.3413 24.2656 73.0718 24.2891 72.8023 24.3125C72.5327 24.3242 72.2573 24.3301 71.9761 24.3301C71.648 24.3301 71.314 24.3184 70.9741 24.2949C70.646 24.2715 70.312 24.2305 69.9722 24.1719V28.127ZM69.9722 22.8008C70.2886 22.8711 70.6109 22.9238 70.939 22.959C71.2671 22.9824 71.5835 22.9941 71.8882 22.9941C72.7671 22.9941 73.5698 22.8652 74.2964 22.6074C75.023 22.3379 75.6382 21.9336 76.1421 21.3945C76.6577 20.8555 77.0562 20.1875 77.3374 19.3906C77.6187 18.582 77.7593 17.6387 77.7593 16.5605C77.7593 15.6816 77.6597 14.8848 77.4605 14.1699C77.2612 13.4551 76.9624 12.8516 76.564 12.3594C76.1773 11.8555 75.6851 11.4687 75.0874 11.1992C74.4898 10.918 73.7925 10.7773 72.9956 10.7773C72.187 10.7773 71.5425 10.8184 71.062 10.9004C70.5816 10.9824 70.2183 11.0703 69.9722 11.1641V22.8008ZM107.13 35V34.9297C107.154 34.8711 107.171 34.7832 107.183 34.666C107.195 34.5488 107.201 34.4434 107.201 34.3496C107.201 33.9863 107.148 33.5879 107.042 33.1543C106.949 32.709 106.761 32.1582 106.48 31.502L104.353 26.7207C103.697 26.6973 102.824 26.6855 101.734 26.6855C100.644 26.6855 99.4662 26.6855 98.2005 26.6855C97.2748 26.6855 96.3783 26.6855 95.5111 26.6855C94.6556 26.6855 93.8822 26.6973 93.1908 26.7207L91.1693 31.3613C90.9935 31.7949 90.806 32.2695 90.6068 32.7852C90.4076 33.3008 90.308 33.8223 90.308 34.3496C90.308 34.502 90.3197 34.6309 90.3431 34.7363C90.3666 34.8301 90.39 34.8945 90.4134 34.9297V35H86.8275V34.9297C87.0384 34.707 87.3021 34.3145 87.6185 33.752C87.9349 33.1777 88.2806 32.4629 88.6556 31.6074L98.7279 9.26562H100.134L109.679 30.7461C109.902 31.25 110.13 31.7422 110.365 32.2227C110.611 32.6914 110.839 33.1133 111.05 33.4883C111.261 33.8633 111.449 34.1797 111.613 34.4375C111.777 34.6953 111.888 34.8594 111.947 34.9297V35H107.13ZM95.7396 25.1738C96.4193 25.1738 97.1166 25.1738 97.8314 25.1738C98.5462 25.1621 99.2435 25.1562 99.9232 25.1562C100.615 25.1445 101.277 25.1387 101.91 25.1387C102.542 25.127 103.117 25.1152 103.632 25.1035L98.6927 13.9414L93.8412 25.1738H95.7396Z"></path>
+</svg>
+</a>
+</div>
+<div class="col-auto">
+<div aria-labelledby="offcanvasNavbarLabel" class="offcanvas offcanvas-end" id="offcanvasNavbar" tabindex="-1">
+<div class="offcanvas-header">
+<h5 class="offcanvas-title" id="offcanvasNavbarLabel">Menu</h5>
+<button aria-label="Close" class="btn-close text-reset" data-bs-dismiss="offcanvas" type="button"></button>
+</div>
+<div class="offcanvas-body">
+<ul class="navbar-nav justify-content-end flex-grow-1 gap-1 gap-md-5 pe-3">
+<li class="nav-item">
+<a class="nav-link" href="/Home">Home</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="#">Shop</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="#">Blog</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="#">Contact</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="col-3 col-lg-auto">
+<ul class="list-unstyled d-flex m-0">
+<li class="d-none d-lg-block">
+<a class="text-uppercase mx-3" href="#">Wishlist <span class="wishlist-count">(0)</span>
+</a>
+</li>
+<li class="d-none d-lg-block">
+<a class="text-uppercase mx-3" href="#">Cart <span class="cart-count">(0)</span>
+</a>
+</li>
+<li class="d-lg-none">
+<a class="mx-2" href="#">
+<svg height="24" viewbox="0 0 24 24" width="24">
+<use xlink:href="#heart"></use>
+</svg>
+</a>
+</li>
+<li class="d-lg-none">
+<a class="mx-2" href="#">
+<svg height="24" viewbox="0 0 24 24" width="24">
+<use xlink:href="#cart"></use>
+</svg>
+</a>
+</li>
+<li class="search-box mx-2">
+<a class="search-button" href="#">
+<svg height="24" viewbox="0 0 24 24" width="24">
+<use xlink:href="#search"></use>
+</svg>
+</a>
+</li>
+<li class="user-box mx-2">
+<a class="user-button" href="#">
+<svg height="24" viewbox="0 0 24 24" width="24">
+<use xlink:href="#user"></use>
+</svg>
+</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</nav>
+<!-- Account Section -->
+<section class="account-container py-5">
+<div class="container">
+<div class="row justify-content-center">
+<div class="col-lg-10">
+<div class="account-card">
+<!-- Tabs Navigation -->
+<ul class="nav nav-tabs account-tabs justify-content-center" id="accountTabs" role="tablist">
+<li class="nav-item" role="presentation">
+<button aria-controls="login" aria-selected="true" class="nav-link active" data-bs-target="#login" data-bs-toggle="tab" id="login-tab" role="tab" type="button">
+                  Iniciar Sesión
+                </button>
+</li>
+<li class="nav-item" role="presentation">
+<button aria-controls="register" aria-selected="false" class="nav-link" data-bs-target="#register" data-bs-toggle="tab" id="register-tab" role="tab" type="button">
+                  Registrarse
+                </button>
+</li>
+</ul>
+<!-- Tabs Content -->
+<div class="tab-content" id="accountTabContent">
+<!-- Login Tab -->
+<div aria-labelledby="login-tab" class="tab-pane fade show active" id="login" role="tabpanel">
+<div class="form-container">
+<h2 class="form-title">Bienvenido de vuelta</h2>
+<p class="form-subtitle">Inicia sesión en tu cuenta para continuar</p>
+<form action="/Account/Login" id="loginForm" method="post">@Html.AntiForgeryToken()
+<div class="row">
+<div class="col-12">
+<div class="form-group">
+<label class="form-label" for="loginEmail">Email</label>
+<input class="form-control" id="loginEmail" name="email" placeholder="tu@email.com" required="" type="email"/>
+</div>
+</div>
+<div class="col-12">
+<div class="form-group">
+<label class="form-label" for="loginPassword">Contraseña</label>
+<input class="form-control" id="loginPassword" name="password" placeholder="Tu contraseña" required="" type="password"/>
+</div>
+</div>
+<div class="col-12">
+<div class="form-check mb-3">
+<input class="form-check-input" id="rememberMe" name="rememberMe" type="checkbox" value=""/>
+<label class="form-check-label" for="rememberMe">
+                            Recordarme
+                          </label>
+</div>
+</div>
+<div class="col-12">
+<button class="btn btn-account" type="submit">Iniciar Sesión</button>
+</div>
+</div>
+</form>
+<div class="forgot-password">
+<a href="#" onclick="showForgotPassword()">¿Olvidaste tu contraseña?</a>
+</div>
+<div class="divider">
+<span>o continúa con</span>
+</div>
+<div class="social-login">
+<button class="btn btn-social" type="button">
+<svg fill="#4285F4" height="20" viewbox="0 0 24 24" width="20">
+<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"></path>
+<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"></path>
+<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"></path>
+<path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"></path>
+</svg>
+                      Continuar con Google
+                    </button>
+<button class="btn btn-social" type="button">
+<svg fill="#1877F2" height="20" viewbox="0 0 24 24" width="20">
+<path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"></path>
+</svg>
+                      Continuar con Facebook
+                    </button>
+</div>
+</div>
+</div>
+<!-- Register Tab -->
+<div aria-labelledby="register-tab" class="tab-pane fade" id="register" role="tabpanel">
+<div class="form-container">
+<h2 class="form-title">Crear cuenta</h2>
+<p class="form-subtitle">Únete a nuestra comunidad de fashion lovers</p>
+<form action="/Account/Register" id="registerForm" method="post">@Html.AntiForgeryToken()
+<div class="row">
+<div class="col-md-6">
+<div class="form-group">
+<label class="form-label" for="firstName">Nombre</label>
+<input class="form-control" id="firstName" name="firstName" placeholder="Tu nombre" required="" type="text"/>
+</div>
+</div>
+<div class="col-md-6">
+<div class="form-group">
+<label class="form-label" for="lastName">Apellido</label>
+<input class="form-control" id="lastName" name="lastName" placeholder="Tu apellido" required="" type="text"/>
+</div>
+</div>
+<div class="col-12">
+<div class="form-group">
+<label class="form-label" for="registerEmail">Email</label>
+<input class="form-control" id="registerEmail" name="email" placeholder="tu@email.com" required="" type="email"/>
+</div>
+</div>
+<div class="col-md-6">
+<div class="form-group">
+<label class="form-label" for="registerPassword">Contraseña</label>
+<input class="form-control" id="registerPassword" minlength="6" name="password" placeholder="Tu contraseña" required="" type="password"/>
+</div>
+</div>
+<div class="col-md-6">
+<div class="form-group">
+<label class="form-label" for="confirmPassword">Confirmar contraseña</label>
+<input class="form-control" id="confirmPassword" minlength="6" name="confirmPassword" placeholder="Confirma tu contraseña" required="" type="password"/>
+</div>
+</div>
+<div class="col-12">
+<div class="form-group">
+<label class="form-label" for="phone">Teléfono (opcional)</label>
+<input class="form-control" id="phone" name="phone" placeholder="+52 123 456 7890" type="tel"/>
+</div>
+</div>
+<div class="col-12">
+<div class="form-check mb-3">
+<input class="form-check-input" id="agreeTerms" name="checkbox1" required="" type="checkbox" value=""/>
+<label class="form-check-label" for="agreeTerms">
+                            Acepto los <a class="text-decoration-none" href="#">términos y condiciones</a> y la 
+                            <a class="text-decoration-none" href="#">política de privacidad</a>
+</label>
+</div>
+</div>
+<div class="col-12">
+<div class="form-check mb-3">
+<input class="form-check-input" id="newsletter" name="checkbox2" type="checkbox" value=""/>
+<label class="form-check-label" for="newsletter">
+                            Quiero recibir ofertas especiales y novedades por email
+                          </label>
+</div>
+</div>
+<div class="col-12">
+<button class="btn btn-account" type="submit">Crear Cuenta</button>
+</div>
+</div>
+</form>
+<div class="divider">
+<span>o regístrate con</span>
+</div>
+<div class="social-login">
+<button class="btn btn-social" type="button">
+<svg fill="#4285F4" height="20" viewbox="0 0 24 24" width="20">
+<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"></path>
+<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"></path>
+<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"></path>
+<path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"></path>
+</svg>
+                      Continuar con Google
+                    </button>
+<button class="btn btn-social" type="button">
+<svg fill="#1877F2" height="20" viewbox="0 0 24 24" width="20">
+<path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"></path>
+</svg>
+                      Continuar con Facebook
+                    </button>
+</div>
+</div>
+</div>
+<!-- Forgot Password (Hidden by default) -->
+<div class="tab-pane fade" id="forgot-password" role="tabpanel">
+<div class="form-container">
+<h2 class="form-title">Recuperar contraseña</h2>
+<p class="form-subtitle">Te enviaremos un enlace para restablecer tu contraseña</p>
+<form action="/Account/ForgotPassword" id="forgotForm" method="post">@Html.AntiForgeryToken()
+<div class="row">
+<div class="col-12">
+<div class="form-group">
+<label class="form-label" for="forgotEmail">Email</label>
+<input class="form-control" id="forgotEmail" name="email" placeholder="tu@email.com" required="" type="email"/>
+</div>
+</div>
+<div class="col-12">
+<button class="btn btn-account" type="submit">Enviar enlace</button>
+</div>
+<div class="col-12 mt-3">
+<button class="btn btn-secondary-account" onclick="showLogin()" type="button">
+                          Volver al inicio de sesión
+                        </button>
+</div>
+</div>
+</form>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="mt-5 bg-light" id="footer">
+<div class="container">
+<div class="row d-flex flex-wrap justify-content-between py-5">
+<div class="col-md-3 col-sm-6">
+<div class="footer-intro mb-4">
+<a href="/Home">
+<svg fill="#111" height="45" viewbox="0 0 112 45" width="112" xmlns="http://www.w3.org/2000/svg">
+<path d="M2.51367 34.9297C2.58398 34.6836 2.64844 34.3789 2.70703 34.0156C2.77734 33.6523 2.83594 33.2012 2.88281 32.6621C2.92969 32.123 2.96484 31.4844 2.98828 30.7461C3.01172 29.9961 3.02344 29.123 3.02344 28.127V16.6836C3.02344 15.6875 3.01172 14.8203 2.98828 14.082C2.96484 13.332 2.92969 12.6875 2.88281 12.1484C2.83594 11.5977 2.77734 11.1406 2.70703 10.7773C2.64844 10.4141 2.58398 10.1094 2.51367 9.86328V9.79297H6.73242V9.86328C6.66211 10.1094 6.5918 10.4141 6.52148 10.7773C6.46289 11.1406 6.41016 11.5977 6.36328 12.1484C6.32812 12.6875 6.29297 13.332 6.25781 14.082C6.23438 14.8203 6.22266 15.6875 6.22266 16.6836V20.6035L16.4883 12.2188C17.6367 11.2813 18.2109 10.4727 18.2109 9.79297H23.1504V9.86328C22.459 10.0273 21.7559 10.3437 21.041 10.8125C20.3379 11.2695 19.5879 11.832 18.791 12.5L9.7207 20.0938L20.6367 32.082C21.0938 32.5508 21.4805 32.9434 21.7969 33.2598C22.125 33.5645 22.4121 33.8223 22.6582 34.0332C22.9043 34.2324 23.127 34.4023 23.3262 34.543C23.5371 34.6719 23.7539 34.8008 23.9766 34.9297V35H18.8262C18.7793 34.8945 18.6973 34.7598 18.5801 34.5957C18.4746 34.4316 18.3457 34.2617 18.1934 34.0859C18.0527 33.9102 17.8945 33.7285 17.7188 33.541C17.5547 33.3535 17.3965 33.1777 17.2441 33.0137L6.22266 20.9199V28.127C6.22266 29.123 6.23438 29.9961 6.25781 30.7461C6.29297 31.4844 6.32812 32.123 6.36328 32.6621C6.41016 33.2012 6.46289 33.6523 6.52148 34.0156C6.5918 34.3789 6.66211 34.6836 6.73242 34.9297V35H2.51367V34.9297Z"></path>
+</svg>
+</a>
+</div>
+<p class="text-muted">La mejor moda está aquí. Descubre las últimas tendencias y estilos únicos.</p>
+</div>
+<div class="col-md-3 col-sm-6">
+<h5 class="widget-title text-uppercase mb-4">Enlaces rápidos</h5>
+<ul class="menu-list list-unstyled">
+<li><a class="text-muted" href="#">Inicio</a></li>
+<li><a class="text-muted" href="#">Tienda</a></li>
+<li><a class="text-muted" href="#">Blog</a></li>
+<li><a class="text-muted" href="#">Contacto</a></li>
+</ul>
+</div>
+<div class="col-md-3 col-sm-6">
+<h5 class="widget-title text-uppercase mb-4">Ayuda</h5>
+<ul class="menu-list list-unstyled">
+<li><a class="text-muted" href="#">Mi cuenta</a></li>
+<li><a class="text-muted" href="#">Seguimiento de pedidos</a></li>
+<li><a class="text-muted" href="#">Devoluciones</a></li>
+<li><a class="text-muted" href="#">FAQ</a></li>
+</ul>
+</div>
+<div class="col-md-3 col-sm-6">
+<h5 class="widget-title text-uppercase mb-4">Contacto</h5>
+<p class="text-muted">¿Necesitas ayuda? <br/>
+<a class="text-decoration-none" href="mailto:contact@kairassa.com">contact@kairassa.com</a>
+</p>
+</div>
+</div>
+</div>
+<div class="border-top py-4">
+<div class="container">
+<div class="row">
+<div class="col-12 text-center">
+<p class="text-muted mb-0">© 2024 Kairassa. Todos los derechos reservados.</p>
+</div>
+</div>
+</div>
+</div>
+</footer>
+<!-- Scripts -->
+<script crossorigin="anonymous" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Form validation and interaction
+    document.addEventListener('DOMContentLoaded', function() {
+      // Password confirmation validation
+      const registerForm = document.getElementById('registerForm');
+      const password = document.getElementById('registerPassword');
+      const confirmPassword = document.getElementById('confirmPassword');
+
+      function validatePasswords() {
+        if (password.value !== confirmPassword.value) {
+          confirmPassword.setCustomValidity('Las contraseñas no coinciden');
+          confirmPassword.classList.add('is-invalid');
+        } else {
+          confirmPassword.setCustomValidity('');
+          confirmPassword.classList.remove('is-invalid');
+        }
+      }
+
+      if (password && confirmPassword) {
+        password.addEventListener('input', validatePasswords);
+        confirmPassword.addEventListener('input', validatePasswords);
+      }
+
+      // Form submissions
+      document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        // Aquí iría la lógica de autenticación
+        alert('Formulario de inicio de sesión enviado');
+      });
+
+      document.getElementById('registerForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        validatePasswords();
+        if (confirmPassword.checkValidity()) {
+          // Aquí iría la lógica de registro
+          alert('Formulario de registro enviado');
+        }
+      });
+
+      document.getElementById('forgotForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        // Aquí iría la lógica de recuperación de contraseña
+        alert('Enlace de recuperación enviado');
+      });
+    });
+
+    // Show forgot password form
+    function showForgotPassword() {
+      // Hide current tabs
+      document.getElementById('login').classList.remove('show', 'active');
+      document.getElementById('register').classList.remove('show', 'active');
+      document.getElementById('login-tab').classList.remove('active');
+      document.getElementById('register-tab').classList.remove('active');
+      
+      // Show forgot password
+      document.getElementById('forgot-password').classList.add('show', 'active');
+      
+      // Hide tabs navigation
+      document.getElementById('accountTabs').style.display = 'none';
+    }
+
+    // Show login form
+    function showLogin() {
+      // Hide forgot password
+      document.getElementById('forgot-password').classList.remove('show', 'active');
+      
+      // Show login
+      document.getElementById('login').classList.add('show', 'active');
+      document.getElementById('login-tab').classList.add('active');
+      
+      // Show tabs navigation
+      document.getElementById('accountTabs').style.display = 'flex';
+    }
+
+    // Enhanced form interactions
+    document.querySelectorAll('.form-control').forEach(function(input) {
+      input.addEventListener('focus', function() {
+        this.parentElement.classList.add('focused');
+      });
+      
+      input.addEventListener('blur', function() {
+        if (!this.value) {
+          this.parentElement.classList.remove('focused');
+        }
+      });
+    });
+  </script>
+
+<script>
+(async function(){
+  function hook(formId, endpoint){
+    const f = document.getElementById(formId);
+    if(!f) return;
+    f.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const fd = new FormData(f);
+      try{
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'X-Requested-With': 'XMLHttpRequest' },
+          body: fd
+        });
+        const data = await res.json();
+        if(data.ok){
+          if(data.redirectUrl){ window.location.href = data.redirectUrl; }
+          else if(data.message){ alert(data.message); }
+        }else{
+          alert(data.error || 'Error en la operación');
+        }
+      }catch(err){
+        alert('Error de red: '+err);
+      }
+    });
+  }
+  hook('loginForm','/Account/Login');
+  hook('registerForm','/Account/Register');
+  hook('forgotForm','/Account/ForgotPassword');
+})();
+</script>
+</body>
+</html>
