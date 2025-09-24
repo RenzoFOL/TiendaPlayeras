@@ -67,9 +67,10 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
+    app.UseHttpsRedirection();
+    
 }
 
-app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
@@ -81,9 +82,11 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 // 8) Rutas MVC por defecto
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
 
 // 9) Identity UI (Razor Pages)
 app.MapRazorPages();

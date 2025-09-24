@@ -1,33 +1,70 @@
+using System;
 using System.Collections.Generic;
-
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TiendaPlayeras.Web.Models
 {
-/// <summary>Producto base (playera), sin especificar variante.</summary>
-public class Product
-{
-public int Id { get; set; }
-public string Name { get; set; } = string.Empty;
-public string Slug { get; set; } = string.Empty; // para URL amigable
-public string? Description { get; set; }
-public bool IsCustomizable { get; set; } = false; // permite subir diseño propio
-public bool IsActive { get; set; } = true;
-public List<ProductVariant> Variants { get; set; } = new();
-}
+    /// <summary>Producto base (playera), sin especificar variante.</summary>
+    public class Product
+    {
+        public int Id { get; set; }
 
+        [Required, StringLength(100)]
+        public string Name { get; set; } = string.Empty;
 
-/// <summary>Variante de producto: talla, corte, color, diseño.</summary>
-public class ProductVariant
-{
-public int Id { get; set; }
-public int ProductId { get; set; }
-public Product? Product { get; set; }
-public string Size { get; set; } = string.Empty; // S, M, L, XL
-public string Fit { get; set; } = string.Empty; // Hombre, Mujer, Unisex
-public string Color { get; set; } = string.Empty; // Negro, Blanco, etc.
-public string DesignCode { get; set; } = string.Empty; // identificador de diseño
-public decimal Price { get; set; }
-public int Stock { get; set; }
-public bool IsActive { get; set; } = true;
-}
+        [StringLength(140)]
+        public string Slug { get; set; } = string.Empty; // para URL amigable
+
+        [StringLength(2000)]
+        public string? Description { get; set; }
+
+        /// <summary>Precio base del producto (sin variantes).</summary>
+        [Range(0, 999999.99)]
+        [Column(TypeName = "numeric(10,2)")]
+        public decimal BasePrice { get; set; }
+
+        /// <summary>Permite subir diseño propio.</summary>
+        public bool IsCustomizable { get; set; } = false;
+
+        /// <summary>Soft-delete: activo/inhabilitado (no se elimina físico).</summary>
+        public bool IsActive { get; set; } = true;
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? UpdatedAt { get; set; }
+
+        public List<ProductVariant> Variants { get; set; } = new();
+    }
+
+    /// <summary>Variante de producto: talla, corte, color, diseño.</summary>
+    public class ProductVariant
+    {
+        public int Id { get; set; }
+
+        [Required]
+        public int ProductId { get; set; }
+        public Product? Product { get; set; }
+
+        [Required, StringLength(20)]
+        public string Size { get; set; } = string.Empty; // S, M, L, XL
+
+        [Required, StringLength(20)]
+        public string Fit { get; set; } = string.Empty;  // Hombre, Mujer, Unisex
+
+        [Required, StringLength(30)]
+        public string Color { get; set; } = string.Empty; // Negro, Blanco, etc.
+
+        [StringLength(100)]
+        public string DesignCode { get; set; } = string.Empty; // identificador de diseño
+
+        /// <summary>Precio final de la variante (si la usas). Si prefieres usar BasePrice + modificadores, déjalo en 0 y calcula en la lógica.</summary>
+        [Range(0, 999999.99)]
+        [Column(TypeName = "numeric(10,2)")]
+        public decimal Price { get; set; }
+
+        [Range(0, int.MaxValue)]
+        public int Stock { get; set; }
+
+        public bool IsActive { get; set; } = true;
+    }
 }
