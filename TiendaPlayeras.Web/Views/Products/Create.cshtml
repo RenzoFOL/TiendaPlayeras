@@ -1,20 +1,60 @@
 @model TiendaPlayeras.Web.Models.Product
 @{
-ViewData["Title"] = "Crear Producto";
+    ViewData["Title"] = "Nuevo producto";
 }
-<h2>Nuevo Producto</h2>
-<form asp-action="Create" method="post">
-<div class="mb-3">
-<label asp-for="Name" class="form-label"></label>
-<input asp-for="Name" class="form-control" />
+<div class="container py-4">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h2 class="m-0">Nuevo producto</h2>
+    <a class="btn btn-outline-secondary" href="/Products">← Regresar</a>
+  </div>
+
+  @Html.ValidationSummary(false, "", new { @class="alert alert-danger" })
+
+  <form method="post" action="/Products/Create" class="row g-3">
+    @Html.AntiForgeryToken()
+
+    <div class="col-12 col-lg-6">
+      <label class="form-label">Nombre *</label>
+      <input asp-for="Name" class="form-control" required maxlength="100" />
+      <span class="text-danger small" asp-validation-for="Name"></span>
+    </div>
+
+    <div class="col-12 col-lg-3">
+      <label class="form-label">Precio base *</label>
+      <input asp-for="BasePrice" type="number" step="0.01" min="0" class="form-control" required />
+      <span class="text-danger small" asp-validation-for="BasePrice"></span>
+    </div>
+
+        <!-- SWITCHES: Personalizable / Habilitado -->
+    <div class="col-12 col-lg-3">
+      <div class="switch-group">
+        <div class="form-check form-switch m-0">
+          <input class="form-check-input" asp-for="IsCustomizable" id="IsCustomizable" role="switch" />
+          <label class="form-check-label" for="IsCustomizable">Personalizable</label>
+          <div class="form-text">Permite subir diseño propio</div>
+        </div>
+
+        <div class="form-check form-switch m-0">
+          <input class="form-check-input" asp-for="IsActive" id="IsActive" role="switch" />
+          <label class="form-check-label" for="IsActive">Habilitado</label>
+          <div class="form-text">Visible en el catálogo</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <label class="form-label">Descripción</label>
+      <textarea asp-for="Description" class="form-control" rows="4" maxlength="2000"></textarea>
+      <span class="text-danger small" asp-validation-for="Description"></span>
+    </div>
+
+    <div class="col-12 d-flex gap-2">
+      <button class="btn btn-primary" type="submit">Guardar</button>
+      <a class="btn btn-outline-secondary" href="/Products">Cancelar</a>
+    </div>
+  </form>
 </div>
-<div class="mb-3">
-<label asp-for="Description" class="form-label"></label>
-<textarea asp-for="Description" class="form-control"></textarea>
-</div>
-<div class="form-check">
-<input asp-for="IsCustomizable" class="form-check-input" />
-<label asp-for="IsCustomizable" class="form-check-label">Personalizable</label>
-</div>
-<button type="submit" class="btn btn-success">Guardar</button>
-</form>
+
+@section Scripts{
+  @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

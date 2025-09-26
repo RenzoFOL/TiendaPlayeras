@@ -1,9 +1,14 @@
 @{
-ViewData["Title"] = "Panel de Empleado";
+    ViewData["Title"] = "Panel Empleado";
 }
-<h2>Panel Empleado</h2>
-<ul>
-<li><a asp-controller="Products" asp-action="Index">Gestión de Productos</a></li>
-<li><a asp-controller="Users" asp-action="Index">Gestión de Usuarios</a></li>
-<li><a asp-controller="Reports" asp-action="Index">Reportes</a></li>
-</ul>
+<div class="container py-4">
+    <h2 class="mb-3">Panel de Empleado</h2>
+
+    <div class="mb-3">
+        <a class="btn btn-primary" href="@Url.Action("Index","Products")">
+            Gestión de productos
+        </a>
+    </div>
+
+    <a class="btn btn-outline-secondary" href="@Url.Content("~/")">← Regresar a la tienda</a>
+</div>
