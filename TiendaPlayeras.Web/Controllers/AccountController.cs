@@ -39,7 +39,19 @@ namespace TiendaPlayeras.Web.Controllers
         /// </summary>
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult Index() => View("Account");
+        public IActionResult Index(string? returnUrl = null)
+        {
+            // Si ya está autenticado, NO mostramos /Account; redirigimos por rol
+            if (User?.Identity?.IsAuthenticated == true)
+            {
+                if (User.IsInRole("Admin")) return LocalRedirect("/Admin");
+                if (User.IsInRole("Employee")) return LocalRedirect("/Employee");
+                return LocalRedirect("/"); // Customer
+            }
+            ViewBag.ReturnUrl = returnUrl;
+            return View("Account"); // Views/Account/Account.cshtml
+        }
+
 
         /// <summary>
         /// Inicia sesión y devuelve JSON con redirectUrl según rol.
@@ -81,6 +93,12 @@ namespace TiendaPlayeras.Web.Controllers
                 return Json(new { ok = false, error = "Debes confirmar tu correo para iniciar sesión." });
             }
         }
+[Authorize]
+[HttpGet]
+public IActionResult Profile()
+{
+    return View(); // crea Views/Account/Profile.cshtml con tu UI de edición
+}
 
         /// <summary>
         /// Registro de cliente (auto-registro siempre rol "Customer").
@@ -116,18 +134,35 @@ namespace TiendaPlayeras.Web.Controllers
                 await _roleManager.CreateAsync(new IdentityRole("Customer"));
             await _userManager.AddToRoleAsync(user, "Customer");
 
-            // Token y link de confirmación
-            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            var url = Url.Action(nameof(ConfirmEmail), "Account",
-                new { userId = user.Id, token = HttpUtility.UrlEncode(token) },
-                protocol: Request.Scheme);
+            // Si no requiere confirmación de email, inicia sesión automáticamente
+            if (!_userManager.Options.SignIn.RequireConfirmedEmail)
+            {
+                await _signInManager.SignInAsync(user, isPersistent: false);
+                return Json(new { ok = true, redirectUrl = "/" });
+            }
 
-            await _email.SendAsync(user.Email!, "Confirma tu correo",
-                $@"<p>Hola {user.FirstName},</p>
-                   <p>Confirma tu correo haciendo clic:</p>
-                   <p><a href=""{url}"">Confirmar correo</a></p>");
+            // Si requiere confirmación de email, envía el correo de confirmación
+            try
+            {
+                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                var url = Url.Action(nameof(ConfirmEmail), "Account",
+                    new { userId = user.Id, token = HttpUtility.UrlEncode(token) },
+                    protocol: Request.Scheme);
 
-            return Json(new { ok = true, message = "Registro exitoso. Revisa tu correo para confirmar tu cuenta." });
+                await _email.SendAsync(user.Email!, "Confirma tu correo",
+                    $@"<p>Hola {user.FirstName},</p>
+                    <p>Confirma tu correo haciendo clic:</p>
+                    <p><a href=""{url}"">Confirmar correo</a></p>");
+
+                return Json(new { ok = true, message = "Registro exitoso. Revisa tu correo para confirmar tu cuenta." });
+            }
+            catch (Exception ex)
+            {
+                // Log del error (opcional)
+                // _logger.LogError(ex, "Error enviando email de confirmación para {Email}", user.Email);
+                
+                return Json(new { ok = true, message = "Registro exitoso, pero hubo un error al enviar el correo de confirmación. Contacta al administrador." });
+            }
         }
 
         /// <summary>
@@ -178,6 +213,18 @@ namespace TiendaPlayeras.Web.Controllers
         {
             return View("ResetPassword", new ResetPasswordVm { Email = email, Token = token });
         }
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult Status()
+        {
+            if (User?.Identity?.IsAuthenticated == true)
+            {
+                var roles = User.Claims.Where(c => c.Type == System.Security.Claims.ClaimTypes.Role).Select(c=>c.Value).ToList();
+                var redirect = roles.Contains("Admin") ? "/Admin" : roles.Contains("Employee") ? "/Employee" : "/";
+                return Json(new { authenticated = true, roles, redirect });
+            }
+            return Json(new { authenticated = false });
+        }
 
         /// <summary>
         /// Procesa restablecimiento de contraseña.
@@ -207,9 +254,10 @@ namespace TiendaPlayeras.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
-            await _signInManager.SignOutAsync();
-            return Redirect("/");
+            await _signInManager.SignOutAsync();      // limpia cookie de Identity
+            return Redirect("/");                     // redirige a Home
         }
+
 
         /// <summary>Devuelve ruta por rol.</summary>
         private static string RoleRedirect(IList<string> roles)

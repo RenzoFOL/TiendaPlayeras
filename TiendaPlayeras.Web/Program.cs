@@ -12,23 +12,25 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // 2) Identity (con confirmación de correo)
+var requireConfirmed = builder.Configuration.GetValue<bool>("Auth:RequireConfirmedEmail", false);
+
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>(opt =>
     {
-        opt.SignIn.RequireConfirmedEmail = true; // forzar verificación
+        opt.SignIn.RequireConfirmedEmail = requireConfirmed; // <- opcional
         opt.User.RequireUniqueEmail = true;
         opt.Password.RequiredLength = 6;
     })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-// 2.1) Cookies de autenticación: rutas del flujo de acceso
 builder.Services.ConfigureApplicationCookie(opt =>
 {
-    opt.LoginPath = "/Account";          // login UI centralizada
-    opt.LogoutPath = "/Account/Logout";  // logout
-    opt.AccessDeniedPath = "/Account";   // acceso denegado → página de cuenta
+    opt.LoginPath = "/Account";          // siempre centralizamos el acceso en /Account
+    opt.LogoutPath = "/Account/Logout";
+    opt.AccessDeniedPath = "/Account";
 });
+
 
 // 3) MVC + Razor Pages (para Identity UI)
 builder.Services.AddControllersWithViews();
