@@ -1,14 +1,22 @@
 # .NET build outputs
+<<<<<<< HEAD
 **/bin/
 **/obj/
+=======
+bin/
+obj/
+>>>>>>> origin/main
 
 # Compiled files
 *.dll
 *.exe
 *.pdb
+<<<<<<< HEAD
 *.cache
 *.cache.json
 *.log
+=======
+>>>>>>> origin/main
 
 # NuGet
 packages/
@@ -17,4 +25,8 @@ packages/
 # VS files
 .vs/
 *.user
+<<<<<<< HEAD
 *.suo
+=======
+*.suo
+>>>>>>> origin/main

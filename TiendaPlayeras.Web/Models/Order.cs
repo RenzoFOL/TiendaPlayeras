@@ -32,6 +32,7 @@ public int Quantity { get; set; }
 public decimal UnitPrice { get; set; }
 public bool IsActive { get; set; } = true;
 }
+<<<<<<< HEAD
 
 public class OrderDemoItem //Pedidos
     {
@@ -41,4 +42,6 @@ public class OrderDemoItem //Pedidos
         public int      Items       { get; set; }
         public decimal  Total       { get; set; }
     }
+=======
+>>>>>>> origin/main
 }
