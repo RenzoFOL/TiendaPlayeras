@@ -1,0 +1,25 @@
+@model IEnumerable<TiendaPlayeras.Web.Models.Product>
+@{
+ViewData["Title"] = "Catálogo";
+}
+<form class="row g-2 mb-3">
+<div class="col">
+<input name="q" value="@ViewBag.Q" class="form-control" placeholder="Buscar playeras" />
+</div>
+<div class="col-auto">
+<button class="btn btn-primary">Buscar</button>
+</div>
+</form>
+<div class="row row-cols-1 row-cols-md-3 g-3">
+@foreach (var p in Model) {
+<div class="col">
+<div class="card h-100">
+<div class="card-body">
+<h5 class="card-title">@p.Name</h5>
+<p class="card-text">@p.Description</p>
+<a class="btn btn-outline-primary" href="@Url.Action("Product", new { slug = p.Slug })">Ver</a>
+</div>
+</div>
+</div>
+}
+</div>

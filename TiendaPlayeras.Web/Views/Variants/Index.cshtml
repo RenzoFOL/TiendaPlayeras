@@ -1,0 +1,14 @@
+@model IEnumerable<TiendaPlayeras.Web.Models.ProductVariant>
+@{ var productId = (int)ViewBag.ProductId; }
+<a class="btn btn-primary mb-2" asp-action="Create" asp-route-productId="@productId">Nueva variante</a>
+<table class="table table-striped"><thead><tr><th>Fit</th><th>Color</th><th>Talla</th><th>Precio</th><th>Stock</th><th>Activo</th><th></th></tr></thead><tbody>
+@foreach (var v in Model) {
+<tr>
+<td>@v.Fit</td><td>@v.Color</td><td>@v.Size</td><td>$@v.Price</td><td>@v.Stock</td><td>@v.IsActive</td>
+<td>
+<a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@v.Id">Editar</a>
+<form asp-action="Toggle" method="post" class="d-inline">@Html.AntiForgeryToken()<input type="hidden" name="id" value="@v.Id" /><button class="btn btn-sm btn-outline-warning">@(v.IsActive ? "Inhabilitar" : "Habilitar")</button></form>
+</td>
+</tr>
+}
+</tbody></table>

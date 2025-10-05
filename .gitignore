@@ -1,0 +1,20 @@
+# .NET build outputs
+**/bin/
+**/obj/
+
+# Compiled files
+*.dll
+*.exe
+*.pdb
+*.cache
+*.cache.json
+*.log
+
+# NuGet
+packages/
+*.nupkg
+
+# VS files
+.vs/
+*.user
+*.suo

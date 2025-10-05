@@ -1,0 +1,64 @@
+@model IEnumerable<TiendaPlayeras.Web.Models.Product>
+@{
+    ViewData["Title"] = "Productos";
+}
+<div class="container py-4">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h2 class="m-0">Productos</h2>
+    <div class="d-flex gap-2">
+      <a class="btn btn-success" href="/Products/Create">+ Nuevo producto</a>
+      <a class="btn btn-outline-secondary" href="@Url.Action("Index","Employee")">← Regresar</a>
+    </div>
+  </div>
+
+  @if (TempData["Ok"] != null) {
+    <div class="alert alert-success">@TempData["Ok"]</div>
+  }
+
+  @if (Model == null || !Model.Any())
+  {
+    <div class="alert alert-secondary">No hay productos aún.</div>
+  }
+  else
+  {
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Nombre</th>
+            <th class="text-center">Precio base</th>
+            <th class="text-center">Personalizable</th>
+            <th class="text-center">Estado</th>
+            <th class="text-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (var p in Model)
+          {
+            <tr>
+              <td>
+                <div class="fw-semibold">@p.Name</div>
+                <small class="text-muted">Slug: @p.Slug</small>
+              </td>
+              <td class="text-center">$ @p.BasePrice.ToString("0.00")</td>
+              <td class="text-center">@(p.IsCustomizable ? "Sí" : "No")</td>
+              <td class="text-center">
+                @if (p.IsActive) { <span class="badge bg-success">Activo</span> }
+                else { <span class="badge bg-secondary">Inhabilitado</span> }
+              </td>
+              <td class="text-end">
+                <a class="btn btn-sm btn-outline-primary" href="/Products/Edit/@p.Id">Editar</a>
+                <form method="post" action="/Products/ToggleActive/@p.Id" class="d-inline">
+                  @Html.AntiForgeryToken()
+                  <button class="btn btn-sm btn-outline-warning" type="submit">
+                    @(p.IsActive ? "Inhabilitar" : "Habilitar")
+                  </button>
+                </form>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
