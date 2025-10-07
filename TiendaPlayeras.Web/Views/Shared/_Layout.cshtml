@@ -10,28 +10,29 @@
     <meta name="author" content="TemplatesJungle">
     <meta name="keywords" content="ecommerce,fashion,store">
     <meta name="description" content="Bootstrap 5 Fashion Store HTML CSS Template">
-    
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
-    
+          integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    
+
     <!-- Swiper CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
-    
+
     <!-- CSS personalizados -->
     <link rel="stylesheet" href="~/css/kaira/normalize.css" asp-append-version="true">
     <link rel="stylesheet" href="~/css/kaira/vendor.css" asp-append-version="true">
     <link rel="stylesheet" href="~/css/kaira/swiper-bundle.min.css" asp-append-version="true">
     <link rel="stylesheet" href="~/css/kaira/style.css" asp-append-version="true">
     <link rel="stylesheet" href="~/css/kaira/enhanced.css">
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&family=Marcellus&display=swap" rel="stylesheet">
-    
+
     <style>
         :root {
             --primary-color: #111;
@@ -40,202 +41,60 @@
             --transition-speed: 0.3s;
             --shadow: 0 4px 20px rgba(0,0,0,0.1);
         }
-
-        /* Navbar Enhanced Styles */
-        .navbar-enhanced {
-            background: rgba(255, 255, 255, 0.95) !important;
-            backdrop-filter: blur(10px);
-            transition: all var(--transition-speed) ease;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.05);
-            position: sticky;
-            top: 0;
-            z-index: 1050;
-        }
-
-        .navbar-enhanced.scrolled {
-            background: rgba(255, 255, 255, 0.98) !important;
-            box-shadow: var(--shadow);
-        }
-
-        .navbar-brand {
-            transition: transform var(--transition-speed) ease;
-        }
-
-        .navbar-brand:hover {
-            transform: scale(1.05);
-        }
-
-        /* Navigation Links */
-        .nav-link-enhanced {
-            position: relative;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 0.75rem 1rem !important;
-            transition: all var(--transition-speed) ease;
-            color: var(--primary-color) !important;
-        }
-
-        .nav-link-enhanced::before {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            width: 0;
-            height: 2px;
-            background: var(--hover-color);
-            transition: all var(--transition-speed) ease;
-            transform: translateX(-50%);
-        }
-
-        .nav-link-enhanced:hover::before,
-        .nav-link-enhanced.active::before {
-            width: 80%;
-        }
-
-        .nav-link-enhanced:hover,
-        .nav-link-enhanced.active {
-            color: var(--hover-color) !important;
-            transform: translateY(-2px);
-        }
-
-        /* Dropdown Menus Enhanced */
-        .dropdown-menu-enhanced {
-            border: none;
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-            padding: 1rem 0;
-            margin-top: 0.5rem;
-            opacity: 0;
-            transform: translateY(-10px);
-            transition: all var(--transition-speed) ease;
-            pointer-events: none;
-        }
-
-        .dropdown:hover .dropdown-menu-enhanced,
-        .dropdown-menu-enhanced.show {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: auto;
-        }
-
-        .dropdown-item-enhanced {
-            padding: 0.75rem 1.5rem;
-            transition: all 0.2s ease;
-            border-radius: 8px;
-            margin: 0 0.5rem;
-            font-weight: 500;
-        }
-
-        .dropdown-item-enhanced:hover {
-            background: linear-gradient(135deg, var(--hover-color), #66513e);
-            color: white;
-            transform: translateX(5px);
-        }
-
-        /* User Menu - Dropdown to left */
-        .user-box .dropdown-menu-enhanced {
-            min-width: 200px;
-            right: 0;
-            left: auto;
-        }
-
-        .user-button-enhanced {
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            transition: all var(--transition-speed) ease;
-        }
-
-        .user-button-enhanced:hover {
-            background: rgb(102, 81, 62);
-            transform: scale(1.1);
-        }
-
-        /* Navigation Icons */
-        .nav-icon-enhanced {
-            transition: all 0.2s ease;
-        }
-
-        .nav-icon-enhanced:hover {
-            transform: scale(1.2);
-            filter: drop-shadow(0 0 5px rgb(102, 81, 62))
-        }
-
-        /* Mobile Icons */
-        .mobile-icon-enhanced {
-            width: 24px;
-            height: 24px;
-            transition: all 0.2s ease;
-        }
-
-        .mobile-icon-enhanced:hover {
-            transform: scale(1.2);
-            color: var(--hover-color);
-        }
-
-        /* Badge Styles */
-        .badge-enhanced {
-            font-size: 0.7em;
-            padding: 0.3em 0.5em;
-            border-radius: 50px;
-            background: var(--hover-color);
-            color: white;
-            margin-left: 0.2rem;
-        }
-
-        .navbar-toggler {
-            border: none;
-            transition: all 0.2s ease;
-        }
-
-        .navbar-toggler:hover {
-            transform: scale(1.1);
-        }
-
-        .navbar-toggler:focus {
-            box-shadow: none;
-        }
-
+        .navbar-enhanced { background: rgba(255,255,255,.95)!important; backdrop-filter: blur(10px); transition: all var(--transition-speed) ease; box-shadow: 0 2px 20px rgba(0,0,0,.05); position: sticky; top: 0; z-index: 1050; }
+        .navbar-enhanced.scrolled { background: rgba(255,255,255,.98)!important; box-shadow: var(--shadow); }
+        .navbar-brand { transition: transform var(--transition-speed) ease; }
+        .navbar-brand:hover { transform: scale(1.05); }
+        .nav-link-enhanced { position: relative; font-weight: 500; text-transform: uppercase; letter-spacing: .5px; padding: .75rem 1rem!important; transition: all var(--transition-speed) ease; color: var(--primary-color)!important; }
+        .nav-link-enhanced::before { content: ''; position: absolute; bottom: 0; left: 50%; width: 0; height: 2px; background: var(--hover-color); transition: all var(--transition-speed) ease; transform: translateX(-50%); }
+        .nav-link-enhanced:hover::before, .nav-link-enhanced.active::before { width: 80%; }
+        .nav-link-enhanced:hover, .nav-link-enhanced.active { color: var(--hover-color)!important; transform: translateY(-2px); }
+        .dropdown-menu-enhanced { border: none; border-radius: 12px; box-shadow: var(--shadow); padding: 1rem 0; margin-top: .5rem; opacity: 0; transform: translateY(-10px); transition: all var(--transition-speed) ease; pointer-events: none; }
+        .dropdown:hover .dropdown-menu-enhanced, .dropdown-menu-enhanced.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        .dropdown-item-enhanced { padding: .75rem 1.5rem; transition: all .2s ease; border-radius: 8px; margin: 0 .5rem; font-weight: 500; }
+        .dropdown-item-enhanced:hover { background: linear-gradient(135deg, var(--hover-color), #66513e); color: #fff; transform: translateX(5px); }
+        .user-box .dropdown-menu-enhanced { min-width: 200px; right: 0; left: auto; }
+        .user-button-enhanced { position: relative; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; transition: all var(--transition-speed) ease; }
+        .user-button-enhanced:hover { background: rgb(102,81,62); transform: scale(1.1); }
+        .nav-icon-enhanced { transition: all .2s ease; }
+        .nav-icon-enhanced:hover { transform: scale(1.2); filter: drop-shadow(0 0 5px rgb(102,81,62)); }
+        .mobile-icon-enhanced { width: 24px; height: 24px; transition: all .2s ease; }
+        .mobile-icon-enhanced:hover { transform: scale(1.2); color: var(--hover-color); }
+        .badge-enhanced { font-size: .7em; padding: .3em .5em; border-radius: 50px; background: var(--hover-color); color: #fff; margin-left: .2rem; }
+        .navbar-toggler { border: none; transition: all .2s ease; }
+        .navbar-toggler:hover { transform: scale(1.1); }
+        .navbar-toggler:focus { box-shadow: none; }
     </style>
+
     @RenderSection("Styles", required: false)
 </head>
 
 <body class="homepage">
     <!-- SVG Icons -->
-    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+    <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
         <defs>
             <symbol id="heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
             </symbol>
             <symbol id="cart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="9" cy="21" r="1"/>
-                <circle cx="20" cy="21" r="1"/>
-                <path d="m1 1 4 4 2 13 10 0 3-10-10 0"/>
+                <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="m1 1 4 4 2 13 10 0 3-10-10 0"/>
             </symbol>
             <symbol id="search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="11" cy="11" r="8"/>
-                <path d="m21 21-4.35-4.35"/>
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
             </symbol>
             <symbol id="user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
             </symbol>
         </defs>
     </svg>
 
-    <!-- Preloader -->
     <div class="preloader text-white fs-6 text-uppercase overflow-hidden"></div>
 
-    <!-- Enhanced Navbar -->
+    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-enhanced text-uppercase fs-6 p-3 border-bottom align-items-center">
         <div class="container-fluid">
             <div class="row justify-content-between align-items-center w-100">
-                
+
                 <!-- Logo -->
                 <div class="col-auto">
                     <a class="navbar-brand text-dark" href="/Home">
@@ -318,21 +177,19 @@
                         <!-- Desktop Wishlist -->
                         <li class="d-none d-lg-block">
                             <a href="#" class="text-uppercase mx-3 text-decoration-none nav-link-enhanced position-relative" title="Lista de deseos">
-                                <i class="fas fa-heart me-1"></i>
-                                Wishlist 
+                                <i class="fas fa-heart me-1"></i>Wishlist
                                 <span class="wishlist-count badge-enhanced">(0)</span>
                             </a>
                         </li>
-                        
+
                         <!-- Desktop Cart -->
                         <li class="d-none d-lg-block">
                             <a href="#" class="text-uppercase mx-3 text-decoration-none nav-link-enhanced position-relative" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart" title="Carrito de compras">
-                                <i class="fas fa-shopping-cart me-1"></i>
-                                Cart 
+                                <i class="fas fa-shopping-cart me-1"></i>Cart
                                 <span class="cart-count badge-enhanced">(0)</span>
                             </a>
                         </li>
-                        
+
                         <!-- Mobile Icons -->
                         <li class="d-lg-none">
                             <a href="#" class="mx-2 nav-icon-enhanced" title="Lista de deseos">
@@ -348,7 +205,7 @@
                                 </svg>
                             </a>
                         </li>
-                        
+
                         <!-- Search -->
                         <li class="search-box mx-2">
                             <a href="#" class="search-button nav-icon-enhanced" title="Buscar">
@@ -357,59 +214,55 @@
                                 </svg>
                             </a>
                         </li>
-                        
-                       <!-- User Menu -->
-<li class="nav-item dropdown mx-2 user-box">
-    @if (!User.Identity.IsAuthenticated)
-    {
-        <!-- Not authenticated -->
-        <a class="nav-link nav-icon-enhanced user-button-enhanced" href="/Account" title="Mi cuenta">
-            <svg width="24" height="24" viewBox="0 0 24 24" class="mobile-icon-enhanced">
-                <use xlink:href="#user"></use>
-            </svg>
-        </a>
-    }
-    else
-    {
-        <!-- Authenticated -->
-        <a class="nav-link nav-icon-enhanced dropdown-toggle user-button-enhanced" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="Mi cuenta">
-            <svg width="24" height="24" viewBox="0 0 24 24" class="mobile-icon-enhanced">
-                <use xlink:href="#user"></use>
-            </svg>
-        </a>
-        <ul class="dropdown-menu dropdown-menu-enhanced dropdown-menu-end" aria-labelledby="userMenu">
-            <li>
-                <a class="dropdown-item dropdown-item-enhanced" href="/Account/Profile">
-                    <i class="fas fa-user-edit me-2"></i>Editar perfil
-                </a>
-            </li>
-            <li>
-<<<<<<< HEAD
-                <a class="dropdown-item" asp-controller="Pedidos" asp-action="Index" asp-area="">
-                    <span class="me-2">👜</span> MIS PEDIDOS
-=======
-                <a class="dropdown-item dropdown-item-enhanced" href="#">
-                    <i class="fas fa-shopping-bag me-2"></i>Mis pedidos
->>>>>>> origin/main
-                </a>
-            </li>
-            <li>
-                <a class="dropdown-item dropdown-item-enhanced" href="#">
-                    <i class="fas fa-heart me-2"></i>Lista de deseos
-                </a>
-            </li>
-            <li><hr class="dropdown-divider"></li>
-            <li>
-                <form method="post" action="/Account/Logout" class="px-3 py-1">
-                    @Html.AntiForgeryToken()
-                    <button class="btn btn-sm btn-outline-danger w-100" type="submit">
-                        <i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión
-                    </button>
-                </form>
-            </li>
-        </ul>
-    }
-</li>
+
+                        <!-- User Menu -->
+                        <li class="nav-item dropdown mx-2 user-box">
+                            @if (!User.Identity.IsAuthenticated)
+                            {
+                                @* Not authenticated *@
+                                <a class="nav-link nav-icon-enhanced user-button-enhanced" href="/Account" title="Mi cuenta">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" class="mobile-icon-enhanced">
+                                        <use xlink:href="#user"></use>
+                                    </svg>
+                                </a>
+                            }
+                            else
+                            {
+                                @* Authenticated *@
+                                <a class="nav-link nav-icon-enhanced dropdown-toggle user-button-enhanced" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="Mi cuenta">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" class="mobile-icon-enhanced">
+                                        <use xlink:href="#user"></use>
+                                    </svg>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-enhanced dropdown-menu-end" aria-labelledby="userMenu">
+                                    <li>
+                                        <a class="dropdown-item dropdown-item-enhanced"
+                                           asp-controller="Account" asp-action="Profile">
+                                            <i class="fas fa-user-edit me-2"></i>Editar perfil
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item dropdown-item-enhanced" asp-controller="Pedidos" asp-action="Index">
+                                            <i class="fas fa-shopping-bag me-2"></i>Mis pedidos
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item dropdown-item-enhanced" href="#">
+                                            <i class="fas fa-heart me-2"></i>Lista de deseos
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li>
+                                        <form method="post" action="/Account/Logout" class="px-3 py-1">
+                                            @Html.AntiForgeryToken()
+                                            <button class="btn btn-sm btn-outline-danger w-100" type="submit">
+                                                <i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            }
+                        </li>
 
                     </ul>
                 </div>
@@ -418,7 +271,7 @@
     </nav>
 
     <!-- Offcanvas Cart -->
-    <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="offcanvasCart" aria-labelledby="My Cart">
+    <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="offcanvasCart" aria-labelledby="offcanvasCartLabel">
         <div class="offcanvas-header border-bottom">
             <h5 class="offcanvas-title" id="offcanvasCartLabel">
                 <i class="fas fa-shopping-cart me-2"></i>Mi Carrito
@@ -446,7 +299,7 @@
     <footer id="footer" class="mt-5">
         <div class="footer-intro mb-4 text-center">
             <a href="/">
-                <img src="~/images/kaira/main-logo.png" alt="Kaira Logo" class="img-fluid">
+                <img src="~/images/kaira/main-logo.png" alt="Kaira Logo" class="img-fluid" />
             </a>
         </div>
     </footer>
@@ -457,74 +310,53 @@
     <script src="~/js/kaira/plugins.js" asp-append-version="true"></script>
     <script src="~/js/kaira/SmoothScroll.js" asp-append-version="true"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
-        crossorigin="anonymous"></script>
+            integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+            crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
     <script src="~/js/kaira/script.min.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Navbar scroll effect
+        document.addEventListener('DOMContentLoaded', function () {
             const navbar = document.querySelector('.navbar-enhanced');
-            
-            window.addEventListener('scroll', function() {
+            window.addEventListener('scroll', function () {
                 let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                
-                if (scrollTop > 100) {
-                    navbar.classList.add('scrolled');
-                } else {
-                    navbar.classList.remove('scrolled');
-                }
+                if (scrollTop > 100) navbar.classList.add('scrolled'); else navbar.classList.remove('scrolled');
             });
 
-            // Dropdown hover functionality for desktop
             const dropdowns = document.querySelectorAll('.dropdown');
-            
             dropdowns.forEach(dropdown => {
                 const dropdownMenu = dropdown.querySelector('.dropdown-menu-enhanced');
                 let timeoutId;
-
                 if (dropdownMenu) {
-                    dropdown.addEventListener('mouseenter', function() {
+                    dropdown.addEventListener('mouseenter', function () {
                         if (window.innerWidth >= 992) {
                             clearTimeout(timeoutId);
                             dropdownMenu.classList.add('show');
                         }
                     });
-
-                    dropdown.addEventListener('mouseleave', function() {
+                    dropdown.addEventListener('mouseleave', function () {
                         if (window.innerWidth >= 992) {
-                            timeoutId = setTimeout(() => {
-                                dropdownMenu.classList.remove('show');
-                            }, 100);
+                            timeoutId = setTimeout(() => dropdownMenu.classList.remove('show'), 100);
                         }
                     });
                 }
             });
 
-            // Mobile menu dropdown handling
             const offcanvasNavbar = document.getElementById('offcanvasNavbar');
             const mobileDropdowns = offcanvasNavbar ? offcanvasNavbar.querySelectorAll('.dropdown-toggle') : [];
-            
             mobileDropdowns.forEach(toggle => {
-                toggle.addEventListener('click', function(e) {
+                toggle.addEventListener('click', function (e) {
                     if (window.innerWidth < 992) {
                         e.preventDefault();
                         const dropdownMenu = this.nextElementSibling;
                         const isOpen = dropdownMenu.style.display === 'block';
-                        
-                        // Close all other dropdowns
                         if (offcanvasNavbar) {
-                            offcanvasNavbar.querySelectorAll('.dropdown-menu-enhanced').forEach(menu => {
-                                menu.style.display = 'none';
-                            });
+                            offcanvasNavbar.querySelectorAll('.dropdown-menu-enhanced').forEach(menu => { menu.style.display = 'none'; });
                         }
-                        
-                        // Toggle current dropdown
                         if (!isOpen) {
                             dropdownMenu.style.display = 'block';
-                            dropdownMenu.style.animation = 'fadeInUp 0.3s ease';
+                            dropdownMenu.style.animation = 'fadeInUp .3s ease';
                         }
                     }
                 });

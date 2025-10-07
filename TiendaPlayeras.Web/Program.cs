@@ -22,7 +22,8 @@ builder.Services
         opt.Password.RequiredLength = 6;
     })
     .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders();
+    .AddDefaultTokenProviders()
+    .AddErrorDescriber<SpanishIdentityErrorDescriber>();
 
 builder.Services.ConfigureApplicationCookie(opt =>
 {
