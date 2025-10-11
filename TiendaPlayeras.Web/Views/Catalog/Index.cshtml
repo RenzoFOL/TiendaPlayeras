@@ -1,25 +1,154 @@
+@using Microsoft.AspNetCore.Routing
 @model IEnumerable<TiendaPlayeras.Web.Models.Product>
+
 @{
-ViewData["Title"] = "Catálogo";
+    ViewData["Title"] = "Catálogo";
+
+    int page     = (int)(ViewBag.Page     ?? 1);
+    int pageSize = (int)(ViewBag.PageSize ?? 20);
+    int total    = (int)(ViewBag.Total    ?? 0);
+
+    string q    = (string)(ViewBag.Q    ?? "");
+    string tag  = (string)(ViewBag.Tag  ?? "");
+    string sort = (string)(ViewBag.Sort ?? "az");
+
+    int totalPages = Math.Max(1, (int)Math.Ceiling(total / (double)pageSize));
+
+    // Helper: fusiona los valores actuales con overrides
+    RouteValueDictionary Merge(object extra)
+    {
+        var rv = new RouteValueDictionary(new {
+            q, tag, sort, page, pageSize
+        });
+        foreach (var kv in new RouteValueDictionary(extra))
+            rv[kv.Key] = kv.Value;
+        return rv;
+    }
 }
-<form class="row g-2 mb-3">
-<div class="col">
-<input name="q" value="@ViewBag.Q" class="form-control" placeholder="Buscar playeras" />
-</div>
-<div class="col-auto">
-<button class="btn btn-primary">Buscar</button>
-</div>
-</form>
-<div class="row row-cols-1 row-cols-md-3 g-3">
-@foreach (var p in Model) {
-<div class="col">
-<div class="card h-100">
-<div class="card-body">
-<h5 class="card-title">@p.Name</h5>
-<p class="card-text">@p.Description</p>
-<a class="btn btn-outline-primary" href="@Url.Action("Product", new { slug = p.Slug })">Ver</a>
-</div>
-</div>
-</div>
-}
+
+<div class="container my-4">
+    <div class="row g-4">
+        <!-- Sidebar filtros -->
+        <aside class="col-12 col-md-3">
+            <div class="card">
+                <div class="card-header fw-bold">Filtros</div>
+                <div class="card-body">
+                    <form method="get" action="@Url.Action("Index","Products")" class="mb-3">
+                        <div class="mb-3">
+                            <label class="form-label">Buscar</label>
+                            <input name="q" value="@q" class="form-control" placeholder="Buscar playeras" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Etiqueta</label>
+                            <input name="tag" value="@tag" class="form-control" placeholder="slug o nombre..." />
+                            <div class="form-text">Ej: mustang, rock, ferrari</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Ordenar por</label>
+                            <select name="sort" class="form-select">
+                                <option value="az"         selected="@(sort=="az")">Nombre (A–Z)</option>
+                                <option value="za"         selected="@(sort=="za")">Nombre (Z–A)</option>
+                                <option value="price_asc"  selected="@(sort=="price_asc")">Precio (menor a mayor)</option>
+                                <option value="price_desc" selected="@(sort=="price_desc")">Precio (mayor a menor)</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Por página</label>
+                            <select name="pageSize" class="form-select">
+                                <option value="20" selected="@(pageSize==20)">20</option>
+                                <option value="50" selected="@(pageSize==50)">50</option>
+                            </select>
+                        </div>
+
+                        <button class="btn btn-primary w-100">Aplicar</button>
+                    </form>
+
+                    <div class="small text-muted">
+                        Mostrando @((total==0)?0:((page-1)*pageSize + 1))–@Math.Min(page*pageSize, total) de @total
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Grid productos -->
+        <section class="col-12 col-md-9">
+            @if (Model is null || !Model.Any())
+            {
+                <div class="alert alert-info">No hay productos que coincidan con tu búsqueda.</div>
+            }
+            else
+            {
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="mb-0">Resultados</h5>
+                    <div>
+                        <!-- Dropdowns con enlaces precalculados (sin JS complejo) -->
+                        <select class="form-select form-select-sm d-inline w-auto me-2"
+                                onchange="location.href=this.selectedOptions[0].dataset.href">
+                            <option data-href="@Url.Action("Index","Products", Merge(new { sort="az", page=1 }))"         selected="@(sort=="az")">A–Z</option>
+                            <option data-href="@Url.Action("Index","Products", Merge(new { sort="za", page=1 }))"         selected="@(sort=="za")">Z–A</option>
+                            <option data-href="@Url.Action("Index","Products", Merge(new { sort="price_asc", page=1 }))"  selected="@(sort=="price_asc")">Precio ↑</option>
+                            <option data-href="@Url.Action("Index","Products", Merge(new { sort="price_desc", page=1 }))" selected="@(sort=="price_desc")">Precio ↓</option>
+                        </select>
+
+                        <select class="form-select form-select-sm d-inline w-auto"
+                                onchange="location.href=this.selectedOptions[0].dataset.href">
+                            <option data-href="@Url.Action("Index","Products", Merge(new { pageSize=20, page=1 }))" selected="@(pageSize==20)">20</option>
+                            <option data-href="@Url.Action("Index","Products", Merge(new { pageSize=50, page=1 }))" selected="@(pageSize==50)">50</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3">
+                    @foreach (var p in Model)
+                    {
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="ratio ratio-1x1 bg-light">
+                                    <img src="@(string.IsNullOrWhiteSpace(p.MainImagePath) ? "/img/placeholder.png" : p.MainImagePath)"
+                                         class="card-img-top object-fit-cover" alt="@p.Name" />
+                                </div>
+                                <div class="card-body d-flex flex-column">
+                                    <h6 class="card-title mb-1">@p.Name</h6>
+                                    @if (!string.IsNullOrWhiteSpace(p.Description))
+                                    {
+                                        <p class="card-text text-muted small mb-2">@(
+                                            p.Description.Length > 110 ? p.Description.Substring(0, 110) + "…" : p.Description
+                                        )</p>
+                                    }
+                                    <div class="mt-auto d-flex justify-content-between align-items-center">
+                                        <div class="fw-bold">@p.BasePrice.ToString("C")</div>
+                                        <a class="btn btn-outline-primary btn-sm"
+                                           href="@Url.Action("Details","Products", new { slug = p.Slug })">Ver</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Paginación -->
+                <nav class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item @(page<=1 ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("Index","Products", Merge(new { page = page-1 }))">Anterior</a>
+                        </li>
+
+                        @for (var i = Math.Max(1, page - 2); i <= Math.Min(totalPages, page + 2); i++)
+                        {
+                            <li class="page-item @(i==page ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("Index","Products", Merge(new { page = i }))">@i</a>
+                            </li>
+                        }
+
+                        <li class="page-item @(page>=totalPages ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("Index","Products", Merge(new { page = page+1 }))">Siguiente</a>
+                        </li>
+                    </ul>
+                </nav>
+            }
+        </section>
+    </div>
 </div>

@@ -1,23 +1,210 @@
 @model TiendaPlayeras.Web.Models.Product
 @{
-ViewData["Title"] = Model.Name;
+    ViewData["Title"] = Model.Name;
+    var variants = Model.Variants?.Where(v => v.IsActive).ToList() ?? new List<TiendaPlayeras.Web.Models.ProductVariant>();
+    var fits   = variants.Select(v => v.Fit).Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().OrderBy(s => s).ToList();
+    var colors = variants.Select(v => v.Color).Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().OrderBy(s => s).ToList();
+    var sizes  = variants.Select(v => v.Size).Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().OrderBy(s => s).ToList();
+
+    decimal? minPrice = variants.Any() ? variants.Min(v => v.Price > 0 ? v.Price : Model.BasePrice) : Model.BasePrice;
+    string img = string.IsNullOrWhiteSpace(Model.MainImagePath) ? "/img/placeholder.png" : Model.MainImagePath;
 }
-<h3>@Model.Name</h3>
-<p>@Model.Description</p>
-<form asp-controller="Cart" asp-action="Add" method="post" class="row gy-2">
-<div class="col-12">
-<label class="form-label">Variante</label>
-<select name="variantId" class="form-select" required>
-@foreach (var v in Model.Variants) {
-<option value="@v.Id">@v.Fit - @v.Color - @v.Size — $@v.Price</option>
+
+<div class="container my-4">
+    <div class="row g-4">
+        <!-- Imagen -->
+        <div class="col-12 col-md-6">
+            <div class="ratio ratio-1x1 bg-light rounded">
+                <img src="@img" class="w-100 h-100 object-fit-cover rounded" alt="@Model.Name" />
+            </div>
+        </div>
+
+        <!-- Info -->
+        <div class="col-12 col-md-6">
+            <h1 class="h3 mb-2">@Model.Name</h1>
+
+            <div class="mb-2">
+                <span class="h4" id="priceText">@minPrice?.ToString("C")</span>
+                @if (Model.IsCustomizable)
+                {
+                    <span class="badge bg-info ms-2">Personalizable</span>
+                }
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Description))
+            {
+                <p class="text-muted">@Model.Description</p>
+            }
+
+            <!-- Selectores de variantes -->
+            <div class="row g-3 mb-3">
+                @if (fits.Any())
+                {
+                    <div class="col-12 col-sm-6">
+                        <label class="form-label">Fit</label>
+                        <select id="fitSel" class="form-select">
+                            <option value="">Selecciona</option>
+                            @foreach (var f in fits) { <option value="@f">@f</option> }
+                        </select>
+                    </div>
+                }
+                @if (colors.Any())
+                {
+                    <div class="col-12 col-sm-6">
+                        <label class="form-label">Color</label>
+                        <select id="colorSel" class="form-select">
+                            <option value="">Selecciona</option>
+                            @foreach (var c in colors) { <option value="@c">@c</option> }
+                        </select>
+                    </div>
+                }
+                @if (sizes.Any())
+                {
+                    <div class="col-12 col-sm-6">
+                        <label class="form-label">Talla</label>
+                        <select id="sizeSel" class="form-select">
+                            <option value="">Selecciona</option>
+                            @foreach (var s in sizes) { <option value="@s">@s</option> }
+                        </select>
+                    </div>
+                }
+                <div class="col-12 col-sm-6">
+                    <label class="form-label">Cantidad</label>
+                    <input id="qtyInput" type="number" min="1" value="1" class="form-control" />
+                </div>
+            </div>
+
+            <!-- Estado / stock -->
+            <div class="mb-3">
+                <span id="stockText" class="text-muted">Selecciona una variante para ver stock</span>
+            </div>
+
+            <!-- Botones (placeholder sin lógica) -->
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary" id="btnAddToCart" disabled>
+                    <i class="fas fa-shopping-cart me-1"></i> Agregar al carrito
+                </button>
+                <button class="btn btn-outline-danger" id="btnWishlist" type="button">
+                    <i class="far fa-heart me-1"></i> Wishlist
+                </button>
+            </div>
+
+            <input type="hidden" id="variantId" />
+        </div>
+    </div>
+
+    <!-- Tags (opcional) -->
+    @if (Model.ProductTags?.Any(pt => pt.IsActive && pt.Tag != null && pt.Tag.IsActive) ?? false)
+    {
+        <hr />
+        <div class="mt-3">
+            <strong>Colecciones:</strong>
+            @foreach (var pt in Model.ProductTags.Where(pt => pt.IsActive && pt.Tag != null && pt.Tag.IsActive))
+            {
+                <a class="badge bg-light text-dark border me-1"
+                   href="/catalogo?tag=@pt.Tag!.Slug">@pt.Tag!.Name</a>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts{
+<script>
+(function(){
+    // Variantes disponibles (como JSON seguro aunque Model.Variants sea null)
+    const variants = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+        (Model.Variants ?? new List<TiendaPlayeras.Web.Models.ProductVariant>())
+            .Where(v => v.IsActive)
+            .Select(v => new {
+                v.Id,
+                v.Fit,
+                v.Color,
+                v.Size,
+                Price = (double)((v.Price > 0 ? v.Price : Model.BasePrice)),
+                v.Stock
+            })
+    ));
+
+    const fitSel   = document.getElementById('fitSel');
+    const colorSel = document.getElementById('colorSel');
+    const sizeSel  = document.getElementById('sizeSel');
+    const priceTxt = document.getElementById('priceText');
+    const stockTxt = document.getElementById('stockText');
+    const qtyInput = document.getElementById('qtyInput');
+    const variantId= document.getElementById('variantId');
+    const btnCart  = document.getElementById('btnAddToCart');
+    const btnWish  = document.getElementById('btnWishlist');
+
+    function formatCurrency(n){
+        try { return n.toLocaleString(undefined, { style:'currency', currency:'MXN' }); }
+        catch { return '$' + n.toFixed(2); }
+    }
+
+    function currentFilter(){
+        return {
+            fit:   fitSel ? fitSel.value : '',
+            color: colorSel ? colorSel.value : '',
+            size:  sizeSel ? sizeSel.value : ''
+        };
+    }
+
+    function filterVariants(){
+        const f = currentFilter();
+        return variants.filter(v =>
+            (!f.fit   || v.Fit   === f.fit) &&
+            (!f.color || v.Color === f.color) &&
+            (!f.size  || v.Size  === f.size));
+    }
+
+    function refreshUI(){
+        const list = filterVariants();
+
+        if (list.length === 1){
+            const v = list[0];
+            priceTxt.textContent = formatCurrency(v.Price);
+            stockTxt.textContent = v.Stock > 0 ? `Stock: ${v.Stock}` : 'Sin stock';
+            variantId.value = v.Id;
+            btnCart.disabled = (v.Stock <= 0);
+        } else if (list.length > 1){
+            // varias posibles – muestra precio mínimo de las coincidencias
+            const min = Math.min(...list.map(x => x.Price));
+            priceTxt.textContent = formatCurrency(min);
+            stockTxt.textContent = 'Selecciona los atributos para ver stock';
+            variantId.value = '';
+            btnCart.disabled = true;
+        } else {
+            // nada coincide
+            priceTxt.textContent = formatCurrency(@(Model.BasePrice.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+            stockTxt.textContent = 'No hay combinación disponible';
+            variantId.value = '';
+            btnCart.disabled = true;
+        }
+    }
+
+    // listeners
+    [fitSel, colorSel, sizeSel].forEach(sel => {
+        if (sel) sel.addEventListener('change', refreshUI);
+    });
+
+    // Wishlist (placeholder)
+    btnWish?.addEventListener('click', () => {
+        btnWish.classList.toggle('btn-outline-danger');
+        btnWish.classList.toggle('btn-danger');
+        const icon = btnWish.querySelector('i');
+        if (icon) icon.classList.toggle('far');
+        if (icon) icon.classList.toggle('fas');
+    });
+
+    // Cart (placeholder sin submit aún)
+    btnCart?.addEventListener('click', () => {
+        if (!variantId.value){
+            alert('Selecciona una combinación válida.');
+            return;
+        }
+        alert('Agregar al carrito (pendiente de integrar)');
+    });
+
+    refreshUI();
+})();
+</script>
 }
-</select>
-</div>
-<div class="col-4">
-<input type="number" name="qty" value="1" min="1" class="form-control" />
-</div>
-<div class="col-12">
-<button class="btn btn-primary" type="submit">Agregar al carrito</button>
-</div>
-@Html.AntiForgeryToken()
-</form>

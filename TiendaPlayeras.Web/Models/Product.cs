@@ -38,6 +38,19 @@ namespace TiendaPlayeras.Web.Models
         public DateTime? UpdatedAt { get; set; }
 
         public List<ProductVariant> Variants { get; set; } = new();
+
+        // Opciones de variantes visibles en la página pública
+    public bool UseFit { get; set; } = true;
+    public bool UseColor { get; set; } = true;
+    public bool UseSize { get; set; } = true;
+
+    // Listas permitidas (CSV). Si están vacías, se infiere de las variantes creadas.
+    [MaxLength(200)]
+    public string? AllowedFitsCsv { get; set; }   // ej: "Hombre,Mujer,Unisex"
+    [MaxLength(400)]
+    public string? AllowedColorsCsv { get; set; } // ej: "Negro,Blanco,Rojo,#000000,#FFFFFF"
+    [MaxLength(200)]
+    public string? AllowedSizesCsv { get; set; }  // ej: "XS,S,M,L,XL,XXL"
     }
 
     /// <summary>Variante de producto: talla, corte, color, diseño.</summary>

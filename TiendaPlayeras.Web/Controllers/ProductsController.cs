@@ -5,7 +5,6 @@ using TiendaPlayeras.Web.Data;
 using TiendaPlayeras.Web.Models;
 using System.Text.RegularExpressions;
 using Slugify;
-using Microsoft.AspNetCore.Authorization;
 
 namespace TiendaPlayeras.Web.Controllers
 {
@@ -38,9 +37,9 @@ namespace TiendaPlayeras.Web.Controllers
                 if (!string.IsNullOrWhiteSpace(q))
                 {
                     q = q.Trim();
-                    query = query.Where(p => 
-                        p.Name.Contains(q) || 
-                        p.Description!.Contains(q) || 
+                    query = query.Where(p =>
+                        p.Name.Contains(q) ||
+                        p.Description!.Contains(q) ||
                         p.Id.ToString().Contains(q) ||
                         p.Slug.Contains(q)
                     );
@@ -50,10 +49,10 @@ namespace TiendaPlayeras.Web.Controllers
                 if (!string.IsNullOrWhiteSpace(tag))
                 {
                     tag = tag.Trim().ToLower();
-                    query = query.Where(p => 
-                        p.ProductTags.Any(pt => 
-                            pt.IsActive && 
-                            pt.Tag != null && 
+                    query = query.Where(p =>
+                        p.ProductTags.Any(pt =>
+                            pt.IsActive &&
+                            pt.Tag != null &&
                             pt.Tag.IsActive &&
                             (pt.Tag.Slug.ToLower() == tag || pt.Tag.Name.ToLower().Contains(tag))
                         )
@@ -77,7 +76,7 @@ namespace TiendaPlayeras.Web.Controllers
                 // Paginación
                 pageSize = Math.Clamp(pageSize, 10, 100);
                 page = Math.Max(1, page);
-                
+
                 var products = await query
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
@@ -93,7 +92,7 @@ namespace TiendaPlayeras.Web.Controllers
                 ViewBag.Sort = sort ?? "az";
 
                 _logger.LogInformation(
-                    "Productos cargados: {Count} de {Total}. Filtros: q={Query}, tag={Tag}, sort={Sort}", 
+                    "Productos cargados: {Count} de {Total}. Filtros: q={Query}, tag={Tag}, sort={Sort}",
                     products.Count, total, q ?? "none", tag ?? "none", sort
                 );
 
@@ -115,221 +114,221 @@ namespace TiendaPlayeras.Web.Controllers
         }
 
         // POST /Products/Create - VERSIÓN CORREGIDA
-[HttpPost("/Products/Create")]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> Create(Product model, IFormFile? image)
-{
-    try
-    {
-        // Validaciones básicas
-        if (string.IsNullOrWhiteSpace(model.Name))
-        {
-            ModelState.AddModelError(nameof(model.Name), "El nombre del producto es obligatorio.");
-        }
-        else
-        {
-            // Verificar si ya existe un producto con el mismo nombre
-            var existingProduct = await _db.Products
-                .FirstOrDefaultAsync(p => p.Name.ToLower() == model.Name.Trim().ToLower());
-            
-            if (existingProduct != null)
-            {
-                ModelState.AddModelError(nameof(model.Name), "Ya existe un producto con este nombre.");
-            }
-        }
-
-        if (model.BasePrice < 0)
-        {
-            ModelState.AddModelError(nameof(model.BasePrice), "El precio base no puede ser negativo.");
-        }
-
-        // ⚠️ CAMBIO: Hacer imagen opcional o validarla según tu necesidad
-        // Opción A: Hacerla opcional (RECOMENDADO)
-        if (image != null)
-        {
-            var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif" };
-            if (!allowedTypes.Contains(image.ContentType))
-            {
-                ModelState.AddModelError("Image", "Formato de imagen no válido. Use JPG, PNG, WebP o GIF.");
-            }
-
-            if (image.Length > 10 * 1024 * 1024) // 10MB
-            {
-                ModelState.AddModelError("Image", "La imagen es demasiado grande. Máximo 10MB permitidos.");
-            }
-        }
-
-        // Opción B: Hacerla obligatoria (si prefieres)
-        /*
-        if (image == null || image.Length == 0)
-        {
-            ModelState.AddModelError("Image", "La imagen del producto es obligatoria.");
-        }
-        else
-        {
-            var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif" };
-            if (!allowedTypes.Contains(image.ContentType))
-            {
-                ModelState.AddModelError("Image", "Formato de imagen no válido.");
-            }
-            if (image.Length > 10 * 1024 * 1024)
-            {
-                ModelState.AddModelError("Image", "La imagen es demasiado grande.");
-            }
-        }
-        */
-
-        if (!ModelState.IsValid) 
-        {
-            return View("Create", model);
-        }
-
-        // Crear producto con slug único
-        var slugger = new SlugHelper();
-        var baseSlug = slugger.GenerateSlug(model.Name);
-        model.Slug = await EnsureUniqueProductSlugAsync(baseSlug);
-        model.CreatedAt = DateTime.UtcNow;
-        model.IsActive = true;
-
-        _db.Products.Add(model);
-        await _db.SaveChangesAsync(); // Guardar para obtener el ID
-
-        // Guardar imagen si se proporcionó
-        if (image != null && image.Length > 0)
+        [HttpPost("/Products/Create")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(Product model, IFormFile? image)
         {
             try
             {
-                model.MainImagePath = await SaveProductImageAsync(model.Id, image);
-                await _db.SaveChangesAsync();
+                // Validaciones básicas
+                if (string.IsNullOrWhiteSpace(model.Name))
+                {
+                    ModelState.AddModelError(nameof(model.Name), "El nombre del producto es obligatorio.");
+                }
+                else
+                {
+                    // Verificar si ya existe un producto con el mismo nombre
+                    var existingProduct = await _db.Products
+                        .FirstOrDefaultAsync(p => p.Name.ToLower() == model.Name.Trim().ToLower());
+
+                    if (existingProduct != null)
+                    {
+                        ModelState.AddModelError(nameof(model.Name), "Ya existe un producto con este nombre.");
+                    }
+                }
+
+                if (model.BasePrice < 0)
+                {
+                    ModelState.AddModelError(nameof(model.BasePrice), "El precio base no puede ser negativo.");
+                }
+
+                // ⚠️ CAMBIO: Hacer imagen opcional o validarla según tu necesidad
+                // Opción A: Hacerla opcional (RECOMENDADO)
+                if (image != null)
+                {
+                    var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif" };
+                    if (!allowedTypes.Contains(image.ContentType))
+                    {
+                        ModelState.AddModelError("Image", "Formato de imagen no válido. Use JPG, PNG, WebP o GIF.");
+                    }
+
+                    if (image.Length > 10 * 1024 * 1024) // 10MB
+                    {
+                        ModelState.AddModelError("Image", "La imagen es demasiado grande. Máximo 10MB permitidos.");
+                    }
+                }
+
+                // Opción B: Hacerla obligatoria (si prefieres)
+                /*
+                if (image == null || image.Length == 0)
+                {
+                    ModelState.AddModelError("Image", "La imagen del producto es obligatoria.");
+                }
+                else
+                {
+                    var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif" };
+                    if (!allowedTypes.Contains(image.ContentType))
+                    {
+                        ModelState.AddModelError("Image", "Formato de imagen no válido.");
+                    }
+                    if (image.Length > 10 * 1024 * 1024)
+                    {
+                        ModelState.AddModelError("Image", "La imagen es demasiado grande.");
+                    }
+                }
+                */
+
+                if (!ModelState.IsValid)
+                {
+                    return View("Create", model);
+                }
+
+                // Crear producto con slug único
+                var slugger = new SlugHelper();
+                var baseSlug = slugger.GenerateSlug(model.Name);
+                model.Slug = await EnsureUniqueProductSlugAsync(baseSlug);
+                model.CreatedAt = DateTime.UtcNow;
+                model.IsActive = true;
+
+                _db.Products.Add(model);
+                await _db.SaveChangesAsync(); // Guardar para obtener el ID
+
+                // Guardar imagen si se proporcionó
+                if (image != null && image.Length > 0)
+                {
+                    try
+                    {
+                        model.MainImagePath = await SaveProductImageAsync(model.Id, image);
+                        await _db.SaveChangesAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error al guardar imagen para producto ID: {ProductId}", model.Id);
+                        // No fallar todo el proceso, solo advertir
+                        TempData["Warning"] = "Producto creado pero hubo un error al guardar la imagen.";
+                    }
+                }
+
+                TempData["Success"] = $"Producto '{model.Name}' creado correctamente.";
+                return RedirectToAction("Edit", new { id = model.Id });
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, "Error de base de datos al crear producto: {ProductName}", model.Name);
+                ModelState.AddModelError("", "Error al guardar el producto en la base de datos.");
+                return View("Create", model);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al guardar imagen para producto ID: {ProductId}", model.Id);
-                // No fallar todo el proceso, solo advertir
-                TempData["Warning"] = "Producto creado pero hubo un error al guardar la imagen.";
+                _logger.LogError(ex, "Error inesperado al crear producto: {ProductName}", model.Name);
+                ModelState.AddModelError("", "Error inesperado al crear el producto.");
+                return View("Create", model);
             }
         }
 
-        TempData["Success"] = $"Producto '{model.Name}' creado correctamente.";
-        return RedirectToAction("Edit", new { id = model.Id });
-    }
-    catch (DbUpdateException ex)
-    {
-        _logger.LogError(ex, "Error de base de datos al crear producto: {ProductName}", model.Name);
-        ModelState.AddModelError("", "Error al guardar el producto en la base de datos.");
-        return View("Create", model);
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "Error inesperado al crear producto: {ProductName}", model.Name);
-        ModelState.AddModelError("", "Error inesperado al crear el producto.");
-        return View("Create", model);
-    }
-}
-
-// ⚠️ NUEVO: Acción separada para guardar tags desde Edit
-[HttpPost, ValidateAntiForgeryToken]
-public async Task<IActionResult> SaveProductWithTags(int id, Product model, IFormFile? image, [FromForm] int[] tagIds)
-{
-    using var transaction = await _db.Database.BeginTransactionAsync();
-    
-    try
-    {
-        var existing = await _db.Products.FindAsync(id);
-        if (existing == null)
+        // ⚠️ NUEVO: Acción separada para guardar tags desde Edit
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveProductWithTags(int id, Product model, IFormFile? image, [FromForm] int[] tagIds)
         {
-            TempData["Error"] = "Producto no encontrado.";
-            return RedirectToAction(nameof(Index));
-        }
+            using var transaction = await _db.Database.BeginTransactionAsync();
 
-        // Validaciones
-        if (string.IsNullOrWhiteSpace(model.Name))
-        {
-            ModelState.AddModelError(nameof(model.Name), "El nombre es obligatorio.");
-            return View("Edit", model);
-        }
-
-        var duplicateProduct = await _db.Products
-            .FirstOrDefaultAsync(p => p.Id != id && p.Name.ToLower() == model.Name.Trim().ToLower());
-        
-        if (duplicateProduct != null)
-        {
-            ModelState.AddModelError(nameof(model.Name), "Ya existe otro producto con este nombre.");
-            return View("Edit", model);
-        }
-
-        // Actualizar producto
-        existing.Name = model.Name;
-        existing.Description = model.Description;
-        existing.BasePrice = model.BasePrice;
-        existing.IsCustomizable = model.IsCustomizable;
-        existing.IsActive = model.IsActive;
-        
-        var slugger = new SlugHelper();
-        var newSlug = slugger.GenerateSlug(model.Name);
-        existing.Slug = await EnsureUniqueProductSlugAsync(newSlug, id);
-        existing.UpdatedAt = DateTime.UtcNow;
-
-        // Guardar imagen si se proporcionó
-        if (image != null && image.Length > 0)
-        {
-            existing.MainImagePath = await SaveProductImageAsync(existing.Id, image);
-        }
-
-        await _db.SaveChangesAsync();
-
-        // Actualizar tags
-        var validTagIds = tagIds?.Where(t => t > 0).Distinct().ToArray() ?? Array.Empty<int>();
-        
-        var currentActiveTags = await _db.ProductTags
-            .Where(pt => pt.ProductId == id && pt.IsActive)
-            .ToListAsync();
-
-        var currentTagIds = currentActiveTags.Select(pt => pt.TagId).ToHashSet();
-        var newTagIds = validTagIds.ToHashSet();
-
-        // Desactivar tags removidos
-        foreach (var pt in currentActiveTags.Where(pt => !newTagIds.Contains(pt.TagId)))
-        {
-            pt.IsActive = false;
-        }
-
-        // Activar/crear nuevos tags
-        foreach (var tagId in newTagIds.Where(tid => !currentTagIds.Contains(tid)))
-        {
-            var existingRelation = await _db.ProductTags
-                .FirstOrDefaultAsync(pt => pt.ProductId == id && pt.TagId == tagId);
-
-            if (existingRelation != null)
+            try
             {
-                existingRelation.IsActive = true;
+                var existing = await _db.Products.FindAsync(id);
+                if (existing == null)
+                {
+                    TempData["Error"] = "Producto no encontrado.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // Validaciones
+                if (string.IsNullOrWhiteSpace(model.Name))
+                {
+                    ModelState.AddModelError(nameof(model.Name), "El nombre es obligatorio.");
+                    return View("Edit", model);
+                }
+
+                var duplicateProduct = await _db.Products
+                    .FirstOrDefaultAsync(p => p.Id != id && p.Name.ToLower() == model.Name.Trim().ToLower());
+
+                if (duplicateProduct != null)
+                {
+                    ModelState.AddModelError(nameof(model.Name), "Ya existe otro producto con este nombre.");
+                    return View("Edit", model);
+                }
+
+                // Actualizar producto
+                existing.Name = model.Name;
+                existing.Description = model.Description;
+                existing.BasePrice = model.BasePrice;
+                existing.IsCustomizable = model.IsCustomizable;
+                existing.IsActive = model.IsActive;
+
+                var slugger = new SlugHelper();
+                var newSlug = slugger.GenerateSlug(model.Name);
+                existing.Slug = await EnsureUniqueProductSlugAsync(newSlug, id);
+                existing.UpdatedAt = DateTime.UtcNow;
+
+                // Guardar imagen si se proporcionó
+                if (image != null && image.Length > 0)
+                {
+                    existing.MainImagePath = await SaveProductImageAsync(existing.Id, image);
+                }
+
+                await _db.SaveChangesAsync();
+
+                // Actualizar tags
+                var validTagIds = tagIds?.Where(t => t > 0).Distinct().ToArray() ?? Array.Empty<int>();
+
+                var currentActiveTags = await _db.ProductTags
+                    .Where(pt => pt.ProductId == id && pt.IsActive)
+                    .ToListAsync();
+
+                var currentTagIds = currentActiveTags.Select(pt => pt.TagId).ToHashSet();
+                var newTagIds = validTagIds.ToHashSet();
+
+                // Desactivar tags removidos
+                foreach (var pt in currentActiveTags.Where(pt => !newTagIds.Contains(pt.TagId)))
+                {
+                    pt.IsActive = false;
+                }
+
+                // Activar/crear nuevos tags
+                foreach (var tagId in newTagIds.Where(tid => !currentTagIds.Contains(tid)))
+                {
+                    var existingRelation = await _db.ProductTags
+                        .FirstOrDefaultAsync(pt => pt.ProductId == id && pt.TagId == tagId);
+
+                    if (existingRelation != null)
+                    {
+                        existingRelation.IsActive = true;
+                    }
+                    else
+                    {
+                        _db.ProductTags.Add(new ProductTag
+                        {
+                            ProductId = id,
+                            TagId = tagId,
+                            IsActive = true,
+                            CreatedAt = DateTime.UtcNow
+                        });
+                    }
+                }
+
+                await _db.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                TempData["Success"] = $"Producto '{existing.Name}' actualizado correctamente.";
+                return RedirectToAction(nameof(Index));
             }
-            else
+            catch (Exception ex)
             {
-                _db.ProductTags.Add(new ProductTag 
-                { 
-                    ProductId = id, 
-                    TagId = tagId, 
-                    IsActive = true,
-                    CreatedAt = DateTime.UtcNow
-                });
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Error al guardar producto con tags ID: {ProductId}", id);
+                ModelState.AddModelError("", "Error al guardar los cambios.");
+                return View("Edit", model);
             }
         }
-
-        await _db.SaveChangesAsync();
-        await transaction.CommitAsync();
-
-        TempData["Success"] = $"Producto '{existing.Name}' actualizado correctamente.";
-        return RedirectToAction(nameof(Index));
-    }
-    catch (Exception ex)
-    {
-        await transaction.RollbackAsync();
-        _logger.LogError(ex, "Error al guardar producto con tags ID: {ProductId}", id);
-        ModelState.AddModelError("", "Error al guardar los cambios.");
-        return View("Edit", model);
-    }
-}
 
         // GET /Products/Edit/5
         [HttpGet("/Products/Edit/{id:int}")]
@@ -367,13 +366,13 @@ public async Task<IActionResult> SaveProductWithTags(int id, Product model, IFor
                     return RedirectToAction(nameof(Index));
                 }
 
-                if (!ModelState.IsValid) 
+                if (!ModelState.IsValid)
                     return View("Edit", model);
 
                 // Verificar si ya existe otro producto con el mismo nombre
                 var duplicateProduct = await _db.Products
                     .FirstOrDefaultAsync(p => p.Id != id && p.Name.ToLower() == model.Name.Trim().ToLower());
-                
+
                 if (duplicateProduct != null)
                 {
                     ModelState.AddModelError(nameof(model.Name), "Ya existe otro producto con este nombre.");
@@ -403,11 +402,11 @@ public async Task<IActionResult> SaveProductWithTags(int id, Product model, IFor
                 existing.BasePrice = model.BasePrice;
                 existing.IsCustomizable = model.IsCustomizable;
                 existing.IsActive = model.IsActive;
-                
+
                 var slugger = new SlugHelper();
                 var newSlug = slugger.GenerateSlug(model.Name);
                 existing.Slug = await EnsureUniqueProductSlugAsync(newSlug, id);
-                
+
                 existing.UpdatedAt = DateTime.UtcNow;
 
                 // Guardar imagen si se proporcionó
@@ -425,7 +424,7 @@ public async Task<IActionResult> SaveProductWithTags(int id, Product model, IFor
                 }
 
                 await _db.SaveChangesAsync();
-                
+
                 TempData["Success"] = $"Producto '{existing.Name}' actualizado correctamente.";
                 return RedirectToAction(nameof(Index));
             }
@@ -499,15 +498,16 @@ public async Task<IActionResult> SaveProductWithTags(int id, Product model, IFor
                 var tags = await _db.ProductTags
                     .Include(pt => pt.Tag)
                         .ThenInclude(t => t!.Category)
-                    .Where(pt => 
-                        pt.ProductId == id && 
-                        pt.IsActive && 
-                        pt.Tag != null && 
+                    .Where(pt =>
+                        pt.ProductId == id &&
+                        pt.IsActive &&
+                        pt.Tag != null &&
                         pt.Tag.IsActive
                     )
                     .OrderBy(pt => pt.Tag!.Category!.Name)
                     .ThenBy(pt => pt.Tag!.Name)
-                    .Select(pt => new { 
+                    .Select(pt => new
+                    {
                         tagId = pt.TagId,
                         name = pt.Tag!.Name,
                         category = pt.Tag!.Category!.Name,
@@ -516,7 +516,7 @@ public async Task<IActionResult> SaveProductWithTags(int id, Product model, IFor
                     .ToListAsync();
 
                 _logger.LogInformation(
-                    "GetTags completado para producto ID: {ProductId}. Tags encontrados: {TagCount}", 
+                    "GetTags completado para producto ID: {ProductId}. Tags encontrados: {TagCount}",
                     id, tags.Count
                 );
 
@@ -534,7 +534,7 @@ public async Task<IActionResult> SaveProductWithTags(int id, Product model, IFor
         public async Task<IActionResult> SaveTags(int id, [FromForm] int[] tagIds)
         {
             using var transaction = await _db.Database.BeginTransactionAsync();
-            
+
             try
             {
                 _logger.LogInformation("Iniciando guardado de tags para producto ID: {ProductId}, tags recibidos: {TagCount}", id, tagIds?.Length ?? 0);
@@ -550,7 +550,7 @@ public async Task<IActionResult> SaveProductWithTags(int id, Product model, IFor
                 var product = await _db.Products
                     .AsNoTracking()
                     .FirstOrDefaultAsync(p => p.Id == id);
-                    
+
                 if (product == null)
                 {
                     _logger.LogWarning("Producto no encontrado ID: {ProductId}", id);
@@ -574,7 +574,7 @@ public async Task<IActionResult> SaveProductWithTags(int id, Product model, IFor
                         .ToListAsync();
 
                     var nonExistentTags = validTagIds.Except(existingTags).ToList();
-                    
+
                     if (nonExistentTags.Any())
                     {
                         _logger.LogWarning("Algunos tags no existen o están inactivos: {NonExistentTags}", string.Join(", ", nonExistentTags));
@@ -635,10 +635,10 @@ public async Task<IActionResult> SaveProductWithTags(int id, Product model, IFor
                     else
                     {
                         // Crear nueva relación
-                        var newProductTag = new ProductTag 
-                        { 
-                            ProductId = id, 
-                            TagId = tagId, 
+                        var newProductTag = new ProductTag
+                        {
+                            ProductId = id,
+                            TagId = tagId,
                             IsActive = true,
                             CreatedAt = DateTime.UtcNow
                         };
@@ -657,8 +657,8 @@ public async Task<IActionResult> SaveProductWithTags(int id, Product model, IFor
                 );
 
                 // Devolver información útil para el cliente
-                return Json(new 
-                { 
+                return Json(new
+                {
                     ok = true,
                     message = "Etiquetas guardadas correctamente",
                     stats = new
@@ -674,13 +674,13 @@ public async Task<IActionResult> SaveProductWithTags(int id, Product model, IFor
             {
                 await transaction.RollbackAsync();
                 _logger.LogError(dbEx, "Error de base de datos al guardar tags para producto ID: {ProductId}", id);
-                
+
                 // Detectar violación de constraints únicas
                 if (dbEx.InnerException?.Message?.Contains("unique", StringComparison.OrdinalIgnoreCase) == true)
                 {
                     return Json(new { error = "Error de duplicación en las relaciones de etiquetas" });
                 }
-                
+
                 return Json(new { error = "Error de base de datos al guardar las etiquetas" });
             }
             catch (Exception ex)
@@ -693,13 +693,13 @@ public async Task<IActionResult> SaveProductWithTags(int id, Product model, IFor
 
         private async Task<string?> SaveProductImageAsync(int productId, IFormFile file)
         {
-            if (file == null || file.Length == 0) 
+            if (file == null || file.Length == 0)
                 return null;
 
             var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
             var allowed = new[] { ".jpg", ".jpeg", ".png", ".webp", ".gif" };
-            
-            if (!allowed.Contains(ext)) 
+
+            if (!allowed.Contains(ext))
                 throw new InvalidOperationException("Formato de archivo no permitido.");
 
             // Crear directorio si no existe
@@ -734,28 +734,218 @@ public async Task<IActionResult> SaveProductWithTags(int id, Product model, IFor
             }
             return slug;
         }
+
         
-        [AllowAnonymous]
-        [HttpGet("/p/{slug}")]
-        public async Task<IActionResult> Details(string slug)
+
+        // ProductsController.cs
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveVariantOptions(
+            int productId,
+            bool useFit,
+            bool useColor,
+            bool useSize,
+            string? allowedFitsCsv,
+            string? allowedColorsCsv,
+            string? allowedSizesCsv)
         {
-            if (string.IsNullOrWhiteSpace(slug))
+            try
+            {
+                var p = await _db.Products
+                    .Include(x => x.ProductTags).ThenInclude(pt => pt.Tag)
+                    .FirstOrDefaultAsync(x => x.Id == productId);
+                if (p == null) return NotFound();
+
+                p.UseFit = useFit;
+                p.UseColor = useColor;
+                p.UseSize = useSize;
+
+                // Normalizar CSV: quitar espacios duplicados, comas extras
+                static string? CleanCsv(string? s)
+                    => string.IsNullOrWhiteSpace(s)
+                        ? null
+                        : string.Join(",", s.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+
+                p.AllowedFitsCsv = CleanCsv(allowedFitsCsv);
+                p.AllowedColorsCsv = CleanCsv(allowedColorsCsv);
+                p.AllowedSizesCsv = CleanCsv(allowedSizesCsv);
+
+                p.UpdatedAt = DateTime.UtcNow;
+                await _db.SaveChangesAsync();
+
+                TempData["Success"] = "Configuración de variantes actualizada.";
+                return RedirectToAction(nameof(Variants), new { productId });
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error guardando opciones de variantes para ProductId {ProductId}", productId);
+                TempData["Error"] = "No se pudo guardar la configuración de variantes.";
+                return RedirectToAction(nameof(Variants), new { productId });
+
+            }
+        }
+        [Authorize(Roles = "Admin,Employee")]
+        [HttpGet("/Products/{productId:int}/Variants")]
+        public async Task<IActionResult> Variants(int productId)
+        {
+            if (productId <= 0)
+            {
+                TempData["Error"] = "ID de producto inválido.";
                 return RedirectToAction(nameof(Index));
+            }
 
             var product = await _db.Products
-                .Include(p => p.ProductTags.Where(pt => pt.IsActive))
-                    .ThenInclude(pt => pt.Tag)
-                .Include(p => p.Variants) // 👈 usa la navegación que tienes en el modelo
-                .FirstOrDefaultAsync(p => p.IsActive && p.Slug == slug);
+                .Include(p => p.ProductTags).ThenInclude(pt => pt.Tag)
+                .FirstOrDefaultAsync(p => p.Id == productId);
 
-            if (product == null) return NotFound();
+            if (product == null)
+            {
+                TempData["Error"] = "Producto no encontrado.";
+                return RedirectToAction(nameof(Index));
+            }
 
-            // Si no hay imagen, coloca un placeholder
-            if (string.IsNullOrWhiteSpace(product.MainImagePath))
-                product.MainImagePath = "/images/no-image.png";
+            var variants = await _db.ProductVariants
+                .Where(v => v.ProductId == productId)
+                .OrderBy(v => v.Fit).ThenBy(v => v.Color).ThenBy(v => v.Size)
+                .AsNoTracking()
+                .ToListAsync();
 
-            return View("Details", product); // 👈 pasa el Product directo
+            var vm = new TiendaPlayeras.Web.Models.ViewModels.VariantsAdminViewModel
+            {
+                Product = product,
+                Variants = variants
+            };
+
+            return View("~/Views/Variants/Index.cshtml", vm);
         }
+
+
+[HttpGet("/Products/{productId:int}/Variants/Create")]
+public IActionResult CreateVariant(int productId)
+{
+    return View("Variants/Create", new ProductVariant { ProductId = productId, IsActive = true });
+}
+
+[HttpPost("/Products/Variants/Create")]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> CreateVariant(ProductVariant model)
+{
+    if (!ModelState.IsValid) return View("Variants/Create", model);
+    _db.ProductVariants.Add(model);
+    await _db.SaveChangesAsync();
+    return RedirectToAction(nameof(Variants), new { productId = model.ProductId });
+}
+
+[HttpGet("/Products/Variants/Edit/{id:int}")]
+public async Task<IActionResult> EditVariant(int id)
+{
+    var v = await _db.ProductVariants.FindAsync(id);
+    if (v == null) return NotFound();
+    return View("Variants/Edit", v);
+}
+
+[HttpPost("/Products/Variants/Edit/{id:int}")]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> EditVariant(int id, ProductVariant model)
+{
+    var v = await _db.ProductVariants.FindAsync(id);
+    if (v == null) return NotFound();
+    if (!ModelState.IsValid) return View("Variants/Edit", model);
+
+    v.Fit = model.Fit; v.Color = model.Color; v.Size = model.Size;
+    v.Price = model.Price; v.Stock = model.Stock; v.IsActive = model.IsActive;
+    await _db.SaveChangesAsync();
+    return RedirectToAction(nameof(Variants), new { productId = v.ProductId });
+}
+
+[HttpPost("/Products/Variants/Toggle")]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> ToggleVariant(int id)
+{
+    var v = await _db.ProductVariants.FindAsync(id);
+    if (v == null) return NotFound();
+    v.IsActive = !v.IsActive;
+    await _db.SaveChangesAsync();
+    return RedirectToAction(nameof(Variants), new { productId = v.ProductId });
+}
+// Catálogo público: /catalogo
+    [AllowAnonymous]
+    [HttpGet("/catalogo")]
+    public async Task<IActionResult> Catalog(string? q, string? tag, string sort = "az", int page = 1, int pageSize = 20)
+    {
+        var query = _db.Products
+            .Where(p => p.IsActive)
+            .Include(p => p.ProductTags).ThenInclude(pt => pt.Tag)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(q))
+        {
+            q = q.Trim();
+            query = query.Where(p =>
+                p.Name.Contains(q) ||
+                (p.Description != null && p.Description.Contains(q)) ||
+                p.Slug.Contains(q));
+        }
+
+        if (!string.IsNullOrWhiteSpace(tag))
+        {
+            tag = tag.Trim().ToLower();
+            query = query.Where(p =>
+                p.ProductTags.Any(pt =>
+                    pt.IsActive &&
+                    pt.Tag != null && pt.Tag.IsActive &&
+                    (pt.Tag.Slug.ToLower() == tag || pt.Tag.Name.ToLower().Contains(tag))));
+        }
+
+        query = (sort ?? "").ToLower() switch
+        {
+            "za"         => query.OrderByDescending(p => p.Name),
+            "price_asc"  => query.OrderBy(p => p.BasePrice),
+            "price_desc" => query.OrderByDescending(p => p.BasePrice),
+            _            => query.OrderBy(p => p.Name)
+        };
+
+        pageSize = pageSize is 20 or 50 ? pageSize : 20;
+        page = Math.Max(1, page);
+
+        var total = await query.CountAsync();
+        var items = await query
+            .AsNoTracking()
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        ViewBag.Q = q ?? "";
+        ViewBag.Tag = tag ?? "";
+        ViewBag.Sort = sort ?? "az";
+        ViewBag.Page = page;
+        ViewBag.PageSize = pageSize;
+        ViewBag.Total = total;
+
+        return View("Catalog", items);
+    }
+
+    // Detalle público por slug: /p/{slug}
+    [AllowAnonymous]
+    [HttpGet("/p/{slug}")]
+    public async Task<IActionResult> Product(string slug)
+    {
+        if (string.IsNullOrWhiteSpace(slug)) return NotFound();
+
+        var product = await _db.Products
+            .Include(p => p.Variants)
+            .Include(p => p.ProductTags).ThenInclude(pt => pt.Tag) // por si quieres mostrar tags
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Slug == slug && p.IsActive);
+
+        if (product == null) return NotFound();
+
+        // Solo variantes activas
+        product.Variants = product.Variants?.Where(v => v.IsActive).ToList() ?? new();
+
+        return View("Product", product);
+    }
         // ELIMINÉ LAS ACCIONES DUPLICADAS:
         // - Create(Product model) sin imagen
         // - Edit(Product model) sin imagen
