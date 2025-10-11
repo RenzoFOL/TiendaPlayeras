@@ -736,195 +736,346 @@ namespace TiendaPlayeras.Web.Controllers
         }
 
         
+// Agregar estos métodos a ProductsController.cs
+// Agregar estos métodos a ProductsController.cs
 
-        // ProductsController.cs
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SaveVariantOptions(
-            int productId,
-            bool useFit,
-            bool useColor,
-            bool useSize,
-            string? allowedFitsCsv,
-            string? allowedColorsCsv,
-            string? allowedSizesCsv)
-        {
-            try
-            {
-                var p = await _db.Products
-                    .Include(x => x.ProductTags).ThenInclude(pt => pt.Tag)
-                    .FirstOrDefaultAsync(x => x.Id == productId);
-                if (p == null) return NotFound();
-
-                p.UseFit = useFit;
-                p.UseColor = useColor;
-                p.UseSize = useSize;
-
-                // Normalizar CSV: quitar espacios duplicados, comas extras
-                static string? CleanCsv(string? s)
-                    => string.IsNullOrWhiteSpace(s)
-                        ? null
-                        : string.Join(",", s.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
-
-                p.AllowedFitsCsv = CleanCsv(allowedFitsCsv);
-                p.AllowedColorsCsv = CleanCsv(allowedColorsCsv);
-                p.AllowedSizesCsv = CleanCsv(allowedSizesCsv);
-
-                p.UpdatedAt = DateTime.UtcNow;
-                await _db.SaveChangesAsync();
-
-                TempData["Success"] = "Configuración de variantes actualizada.";
-                return RedirectToAction(nameof(Variants), new { productId });
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error guardando opciones de variantes para ProductId {ProductId}", productId);
-                TempData["Error"] = "No se pudo guardar la configuración de variantes.";
-                return RedirectToAction(nameof(Variants), new { productId });
-
-            }
-        }
-        [Authorize(Roles = "Admin,Employee")]
-        [HttpGet("/Products/{productId:int}/Variants")]
-        public async Task<IActionResult> Variants(int productId)
-        {
-            if (productId <= 0)
-            {
-                TempData["Error"] = "ID de producto inválido.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            var product = await _db.Products
-                .Include(p => p.ProductTags).ThenInclude(pt => pt.Tag)
-                .FirstOrDefaultAsync(p => p.Id == productId);
-
-            if (product == null)
-            {
-                TempData["Error"] = "Producto no encontrado.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            var variants = await _db.ProductVariants
-                .Where(v => v.ProductId == productId)
-                .OrderBy(v => v.Fit).ThenBy(v => v.Color).ThenBy(v => v.Size)
-                .AsNoTracking()
-                .ToListAsync();
-
-            var vm = new TiendaPlayeras.Web.Models.ViewModels.VariantsAdminViewModel
-            {
-                Product = product,
-                Variants = variants
-            };
-
-            return View("~/Views/Variants/Index.cshtml", vm);
-        }
-
-
-[HttpGet("/Products/{productId:int}/Variants/Create")]
-public IActionResult CreateVariant(int productId)
+[Authorize(Roles = "Admin,Employee")]
+[HttpGet("/Products/{productId:int}/Variants")]
+public async Task<IActionResult> Variants(int productId)
 {
-    return View("Variants/Create", new ProductVariant { ProductId = productId, IsActive = true });
+    try
+    {
+        if (productId <= 0)
+        {
+            TempData["Error"] = "ID de producto inválido.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var product = await _db.Products
+            .Include(p => p.ProductTags).ThenInclude(pt => pt.Tag)
+            .Include(p => p.Variants)
+            .FirstOrDefaultAsync(p => p.Id == productId);
+
+        if (product == null)
+        {
+            TempData["Error"] = "Producto no encontrado.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var variants = product.Variants
+            .OrderBy(v => v.Fit)
+            .ThenBy(v => v.Color)
+            .ThenBy(v => v.Size)
+            .ToList();
+
+        var vm = new TiendaPlayeras.Web.Models.ViewModels.VariantsAdminViewModel
+        {
+            Product = product,
+            Variants = variants,
+            PredefinedFits = new[] { "Hombre", "Mujer", "Unisex", "Oversize", "Boxy" },
+            PredefinedSizes = new[] { "XS", "S", "M", "L", "XL", "XXL", "Yasui" },
+            PredefinedColors = new[] { "Negro", "Blanco", "Rojo", "Azul", "Verde", "Gris", "Amarillo", "Rosa" }
+        };
+
+        return View("~/Views/Variants/Index.cshtml", vm);
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error al cargar variantes del producto ID: {ProductId}", productId);
+        TempData["Error"] = "Error al cargar las variantes del producto.";
+        return RedirectToAction(nameof(Index));
+    }
 }
 
-[HttpPost("/Products/Variants/Create")]
+// NUEVA ACCIÓN: Lista general de productos con variantes para acceso rápido
+[Authorize(Roles = "Admin,Employee")]
+[HttpGet("/Products/VariantsManager")]
+public async Task<IActionResult> VariantsManager()
+{
+    try
+    {
+        var products = await _db.Products
+            .Include(p => p.Variants)
+            .Where(p => p.IsActive)
+            .OrderBy(p => p.Name)
+            .Select(p => new
+            {
+                p.Id,
+                p.Name,
+                p.MainImagePath,
+                VariantsCount = p.Variants.Count(v => v.IsActive),
+                TotalVariants = p.Variants.Count
+            })
+            .ToListAsync();
+
+        return View("~/Views/Variants/Manager.cshtml", products);
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error al cargar el gestor de variantes");
+        TempData["Error"] = "Error al cargar el gestor de variantes.";
+        return RedirectToAction(nameof(Index));
+    }
+}
+
+[HttpPost]
 [ValidateAntiForgeryToken]
+[Authorize(Roles = "Admin,Employee")]
+public async Task<IActionResult> SaveVariantOptions(
+    int productId,
+    bool useFit,
+    bool useColor,
+    bool useSize,
+    string? allowedFitsCsv,
+    string? allowedColorsCsv,
+    string? allowedSizesCsv)
+{
+    try
+    {
+        var product = await _db.Products.FindAsync(productId);
+        if (product == null)
+        {
+            TempData["Error"] = "Producto no encontrado.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Normalizar CSV: eliminar espacios y comas extras
+        string? CleanCsv(string? input)
+        {
+            if (string.IsNullOrWhiteSpace(input)) return null;
+            
+            var items = input
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .Distinct()
+                .ToArray();
+            
+            return items.Any() ? string.Join(",", items) : null;
+        }
+
+        product.UseFit = useFit;
+        product.UseColor = useColor;
+        product.UseSize = useSize;
+        product.AllowedFitsCsv = CleanCsv(allowedFitsCsv);
+        product.AllowedColorsCsv = CleanCsv(allowedColorsCsv);
+        product.AllowedSizesCsv = CleanCsv(allowedSizesCsv);
+        product.UpdatedAt = DateTime.UtcNow;
+
+        await _db.SaveChangesAsync();
+
+        TempData["Success"] = "Configuración de variantes actualizada correctamente.";
+        return RedirectToAction(nameof(Variants), new { productId });
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error al guardar opciones de variantes para ProductId: {ProductId}", productId);
+        TempData["Error"] = "Error al guardar la configuración de variantes.";
+        return RedirectToAction(nameof(Variants), new { productId });
+    }
+}
+
+[Authorize(Roles = "Admin,Employee")]
+[HttpGet("/Products/{productId:int}/Variants/Create")]
+public async Task<IActionResult> CreateVariant(int productId)
+{
+    var product = await _db.Products.FindAsync(productId);
+    if (product == null)
+    {
+        TempData["Error"] = "Producto no encontrado.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    ViewBag.ProductName = product.Name;
+    return View("~/Views/Variants/Create.cshtml", new ProductVariant 
+    { 
+        ProductId = productId, 
+        IsActive = true,
+        Price = product.BasePrice
+    });
+}
+
+[HttpPost]
+[ValidateAntiForgeryToken]
+[Authorize(Roles = "Admin,Employee")]
 public async Task<IActionResult> CreateVariant(ProductVariant model)
 {
-    if (!ModelState.IsValid) return View("Variants/Create", model);
-    _db.ProductVariants.Add(model);
-    await _db.SaveChangesAsync();
-    return RedirectToAction(nameof(Variants), new { productId = model.ProductId });
+    try
+    {
+        if (string.IsNullOrWhiteSpace(model.Fit))
+            ModelState.AddModelError(nameof(model.Fit), "El fit es requerido.");
+        
+        if (string.IsNullOrWhiteSpace(model.Color))
+            ModelState.AddModelError(nameof(model.Color), "El color es requerido.");
+        
+        if (string.IsNullOrWhiteSpace(model.Size))
+            ModelState.AddModelError(nameof(model.Size), "La talla es requerida.");
+
+        if (model.Price < 0)
+            ModelState.AddModelError(nameof(model.Price), "El precio no puede ser negativo.");
+
+        if (model.Stock < 0)
+            ModelState.AddModelError(nameof(model.Stock), "El stock no puede ser negativo.");
+
+        // Verificar si ya existe una variante con la misma combinación
+        var existingVariant = await _db.ProductVariants
+            .FirstOrDefaultAsync(v => 
+                v.ProductId == model.ProductId &&
+                v.Fit.ToLower() == model.Fit.Trim().ToLower() &&
+                v.Color.ToLower() == model.Color.Trim().ToLower() &&
+                v.Size.ToLower() == model.Size.Trim().ToLower());
+
+        if (existingVariant != null)
+        {
+            ModelState.AddModelError("", "Ya existe una variante con esta combinación de Fit, Color y Talla.");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            var product = await _db.Products.FindAsync(model.ProductId);
+            ViewBag.ProductName = product?.Name;
+            return View("~/Views/Variants/Create.cshtml", model);
+        }
+
+        // Normalizar valores
+        model.Fit = model.Fit.Trim();
+        model.Color = model.Color.Trim();
+        model.Size = model.Size.Trim();
+        model.DesignCode = model.DesignCode?.Trim() ?? "";
+
+        _db.ProductVariants.Add(model);
+        await _db.SaveChangesAsync();
+
+        TempData["Success"] = $"Variante {model.Fit} - {model.Color} - {model.Size} creada correctamente.";
+        return RedirectToAction(nameof(Variants), new { productId = model.ProductId });
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error al crear variante para producto ID: {ProductId}", model.ProductId);
+        ModelState.AddModelError("", "Error al guardar la variante.");
+        
+        var product = await _db.Products.FindAsync(model.ProductId);
+        ViewBag.ProductName = product?.Name;
+        return View("~/Views/Variants/Create.cshtml", model);
+    }
 }
 
+[Authorize(Roles = "Admin,Employee")]
 [HttpGet("/Products/Variants/Edit/{id:int}")]
 public async Task<IActionResult> EditVariant(int id)
 {
-    var v = await _db.ProductVariants.FindAsync(id);
-    if (v == null) return NotFound();
-    return View("Variants/Edit", v);
+    var variant = await _db.ProductVariants
+        .Include(v => v.Product)
+        .FirstOrDefaultAsync(v => v.Id == id);
+
+    if (variant == null)
+    {
+        TempData["Error"] = "Variante no encontrada.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    ViewBag.ProductName = variant.Product?.Name;
+    return View("~/Views/Variants/Edit.cshtml", variant);
 }
 
-[HttpPost("/Products/Variants/Edit/{id:int}")]
+[HttpPost]
 [ValidateAntiForgeryToken]
+[Authorize(Roles = "Admin,Employee")]
 public async Task<IActionResult> EditVariant(int id, ProductVariant model)
 {
-    var v = await _db.ProductVariants.FindAsync(id);
-    if (v == null) return NotFound();
-    if (!ModelState.IsValid) return View("Variants/Edit", model);
+    try
+    {
+        var variant = await _db.ProductVariants
+            .Include(v => v.Product)
+            .FirstOrDefaultAsync(v => v.Id == id);
 
-    v.Fit = model.Fit; v.Color = model.Color; v.Size = model.Size;
-    v.Price = model.Price; v.Stock = model.Stock; v.IsActive = model.IsActive;
-    await _db.SaveChangesAsync();
-    return RedirectToAction(nameof(Variants), new { productId = v.ProductId });
+        if (variant == null)
+        {
+            TempData["Error"] = "Variante no encontrada.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (string.IsNullOrWhiteSpace(model.Fit))
+            ModelState.AddModelError(nameof(model.Fit), "El fit es requerido.");
+        
+        if (string.IsNullOrWhiteSpace(model.Color))
+            ModelState.AddModelError(nameof(model.Color), "El color es requerido.");
+        
+        if (string.IsNullOrWhiteSpace(model.Size))
+            ModelState.AddModelError(nameof(model.Size), "La talla es requerida.");
+
+        // Verificar duplicados (excluyendo la variante actual)
+        var duplicateVariant = await _db.ProductVariants
+            .FirstOrDefaultAsync(v => 
+                v.Id != id &&
+                v.ProductId == variant.ProductId &&
+                v.Fit.ToLower() == model.Fit.Trim().ToLower() &&
+                v.Color.ToLower() == model.Color.Trim().ToLower() &&
+                v.Size.ToLower() == model.Size.Trim().ToLower());
+
+        if (duplicateVariant != null)
+        {
+            ModelState.AddModelError("", "Ya existe otra variante con esta combinación.");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            ViewBag.ProductName = variant.Product?.Name;
+            return View("~/Views/Variants/Edit.cshtml", model);
+        }
+
+        variant.Fit = model.Fit.Trim();
+        variant.Color = model.Color.Trim();
+        variant.Size = model.Size.Trim();
+        variant.DesignCode = model.DesignCode?.Trim() ?? "";
+        variant.Price = model.Price;
+        variant.Stock = model.Stock;
+        variant.IsActive = model.IsActive;
+
+        await _db.SaveChangesAsync();
+
+        TempData["Success"] = "Variante actualizada correctamente.";
+        return RedirectToAction(nameof(Variants), new { productId = variant.ProductId });
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error al editar variante ID: {VariantId}", id);
+        ModelState.AddModelError("", "Error al actualizar la variante.");
+        
+        var variant = await _db.ProductVariants.Include(v => v.Product).FirstOrDefaultAsync(v => v.Id == id);
+        ViewBag.ProductName = variant?.Product?.Name;
+        return View("~/Views/Variants/Edit.cshtml", model);
+    }
 }
 
-[HttpPost("/Products/Variants/Toggle")]
+[HttpPost]
 [ValidateAntiForgeryToken]
+[Authorize(Roles = "Admin,Employee")]
 public async Task<IActionResult> ToggleVariant(int id)
 {
-    var v = await _db.ProductVariants.FindAsync(id);
-    if (v == null) return NotFound();
-    v.IsActive = !v.IsActive;
-    await _db.SaveChangesAsync();
-    return RedirectToAction(nameof(Variants), new { productId = v.ProductId });
-}
-// Catálogo público: /catalogo
-    [AllowAnonymous]
-    [HttpGet("/catalogo")]
-    public async Task<IActionResult> Catalog(string? q, string? tag, string sort = "az", int page = 1, int pageSize = 20)
+    try
     {
-        var query = _db.Products
-            .Where(p => p.IsActive)
-            .Include(p => p.ProductTags).ThenInclude(pt => pt.Tag)
-            .AsQueryable();
-
-        if (!string.IsNullOrWhiteSpace(q))
+        var variant = await _db.ProductVariants.FindAsync(id);
+        if (variant == null)
         {
-            q = q.Trim();
-            query = query.Where(p =>
-                p.Name.Contains(q) ||
-                (p.Description != null && p.Description.Contains(q)) ||
-                p.Slug.Contains(q));
+            TempData["Error"] = "Variante no encontrada.";
+            return RedirectToAction(nameof(Index));
         }
 
-        if (!string.IsNullOrWhiteSpace(tag))
-        {
-            tag = tag.Trim().ToLower();
-            query = query.Where(p =>
-                p.ProductTags.Any(pt =>
-                    pt.IsActive &&
-                    pt.Tag != null && pt.Tag.IsActive &&
-                    (pt.Tag.Slug.ToLower() == tag || pt.Tag.Name.ToLower().Contains(tag))));
-        }
+        variant.IsActive = !variant.IsActive;
+        await _db.SaveChangesAsync();
 
-        query = (sort ?? "").ToLower() switch
-        {
-            "za"         => query.OrderByDescending(p => p.Name),
-            "price_asc"  => query.OrderBy(p => p.BasePrice),
-            "price_desc" => query.OrderByDescending(p => p.BasePrice),
-            _            => query.OrderBy(p => p.Name)
-        };
-
-        pageSize = pageSize is 20 or 50 ? pageSize : 20;
-        page = Math.Max(1, page);
-
-        var total = await query.CountAsync();
-        var items = await query
-            .AsNoTracking()
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
-
-        ViewBag.Q = q ?? "";
-        ViewBag.Tag = tag ?? "";
-        ViewBag.Sort = sort ?? "az";
-        ViewBag.Page = page;
-        ViewBag.PageSize = pageSize;
-        ViewBag.Total = total;
-
-        return View("Catalog", items);
+        var action = variant.IsActive ? "habilitada" : "inhabilitada";
+        TempData["Success"] = $"Variante {action} correctamente.";
+        
+        return RedirectToAction(nameof(Variants), new { productId = variant.ProductId });
     }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error al cambiar estado de variante ID: {VariantId}", id);
+        TempData["Error"] = "Error al cambiar el estado de la variante.";
+        return RedirectToAction(nameof(Index));
+    }
+}
 
     // Detalle público por slug: /p/{slug}
     [AllowAnonymous]

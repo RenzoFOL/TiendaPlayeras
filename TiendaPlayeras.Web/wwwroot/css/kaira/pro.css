@@ -1,0 +1,13 @@
+@media (max-width: 768px) {
+    .product-title {
+        font-size: 28px;
+    }
+    
+    .price-display {
+        font-size: 32px;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+}

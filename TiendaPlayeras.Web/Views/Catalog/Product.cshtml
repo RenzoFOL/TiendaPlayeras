@@ -1,210 +1,733 @@
 @model TiendaPlayeras.Web.Models.Product
 @{
     ViewData["Title"] = Model.Name;
-    var variants = Model.Variants?.Where(v => v.IsActive).ToList() ?? new List<TiendaPlayeras.Web.Models.ProductVariant>();
-    var fits   = variants.Select(v => v.Fit).Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().OrderBy(s => s).ToList();
-    var colors = variants.Select(v => v.Color).Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().OrderBy(s => s).ToList();
-    var sizes  = variants.Select(v => v.Size).Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().OrderBy(s => s).ToList();
-
-    decimal? minPrice = variants.Any() ? variants.Min(v => v.Price > 0 ? v.Price : Model.BasePrice) : Model.BasePrice;
-    string img = string.IsNullOrWhiteSpace(Model.MainImagePath) ? "/img/placeholder.png" : Model.MainImagePath;
+    
+    // Obtener solo variantes activas
+    var activeVariants = (Model.Variants ?? new List<TiendaPlayeras.Web.Models.ProductVariant>())
+        .Where(v => v.IsActive)
+        .ToList();
+    
+    // Función para parsear CSV
+    string[] ParseCsv(string? csv) 
+    {
+        if (string.IsNullOrWhiteSpace(csv)) return Array.Empty<string>();
+        return csv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    }
+    
+    // Obtener valores permitidos desde la configuración del producto
+    var allowedFits = ParseCsv(Model.AllowedFitsCsv);
+    var allowedColors = ParseCsv(Model.AllowedColorsCsv);
+    var allowedSizes = ParseCsv(Model.AllowedSizesCsv);
+    
+    // Si los CSV están vacíos, inferir de las variantes activas existentes
+    var availableFits = allowedFits.Any() 
+        ? allowedFits.Where(f => activeVariants.Any(v => v.Fit == f)).ToArray()
+        : activeVariants.Select(v => v.Fit).Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().OrderBy(s => s).ToArray();
+    
+    var availableColors = allowedColors.Any() 
+        ? allowedColors.Where(c => activeVariants.Any(v => v.Color == c)).ToArray()
+        : activeVariants.Select(v => v.Color).Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().OrderBy(s => s).ToArray();
+    
+    var availableSizes = allowedSizes.Any() 
+        ? allowedSizes.Where(s => activeVariants.Any(v => v.Size == s)).ToArray()
+        : activeVariants.Select(v => v.Size).Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().OrderBy(s => s).ToArray();
+    
+    // Precio mínimo
+    decimal minPrice = activeVariants.Any() 
+        ? activeVariants.Min(v => v.Price > 0 ? v.Price : Model.BasePrice) 
+        : Model.BasePrice;
+    
+    // Imagen
+    string imgPath = string.IsNullOrWhiteSpace(Model.MainImagePath) 
+        ? "/img/placeholder.png" 
+        : Model.MainImagePath;
+    
+    // Verificar qué selectores mostrar según configuración
+    bool showFit = Model.UseFit && availableFits.Any();
+    bool showColor = Model.UseColor && availableColors.Any();
+    bool showSize = Model.UseSize && availableSizes.Any();
+}
+<link rel="stylesheet" type="text/css/kaira" href="pro.css">
+<style>
+.product-detail-container {
+    padding: 40px 20px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+    min-height: 100vh;
 }
 
-<div class="container my-4">
-    <div class="row g-4">
-        <!-- Imagen -->
-        <div class="col-12 col-md-6">
-            <div class="ratio ratio-1x1 bg-light rounded">
-                <img src="@img" class="w-100 h-100 object-fit-cover rounded" alt="@Model.Name" />
-            </div>
-        </div>
+.product-image-wrapper {
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+    background: white;
+}
 
-        <!-- Info -->
-        <div class="col-12 col-md-6">
-            <h1 class="h3 mb-2">@Model.Name</h1>
+.product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
 
-            <div class="mb-2">
-                <span class="h4" id="priceText">@minPrice?.ToString("C")</span>
-                @if (Model.IsCustomizable)
-                {
-                    <span class="badge bg-info ms-2">Personalizable</span>
-                }
-            </div>
+.product-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
 
-            @if (!string.IsNullOrWhiteSpace(Model.Description))
-            {
-                <p class="text-muted">@Model.Description</p>
-            }
+.product-info-card {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+}
 
-            <!-- Selectores de variantes -->
-            <div class="row g-3 mb-3">
-                @if (fits.Any())
-                {
-                    <div class="col-12 col-sm-6">
-                        <label class="form-label">Fit</label>
-                        <select id="fitSel" class="form-select">
-                            <option value="">Selecciona</option>
-                            @foreach (var f in fits) { <option value="@f">@f</option> }
-                        </select>
-                    </div>
-                }
-                @if (colors.Any())
-                {
-                    <div class="col-12 col-sm-6">
-                        <label class="form-label">Color</label>
-                        <select id="colorSel" class="form-select">
-                            <option value="">Selecciona</option>
-                            @foreach (var c in colors) { <option value="@c">@c</option> }
-                        </select>
-                    </div>
-                }
-                @if (sizes.Any())
-                {
-                    <div class="col-12 col-sm-6">
-                        <label class="form-label">Talla</label>
-                        <select id="sizeSel" class="form-select">
-                            <option value="">Selecciona</option>
-                            @foreach (var s in sizes) { <option value="@s">@s</option> }
-                        </select>
-                    </div>
-                }
-                <div class="col-12 col-sm-6">
-                    <label class="form-label">Cantidad</label>
-                    <input id="qtyInput" type="number" min="1" value="1" class="form-control" />
+.product-title {
+    font-size: 36px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+.price-display {
+    font-size: 42px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 20px;
+}
+
+.product-description {
+    font-size: 16px;
+    color: #64748b;
+    line-height: 1.8;
+    margin-bottom: 30px;
+}
+
+.variants-section {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 25px;
+}
+
+.variants-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-label-custom {
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-select-custom {
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+}
+
+.form-select-custom:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.stock-indicator {
+    padding: 15px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.stock-available {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.stock-warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.stock-unavailable {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.stock-info {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.btn-add-cart {
+    flex: 1;
+    padding: 16px 32px;
+    font-size: 16px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+.btn-add-cart:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+}
+
+.btn-add-cart:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-wishlist {
+    padding: 16px 24px;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    color: #64748b;
+    transition: all 0.3s ease;
+}
+
+.btn-wishlist:hover {
+    border-color: #f43f5e;
+    color: #f43f5e;
+}
+
+.btn-wishlist.active {
+    background: #f43f5e;
+    border-color: #f43f5e;
+    color: white;
+}
+
+.info-box {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.tags-section {
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 2px solid #f1f5f9;
+}
+
+.tag-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 25px;
+    color: #64748b;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    margin: 5px;
+}
+
+.tag-badge:hover {
+    border-color: #667eea;
+    color: #667eea;
+    transform: translateY(-2px);
+}
+
+</style>
+
+<div class="product-detail-container">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Imagen del producto -->
+            <div class="col-12 col-lg-6">
+                <div class="product-image-wrapper ratio ratio-1x1">
+                    <img src="@imgPath" class="product-image" alt="@Model.Name" />
+                    @if (Model.IsCustomizable)
+                    {
+                        <div class="product-badge">
+                            <i class="fas fa-paint-brush"></i> Personalizable
+                        </div>
+                    }
                 </div>
             </div>
 
-            <!-- Estado / stock -->
-            <div class="mb-3">
-                <span id="stockText" class="text-muted">Selecciona una variante para ver stock</span>
-            </div>
+            <!-- Información del producto -->
+            <div class="col-12 col-lg-6">
+                <div class="product-info-card">
+                    <!-- Breadcrumb -->
+                    <nav aria-label="breadcrumb" class="mb-3">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="/catalogo">
+                                    <i class="fas fa-home"></i> Catálogo
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item active">@Model.Name</li>
+                        </ol>
+                    </nav>
 
-            <!-- Botones (placeholder sin lógica) -->
-            <div class="d-flex gap-2">
-                <button class="btn btn-primary" id="btnAddToCart" disabled>
-                    <i class="fas fa-shopping-cart me-1"></i> Agregar al carrito
-                </button>
-                <button class="btn btn-outline-danger" id="btnWishlist" type="button">
-                    <i class="far fa-heart me-1"></i> Wishlist
-                </button>
-            </div>
+                    <!-- Título -->
+                    <h1 class="product-title">@Model.Name</h1>
 
-            <input type="hidden" id="variantId" />
+                    <!-- Precio -->
+                    <div class="price-display" id="priceDisplay">
+                        @minPrice.ToString("C")
+                    </div>
+
+                    <!-- Descripción -->
+                    @if (!string.IsNullOrWhiteSpace(Model.Description))
+                    {
+                        <p class="product-description">@Model.Description</p>
+                    }
+
+                    <!-- Selectores de variantes -->
+                    @if (activeVariants.Any())
+                    {
+                        <div class="variants-section">
+                            <div class="variants-title">
+                                <i class="fas fa-sliders-h"></i>
+                                <span>Selecciona tu variante</span>
+                            </div>
+
+                            <div class="row g-3">
+                                <!-- Selector de Fit -->
+                                @if (showFit)
+                                {
+                                    <div class="col-12 @(showColor || showSize ? "col-md-6" : "")">
+                                        <label class="form-label-custom">
+                                            <i class="fas fa-tshirt text-primary"></i>
+                                            Fit
+                                        </label>
+                                        <select id="fitSelector" class="form-select form-select-custom">
+                                            <option value="">Selecciona un fit</option>
+                                            @foreach (var fit in availableFits)
+                                            {
+                                                <option value="@fit">@fit</option>
+                                            }
+                                        </select>
+                                    </div>
+                                }
+
+                                <!-- Selector de Color -->
+                                @if (showColor)
+                                {
+                                    <div class="col-12 @(showFit || showSize ? "col-md-6" : "")">
+                                        <label class="form-label-custom">
+                                            <i class="fas fa-palette text-danger"></i>
+                                            Color
+                                        </label>
+                                        <select id="colorSelector" class="form-select form-select-custom">
+                                            <option value="">Selecciona un color</option>
+                                            @foreach (var color in availableColors)
+                                            {
+                                                <option value="@color">@color</option>
+                                            }
+                                        </select>
+                                    </div>
+                                }
+
+                                <!-- Selector de Talla -->
+                                @if (showSize)
+                                {
+                                    <div class="col-12 @((showFit || showColor) && availableSizes.Length <= 4 ? "col-md-6" : "")">
+                                        <label class="form-label-custom">
+                                            <i class="fas fa-ruler-combined text-success"></i>
+                                            Talla
+                                        </label>
+                                        <select id="sizeSelector" class="form-select form-select-custom">
+                                            <option value="">Selecciona una talla</option>
+                                            @foreach (var size in availableSizes)
+                                            {
+                                                <option value="@size">@size</option>
+                                            }
+                                        </select>
+                                    </div>
+                                }
+
+                                <!-- Cantidad -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label-custom">
+                                        <i class="fas fa-sort-numeric-up text-info"></i>
+                                        Cantidad
+                                    </label>
+                                    <input type="number" id="quantityInput" class="form-select form-select-custom" 
+                                           min="1" max="99" value="1" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Indicador de stock -->
+                        <div id="stockIndicator" class="stock-indicator stock-info">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Selecciona una variante para ver disponibilidad</span>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="action-buttons">
+                            <button id="btnAddToCart" class="btn btn-add-cart" disabled>
+                                <i class="fas fa-shopping-cart me-2"></i>
+                                Agregar al carrito
+                            </button>
+                            <button id="btnWishlist" class="btn btn-wishlist">
+                                <i class="far fa-heart"></i>
+                            </button>
+                        </div>
+
+                        <!-- Información adicional -->
+                        <div class="info-box">
+                            <div class="info-item">
+                                <div class="info-icon" style="background: #d1fae5; color: #065f46;">
+                                    <i class="fas fa-truck"></i>
+                                </div>
+                                <div>
+                                    <strong>Envío gratis</strong>
+                                    <div class="small text-muted">En compras mayores a $500</div>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-icon" style="background: #dbeafe; color: #1e40af;">
+                                    <i class="fas fa-undo"></i>
+                                </div>
+                                <div>
+                                    <strong>Devoluciones gratuitas</strong>
+                                    <div class="small text-muted">Dentro de 30 días</div>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-icon" style="background: #fef3c7; color: #92400e;">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div>
+                                    <strong>Compra 100% segura</strong>
+                                    <div class="small text-muted">Protección al comprador</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <input type="hidden" id="selectedVariantId" />
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Este producto no tiene variantes disponibles en este momento.
+                        </div>
+                    }
+                </div>
+
+                <!-- Tags del producto -->
+                @if (Model.ProductTags?.Any(pt => pt.IsActive && pt.Tag != null && pt.Tag.IsActive) == true)
+                {
+                    <div class="tags-section">
+                        <strong class="d-block mb-3">
+                            <i class="fas fa-tags me-2"></i>Colecciones:
+                        </strong>
+                        @foreach (var pt in Model.ProductTags
+                            .Where(pt => pt.IsActive && pt.Tag != null && pt.Tag.IsActive)
+                            .OrderBy(pt => pt.Tag!.Name))
+                        {
+                            <a href="/catalogo?tag=@pt.Tag!.Slug" class="tag-badge">
+                                <i class="fas fa-tag"></i>
+                                @pt.Tag!.Name
+                            </a>
+                        }
+                    </div>
+                }
+            </div>
         </div>
     </div>
-
-    <!-- Tags (opcional) -->
-    @if (Model.ProductTags?.Any(pt => pt.IsActive && pt.Tag != null && pt.Tag.IsActive) ?? false)
-    {
-        <hr />
-        <div class="mt-3">
-            <strong>Colecciones:</strong>
-            @foreach (var pt in Model.ProductTags.Where(pt => pt.IsActive && pt.Tag != null && pt.Tag.IsActive))
-            {
-                <a class="badge bg-light text-dark border me-1"
-                   href="/catalogo?tag=@pt.Tag!.Slug">@pt.Tag!.Name</a>
-            }
-        </div>
-    }
 </div>
 
-@section Scripts{
+@section Scripts {
 <script>
-(function(){
-    // Variantes disponibles (como JSON seguro aunque Model.Variants sea null)
+(function() {
+    'use strict';
+    
+    // Datos de variantes activas desde el servidor
     const variants = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
-        (Model.Variants ?? new List<TiendaPlayeras.Web.Models.ProductVariant>())
-            .Where(v => v.IsActive)
-            .Select(v => new {
-                v.Id,
-                v.Fit,
-                v.Color,
-                v.Size,
-                Price = (double)((v.Price > 0 ? v.Price : Model.BasePrice)),
-                v.Stock
-            })
+        activeVariants.Select(v => new {
+            id = v.Id,
+            fit = v.Fit ?? "",
+            color = v.Color ?? "",
+            size = v.Size ?? "",
+            price = (double)v.Price,
+            stock = v.Stock
+        })
     ));
 
-    const fitSel   = document.getElementById('fitSel');
-    const colorSel = document.getElementById('colorSel');
-    const sizeSel  = document.getElementById('sizeSel');
-    const priceTxt = document.getElementById('priceText');
-    const stockTxt = document.getElementById('stockText');
-    const qtyInput = document.getElementById('qtyInput');
-    const variantId= document.getElementById('variantId');
-    const btnCart  = document.getElementById('btnAddToCart');
-    const btnWish  = document.getElementById('btnWishlist');
+    // Configuración de qué selectores mostrar
+    const config = {
+        useFit: @(Model.UseFit ? "true" : "false"),
+        useColor: @(Model.UseColor ? "true" : "false"),
+        useSize: @(Model.UseSize ? "true" : "false")
+    };
 
-    function formatCurrency(n){
-        try { return n.toLocaleString(undefined, { style:'currency', currency:'MXN' }); }
-        catch { return '$' + n.toFixed(2); }
+    console.log('🛍️ Producto cargado:', '@Model.Name');
+    console.log('📦 Variantes disponibles:', variants.length);
+    console.log('⚙️ Configuración:', config);
+
+    // Elementos del DOM
+    const fitSelect = document.getElementById('fitSelector');
+    const colorSelect = document.getElementById('colorSelector');
+    const sizeSelect = document.getElementById('sizeSelector');
+    const quantityInput = document.getElementById('quantityInput');
+    const priceDisplay = document.getElementById('priceDisplay');
+    const stockIndicator = document.getElementById('stockIndicator');
+    const selectedVariantId = document.getElementById('selectedVariantId');
+    const btnAddToCart = document.getElementById('btnAddToCart');
+    const btnWishlist = document.getElementById('btnWishlist');
+
+    // Formatear precio
+    function formatPrice(amount) {
+        try {
+            return new Intl.NumberFormat('es-MX', {
+                style: 'currency',
+                currency: 'MXN'
+            }).format(amount);
+        } catch {
+            return '$' + amount.toFixed(2);
+        }
     }
 
-    function currentFilter(){
+    // Obtener selección actual
+    function getCurrentSelection() {
         return {
-            fit:   fitSel ? fitSel.value : '',
-            color: colorSel ? colorSel.value : '',
-            size:  sizeSel ? sizeSel.value : ''
+            fit: fitSelect ? fitSelect.value : '',
+            color: colorSelect ? colorSelect.value : '',
+            size: sizeSelect ? sizeSelect.value : ''
         };
     }
 
-    function filterVariants(){
-        const f = currentFilter();
-        return variants.filter(v =>
-            (!f.fit   || v.Fit   === f.fit) &&
-            (!f.color || v.Color === f.color) &&
-            (!f.size  || v.Size  === f.size));
+    // Filtrar variantes según selección
+    function getMatchingVariants() {
+        const selection = getCurrentSelection();
+        
+        return variants.filter(v => {
+            const fitMatch = !config.useFit || !selection.fit || v.fit === selection.fit;
+            const colorMatch = !config.useColor || !selection.color || v.color === selection.color;
+            const sizeMatch = !config.useSize || !selection.size || v.size === selection.size;
+            
+            return fitMatch && colorMatch && sizeMatch;
+        });
     }
 
-    function refreshUI(){
-        const list = filterVariants();
+    // Actualizar indicador de stock
+    function updateStockIndicator(variant, matches) {
+        if (!stockIndicator) return;
 
-        if (list.length === 1){
-            const v = list[0];
-            priceTxt.textContent = formatCurrency(v.Price);
-            stockTxt.textContent = v.Stock > 0 ? `Stock: ${v.Stock}` : 'Sin stock';
-            variantId.value = v.Id;
-            btnCart.disabled = (v.Stock <= 0);
-        } else if (list.length > 1){
-            // varias posibles – muestra precio mínimo de las coincidencias
-            const min = Math.min(...list.map(x => x.Price));
-            priceTxt.textContent = formatCurrency(min);
-            stockTxt.textContent = 'Selecciona los atributos para ver stock';
-            variantId.value = '';
-            btnCart.disabled = true;
+        if (matches === 1 && variant) {
+            // Una sola variante coincide
+            if (variant.stock > 10) {
+                stockIndicator.className = 'stock-indicator stock-available';
+                stockIndicator.innerHTML = `
+                    <i class="fas fa-check-circle"></i>
+                    <span><strong>Disponible</strong> - ${variant.stock} unidades en stock</span>
+                `;
+            } else if (variant.stock > 0) {
+                stockIndicator.className = 'stock-indicator stock-warning';
+                stockIndicator.innerHTML = `
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span><strong>Últimas unidades</strong> - Solo ${variant.stock} disponibles</span>
+                `;
+            } else {
+                stockIndicator.className = 'stock-indicator stock-unavailable';
+                stockIndicator.innerHTML = `
+                    <i class="fas fa-times-circle"></i>
+                    <span><strong>Sin stock</strong> - Esta variante no está disponible</span>
+                `;
+            }
+        } else if (matches > 1) {
+            stockIndicator.className = 'stock-indicator stock-info';
+            stockIndicator.innerHTML = `
+                <i class="fas fa-info-circle"></i>
+                <span>Selecciona todos los atributos para ver disponibilidad</span>
+            `;
         } else {
-            // nada coincide
-            priceTxt.textContent = formatCurrency(@(Model.BasePrice.ToString(System.Globalization.CultureInfo.InvariantCulture)));
-            stockTxt.textContent = 'No hay combinación disponible';
-            variantId.value = '';
-            btnCart.disabled = true;
+            stockIndicator.className = 'stock-indicator stock-unavailable';
+            stockIndicator.innerHTML = `
+                <i class="fas fa-exclamation-triangle"></i>
+                <span><strong>No disponible</strong> - Esta combinación no existe</span>
+            `;
         }
     }
 
-    // listeners
-    [fitSel, colorSel, sizeSel].forEach(sel => {
-        if (sel) sel.addEventListener('change', refreshUI);
-    });
-
-    // Wishlist (placeholder)
-    btnWish?.addEventListener('click', () => {
-        btnWish.classList.toggle('btn-outline-danger');
-        btnWish.classList.toggle('btn-danger');
-        const icon = btnWish.querySelector('i');
-        if (icon) icon.classList.toggle('far');
-        if (icon) icon.classList.toggle('fas');
-    });
-
-    // Cart (placeholder sin submit aún)
-    btnCart?.addEventListener('click', () => {
-        if (!variantId.value){
-            alert('Selecciona una combinación válida.');
-            return;
+    // Actualizar UI completa
+    function updateUI() {
+        const matches = getMatchingVariants();
+        
+        if (matches.length === 1) {
+            // Una sola variante coincide
+            const variant = matches[0];
+            
+            priceDisplay.textContent = formatPrice(variant.price);
+            selectedVariantId.value = variant.id;
+            updateStockIndicator(variant, 1);
+            
+            btnAddToCart.disabled = variant.stock <= 0;
+            
+            // Limitar cantidad al stock disponible
+            if (quantityInput) {
+                quantityInput.max = variant.stock > 0 ? variant.stock : 1;
+                if (parseInt(quantityInput.value) > variant.stock) {
+                    quantityInput.value = variant.stock;
+                }
+            }
+            
+        } else if (matches.length > 1) {
+            // Múltiples variantes coinciden
+            const prices = matches.map(v => v.price);
+            const minPrice = Math.min(...prices);
+            const maxPrice = Math.max(...prices);
+            
+            if (minPrice === maxPrice) {
+                priceDisplay.textContent = formatPrice(minPrice);
+            } else {
+                priceDisplay.textContent = `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}`;
+            }
+            
+            selectedVariantId.value = '';
+            updateStockIndicator(null, matches.length);
+            btnAddToCart.disabled = true;
+            
+        } else {
+            // Ninguna variante coincide
+            priceDisplay.textContent = formatPrice(@Model.BasePrice);
+            selectedVariantId.value = '';
+            updateStockIndicator(null, 0);
+            btnAddToCart.disabled = true;
         }
-        alert('Agregar al carrito (pendiente de integrar)');
+    }
+
+    // Event listeners para selectores
+    [fitSelect, colorSelect, sizeSelect].forEach(select => {
+        if (select) {
+            select.addEventListener('change', () => {
+                console.log('🔄 Selección actualizada:', getCurrentSelection());
+                updateUI();
+            });
+        }
     });
 
-    refreshUI();
+    // Validar cantidad
+    if (quantityInput) {
+        quantityInput.addEventListener('input', function() {
+            const val = parseInt(this.value);
+            const min = parseInt(this.min);
+            const max = parseInt(this.max);
+            
+            if (val < min) this.value = min;
+            if (val > max) this.value = max;
+        });
+    }
+
+    // Botón de wishlist
+    if (btnWishlist) {
+        btnWishlist.addEventListener('click', function() {
+            this.classList.toggle('active');
+            const icon = this.querySelector('i');
+            
+            if (this.classList.contains('active')) {
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+                console.log('💖 Agregado a favoritos');
+            } else {
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+                console.log('💔 Removido de favoritos');
+            }
+        });
+    }
+
+    // Botón de agregar al carrito
+    if (btnAddToCart) {
+        btnAddToCart.addEventListener('click', function() {
+            const variantId = selectedVariantId.value;
+            const quantity = parseInt(quantityInput.value);
+            
+            if (!variantId) {
+                alert('⚠️ Por favor selecciona una variante válida.');
+                return;
+            }
+            
+            if (quantity < 1) {
+                alert('⚠️ La cantidad debe ser al menos 1.');
+                return;
+            }
+            
+            const variant = variants.find(v => v.id == variantId);
+            if (variant) {
+                console.log('🛒 Agregar al carrito:', {
+                    productName: '@Model.Name',
+                    variantId: variantId,
+                    fit: variant.fit,
+                    color: variant.color,
+                    size: variant.size,
+                    quantity: quantity,
+                    price: variant.price
+                });
+                
+                alert(`✅ Producto agregado al carrito\n\nProducto: @Model.Name\nCantidad: ${quantity}\nPrecio: ${formatPrice(variant.price * quantity)}\n\n(Funcionalidad de carrito próximamente)`);
+            }
+        });
+    }
+
+    // Inicializar UI
+    updateUI();
+    
+    console.log('✅ Sistema de variantes inicializado correctamente');
+    
 })();
 </script>
 }

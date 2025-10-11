@@ -1,297 +1,331 @@
 @model IEnumerable<TiendaPlayeras.Web.Models.Product>
 @{
     ViewData["Title"] = "Gestión de Productos";
+    var totalProducts = Model?.Count() ?? 0;
+    var activeProducts = Model?.Count(p => p.IsActive) ?? 0;
 }
 <link rel="stylesheet" type="text/css/kaira" href="admin.css">
 <style> 
 :root {
-        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-        --info-gradient: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
-        --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-    }
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    --info-gradient: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+    --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    --purple-gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    --orange-gradient: linear-gradient(135deg, #ff9a56 0%, #ff6a00 100%);
+}
 
-    .products-menu-container {
-        min-height: 100vh;
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        padding: 60px 20px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-    }
+.products-menu-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding: 60px 20px;
+}
 
-    .menu-header {
-        text-align: center;
-        margin-bottom: 50px;
-        animation: fadeInDown 0.8s ease;
-    }
+.menu-header {
+    text-align: center;
+    margin-bottom: 50px;
+    animation: fadeInDown 0.8s ease;
+}
 
-    .menu-header h1 {
-        font-size: 48px;
-        font-weight: 700;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin-bottom: 10px;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-    }
+.menu-header h1 {
+    font-size: 48px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
 
-    .menu-header p {
-        font-size: 18px;
-        color: #64748b;
-        font-weight: 500;
-    }
+.menu-header p {
+    font-size: 18px;
+    color: #64748b;
+    font-weight: 500;
+}
 
-    .cards-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 30px;
-        max-width: 1200px;
-        width: 100%;
-        padding: 0 20px;
-    }
+.stats-summary {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
 
-    .menu-card {
-        position: relative;
-        background: white;
-        border-radius: 20px;
-        padding: 40px 30px;
-        text-decoration: none;
-        color: inherit;
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
-        cursor: pointer;
-        animation: fadeInUp 0.8s ease;
-        animation-fill-mode: both;
-    }
+.stat-box {
+    background: white;
+    padding: 20px 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    animation: fadeInUp 0.8s ease;
+}
 
-    .menu-card:nth-child(1) { animation-delay: 0.1s; }
-    .menu-card:nth-child(2) { animation-delay: 0.2s; }
-    .menu-card:nth-child(3) { animation-delay: 0.3s; }
-    .menu-card:nth-child(4) { animation-delay: 0.4s; }
-    .menu-card:nth-child(5) { animation-delay: 0.5s; }
-    .menu-card:nth-child(6) { animation-delay: 0.6s; }
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+}
 
-    .menu-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: var(--card-gradient);
-        opacity: 0;
-        transition: opacity 0.4s ease;
-        z-index: 0;
-    }
+.stat-info h3 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: #2c3e50;
+}
 
-    .menu-card:hover {
-        transform: translateY(-15px) scale(1.02);
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-    }
+.stat-info p {
+    margin: 0;
+    font-size: 14px;
+    color: #64748b;
+}
 
-    .menu-card:hover::before {
-        opacity: 1;
-    }
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
 
-    .menu-card:active {
-        transform: translateY(-10px) scale(0.98);
-    }
+.menu-card {
+    position: relative;
+    background: white;
+    border-radius: 20px;
+    padding: 40px 30px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    cursor: pointer;
+    animation: fadeInUp 0.8s ease;
+    animation-fill-mode: both;
+}
 
-    .card-content {
-        position: relative;
-        z-index: 1;
-        text-align: center;
-        transition: all 0.3s ease;
-    }
+.menu-card:nth-child(1) { animation-delay: 0.1s; }
+.menu-card:nth-child(2) { animation-delay: 0.2s; }
+.menu-card:nth-child(3) { animation-delay: 0.3s; }
+.menu-card:nth-child(4) { animation-delay: 0.4s; }
+.menu-card:nth-child(5) { animation-delay: 0.5s; }
+.menu-card:nth-child(6) { animation-delay: 0.6s; }
+.menu-card:nth-child(7) { animation-delay: 0.7s; }
+.menu-card:nth-child(8) { animation-delay: 0.8s; }
 
-    .menu-card:hover .card-content {
-        color: white;
-    }
+.menu-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--card-gradient);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: 0;
+}
 
-    .card-icon {
-        width: 80px;
-        height: 80px;
-        margin: 0 auto 25px;
-        background: var(--card-gradient);
-        border-radius: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 36px;
-        transition: all 0.4s ease;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-    }
+.menu-card:hover {
+    transform: translateY(-15px) scale(1.02);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
 
-    .menu-card:hover .card-icon {
-        transform: scale(1.1) rotate(5deg);
-        background: white;
-        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
-    }
+.menu-card:hover::before {
+    opacity: 1;
+}
 
-    .card-title {
-        font-size: 24px;
-        font-weight: 700;
-        margin-bottom: 12px;
-        transition: all 0.3s ease;
-    }
+.card-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    transition: all 0.3s ease;
+}
 
-    .card-description {
-        font-size: 15px;
-        color: #64748b;
-        line-height: 1.6;
-        margin-bottom: 20px;
-        transition: all 0.3s ease;
-    }
+.menu-card:hover .card-content {
+    color: white;
+}
 
-    .menu-card:hover .card-description {
-        color: rgba(255, 255, 255, 0.9);
-    }
+.card-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 25px;
+    background: var(--card-gradient);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    transition: all 0.4s ease;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
 
-    .card-badge {
-        display: inline-block;
-        padding: 6px 14px;
-        background: rgba(102, 126, 234, 0.1);
-        color: #667eea;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        transition: all 0.3s ease;
-    }
-
-    .menu-card:hover .card-badge {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-    }
-
-    .card-arrow {
-        position: absolute;
-        bottom: 20px;
-        right: 20px;
-        width: 40px;
-        height: 40px;
-        background: rgba(102, 126, 234, 0.1);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        transform: translateX(-20px);
-        transition: all 0.4s ease;
-    }
-
-    .menu-card:hover .card-arrow {
-        opacity: 1;
-        transform: translateX(0);
-        background: rgba(255, 255, 255, 0.2);
-    }
-
-    .card-arrow i {
-        font-size: 18px;
-        color: white;
-    }
-
-    /* Specific card gradients */
-    .menu-card[data-card="list"]::before,
-    .menu-card[data-card="list"] .card-icon {
-        --card-gradient: var(--primary-gradient);
-    }
-
-    .menu-card[data-card="create"]::before,
-    .menu-card[data-card="create"] .card-icon {
-        --card-gradient: var(--success-gradient);
-    }
-
-    .menu-card[data-card="tags"]::before,
-    .menu-card[data-card="tags"] .card-icon {
-        --card-gradient: var(--warning-gradient);
-    }
-
-    .menu-card[data-card="variants"]::before,
-    .menu-card[data-card="variants"] .card-icon {
-        --card-gradient: var(--info-gradient);
-    }
-
-    .menu-card[data-card="edit"]::before,
-    .menu-card[data-card="edit"] .card-icon {
-        --card-gradient: var(--secondary-gradient);
-    }
-
-    .menu-card[data-card="settings"]::before,
-    .menu-card[data-card="settings"] .card-icon {
-        --card-gradient: var(--dark-gradient);
-    }
 .menu-card:hover .card-icon {
-        animation: float 2s ease-in-out infinite;
-    }
+    transform: scale(1.1) rotate(5deg);
+    background: white;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+}
 
-    /* Ripple effect */
-    .ripple-effect {
-        position: absolute;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.6);
-        transform: scale(0);
-        animation: ripple 0.6s ease-out;
-        pointer-events: none;
-    }
+.card-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+}
 
-    /* Stats badge */
-    .card-stats {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        background: rgba(255, 255, 255, 0.9);
-        padding: 8px 12px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: 600;
-        color: #667eea;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
-    }
+.card-description {
+    font-size: 15px;
+    color: #64748b;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
 
-    .menu-card:hover .card-stats {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-    }
+.menu-card:hover .card-description {
+    color: rgba(255, 255, 255, 0.9);
+}
 
-    /* Loading skeleton */
-    .skeleton {
-        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-        background-size: 200% 100%;
-        animation: loading 1.5s infinite;
-    }
+.card-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.menu-card:hover .card-badge {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.card-arrow {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: all 0.4s ease;
+}
+
+.menu-card:hover .card-arrow {
+    opacity: 1;
+    transform: translateX(0);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.card-stats {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #667eea;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.menu-card:hover .card-stats {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+/* Gradientes específicos */
+.menu-card[data-card="list"]::before,
+.menu-card[data-card="list"] .card-icon {
+    --card-gradient: var(--primary-gradient);
+}
+
+.menu-card[data-card="create"]::before,
+.menu-card[data-card="create"] .card-icon {
+    --card-gradient: var(--success-gradient);
+}
+
+.menu-card[data-card="tags"]::before,
+.menu-card[data-card="tags"] .card-icon {
+    --card-gradient: var(--warning-gradient);
+}
+
+.menu-card[data-card="variants"]::before,
+.menu-card[data-card="variants"] .card-icon {
+    --card-gradient: var(--info-gradient);
+}
+
+.menu-card[data-card="catalog"]::before,
+.menu-card[data-card="catalog"] .card-icon {
+    --card-gradient: var(--purple-gradient);
+}
+
+.menu-card[data-card="public"]::before,
+.menu-card[data-card="public"] .card-icon {
+    --card-gradient: var(--orange-gradient);
+}
+
 
 </style>
+
 <div class="products-menu-container">
     <div class="menu-header">
         <h1>
             <i class="fas fa-box-open"></i> Gestión de Productos
         </h1>
-        <p>Selecciona una opción para administrar tu inventario</p>
+        <p>Administra tu inventario de forma eficiente</p>
     </div>
 
+    <!-- Resumen de estadísticas -->
+    <div class="stats-summary">
+        <div class="stat-box">
+            <div class="stat-icon" style="background: var(--primary-gradient);">
+                <i class="fas fa-boxes"></i>
+            </div>
+            <div class="stat-info">
+                <h3>@totalProducts</h3>
+                <p>Total Productos</p>
+            </div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-icon" style="background: var(--success-gradient);">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-info">
+                <h3>@activeProducts</h3>
+                <p>Activos</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grid de cards -->
     <div class="cards-grid">
-        <!-- Card: Lista de Productos -->
-        <a href="/Products" class="menu-card" data-card="list">
+        <!-- Card: Ver Lista Completa -->
+        <a href="@Url.Action("Index", "Products", new { page = 1, sort = "az" })" 
+           class="menu-card" data-card="list">
             <div class="card-stats">
                 <i class="fas fa-database me-1"></i>
-                @if (Model != null && Model.Any())
-                {
-                    <span>@Model.Count() items</span>
-                }
-                else
-                {
-                    <span>0 items</span>
-                }
+                <span>@totalProducts items</span>
             </div>
             <div class="card-content">
                 <div class="card-icon">
@@ -299,9 +333,9 @@
                 </div>
                 <h3 class="card-title">Lista de Productos</h3>
                 <p class="card-description">
-                    Ver, buscar y filtrar todos los productos disponibles en tu inventario
+                    Ver, buscar y filtrar todos los productos con paginación y ordenamiento
                 </p>
-                <span class="card-badge">Ver todos</span>
+                <span class="card-badge">Ver lista</span>
             </div>
             <div class="card-arrow">
                 <i class="fas fa-arrow-right"></i>
@@ -309,7 +343,8 @@
         </a>
 
         <!-- Card: Crear Producto -->
-        <a href="/Products/Create" class="menu-card" data-card="create">
+        <a href="@Url.Action("Create", "Products")" 
+           class="menu-card" data-card="create">
             <div class="card-stats">
                 <i class="fas fa-plus-circle me-1"></i>
                 <span>Nuevo</span>
@@ -320,7 +355,7 @@
                 </div>
                 <h3 class="card-title">Crear Producto</h3>
                 <p class="card-description">
-                    Agrega un nuevo producto a tu catálogo con toda su información
+                    Agrega un nuevo producto con nombre, descripción, precio e imagen
                 </p>
                 <span class="card-badge">Agregar</span>
             </div>
@@ -329,8 +364,31 @@
             </div>
         </a>
 
-      <!-- Card: Gestionar Etiquetas -->
-        <a href="@Url.Action("Tags", "CategoryTags")" class="menu-card" data-card="tags">
+        <!-- Card: Gestionar Variantes -->
+        <a href="@Url.Action("VariantsManager", "Products")" 
+           class="menu-card" data-card="variants">
+            <div class="card-stats">
+                <i class="fas fa-layer-group me-1"></i>
+                <span>Variantes</span>
+            </div>
+            <div class="card-content">
+                <div class="card-icon">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <h3 class="card-title">Gestionar Variantes</h3>
+                <p class="card-description">
+                    Configura tallas, colores, fits y stock de cada producto
+                </p>
+                <span class="card-badge">Configurar</span>
+            </div>
+            <div class="card-arrow">
+                <i class="fas fa-arrow-right"></i>
+            </div>
+        </a>
+
+        <!-- Card: Etiquetas y Categorías -->
+        <a href="@Url.Action("Tags", "CategoryTags")" 
+           class="menu-card" data-card="tags">
             <div class="card-stats">
                 <i class="fas fa-tags me-1"></i>
                 <span>Categorías</span>
@@ -341,7 +399,7 @@
                 </div>
                 <h3 class="card-title">Etiquetas</h3>
                 <p class="card-description">
-                    Organiza tus productos con etiquetas y categorías personalizadas
+                    Organiza productos con categorías y etiquetas personalizadas
                 </p>
                 <span class="card-badge">Organizar</span>
             </div>
@@ -349,69 +407,54 @@
                 <i class="fas fa-arrow-right"></i>
             </div>
         </a>
-        
-        <!-- Card: Variantes -->
-        <a href="/Variants" class="menu-card" data-card="variants">
+
+        <!-- Card: Catálogo Público -->
+        <a href="/catalogo" target="_blank" 
+           class="menu-card" data-card="catalog">
             <div class="card-stats">
-                <i class="fas fa-layer-group me-1"></i>
-                <span>Opciones</span>
+                <i class="fas fa-store me-1"></i>
+                <span>Vista previa</span>
             </div>
             <div class="card-content">
                 <div class="card-icon">
-                    <i class="fas fa-layer-group"></i>
+                    <i class="fas fa-store"></i>
                 </div>
-                <h3 class="card-title">Variantes</h3>
+                <h3 class="card-title">Ver Catálogo</h3>
                 <p class="card-description">
-                    Administra tallas, colores y otras variaciones de tus productos
+                    Previsualiza cómo se ven los productos en la tienda pública
                 </p>
-                <span class="card-badge">Gestionar</span>
+                <span class="card-badge">Previsualizar</span>
             </div>
             <div class="card-arrow">
-                <i class="fas fa-arrow-right"></i>
+                <i class="fas fa-external-link-alt"></i>
             </div>
         </a>
 
-        <!-- Card: Editar Rápido -->
-        <a href="/Products/Edit" class="menu-card" data-card="edit">
-            <div class="card-stats">
-                <i class="fas fa-edit me-1"></i>
-                <span>Edición</span>
-            </div>
-            <div class="card-content">
-                <div class="card-icon">
-                    <i class="fas fa-edit"></i>
+        <!-- Card: Ver Producto Público -->
+        @if (Model != null && Model.Any())
+        {
+            var firstProduct = Model.First();
+            <a href="/p/@firstProduct.Slug" target="_blank" 
+               class="menu-card" data-card="public">
+                <div class="card-stats">
+                    <i class="fas fa-eye me-1"></i>
+                    <span>Ejemplo</span>
                 </div>
-                <h3 class="card-title">Edición Rápida</h3>
-                <p class="card-description">
-                    Modifica la información de productos existentes de forma rápida
-                </p>
-                <span class="card-badge">Editar</span>
-            </div>
-            <div class="card-arrow">
-                <i class="fas fa-arrow-right"></i>
-            </div>
-        </a>
-
-        <!-- Card: Configuración -->
-        <a href="/Products/Settings" class="menu-card" data-card="settings">
-            <div class="card-stats">
-                <i class="fas fa-cog me-1"></i>
-                <span>Ajustes</span>
-            </div>
-            <div class="card-content">
-                <div class="card-icon">
-                    <i class="fas fa-cog"></i>
+                <div class="card-content">
+                    <div class="card-icon">
+                        <i class="fas fa-shopping-bag"></i>
+                    </div>
+                    <h3 class="card-title">Vista Cliente</h3>
+                    <p class="card-description">
+                        Ver cómo los clientes interactúan con los productos y variantes
+                    </p>
+                    <span class="card-badge">Ver ejemplo</span>
                 </div>
-                <h3 class="card-title">Configuración</h3>
-                <p class="card-description">
-                    Ajusta las preferencias y configuraciones de productos
-                </p>
-                <span class="card-badge">Configurar</span>
-            </div>
-            <div class="card-arrow">
-                <i class="fas fa-arrow-right"></i>
-            </div>
-        </a>
+                <div class="card-arrow">
+                    <i class="fas fa-external-link-alt"></i>
+                </div>
+            </a>
+        }
     </div>
 </div>
 
@@ -420,11 +463,21 @@
     document.addEventListener('DOMContentLoaded', function() {
         const cards = document.querySelectorAll('.menu-card');
         
-        // Add ripple effect on click
+        // Ripple effect en click
         cards.forEach(card => {
             card.addEventListener('click', function(e) {
+                // No aplicar ripple si es un enlace externo
+                if (this.getAttribute('target') === '_blank') return;
+                
                 const ripple = document.createElement('span');
-                ripple.classList.add('ripple-effect');
+                ripple.style.cssText = `
+                    position: absolute;
+                    border-radius: 50%;
+                    background: rgba(255, 255, 255, 0.6);
+                    transform: scale(0);
+                    animation: ripple 0.6s ease-out;
+                    pointer-events: none;
+                `;
                 
                 const rect = this.getBoundingClientRect();
                 const size = Math.max(rect.width, rect.height);
@@ -436,39 +489,24 @@
                 ripple.style.top = y + 'px';
                 
                 this.appendChild(ripple);
-                
                 setTimeout(() => ripple.remove(), 600);
             });
-
-            // Add keyboard navigation
-            card.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    this.click();
-                }
-            });
         });
 
-        // Intersection Observer for scroll animations
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
-            });
-        }, {
-            threshold: 0.1
-        });
-
-        cards.forEach(card => observer.observe(card));
-
-        // Add tooltip on hover
-        cards.forEach(card => {
-            card.setAttribute('title', card.querySelector('.card-description').textContent.trim());
-        });
-
-        console.log('✅ Products menu cargado correctamente');
+        console.log('✅ Menú de productos cargado correctamente');
+        console.log('📦 Total de productos:', @totalProducts);
     });
+
+    // Animación de ripple
+    const style = document.createElement('style');
+    style.textContent = `
+        @@keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(style);
 </script>
 }
