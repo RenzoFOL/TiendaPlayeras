@@ -1,78 +1,783 @@
 @model TiendaPlayeras.Web.Models.Product
 @{
-    ViewData["Title"] = "Editar producto";
+    ViewData["Title"] = "Editar Producto";
 }
 
-<div class="d-flex align-items-center justify-content-between mb-3">
-  <h2 class="m-0">Editar: @Model.Name</h2>
-  <a class="btn btn-outline-secondary" href="@Url.Action("Index")">← Regresar</a>
+<link rel="stylesheet" type="text/css/kaira" href="edit_producto.css">
+<style>
+    /* Tus estilos existentes se mantienen igual */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        --card-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .edit-container {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        padding: 40px 20px;
+    }
+
+    .edit-header {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: var(--card-shadow);
+        animation: slideDown 0.6s ease;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .edit-header h2 {
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 700;
+        font-size: 32px;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .edit-header h2 i {
+        background: var(--primary-gradient);
+        -webkit-background-clip: initial;
+        -webkit-text-fill-color: initial;
+        padding: 12px;
+        border-radius: 12px;
+        color: white;
+    }
+
+    .btn-back {
+        background: white;
+        border: 2px solid #e0e7ff;
+        padding: 12px 24px;
+        border-radius: 12px;
+        color: #667eea;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-back:hover {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+        transform: translateY(-2px);
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 25px;
+        padding: 40px;
+        box-shadow: var(--card-shadow);
+        animation: slideUp 0.8s ease;
+    }
+
+    .form-section {
+        margin-bottom: 35px;
+        padding-bottom: 35px;
+        border-bottom: 2px solid #f0f4f8;
+    }
+
+    .form-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .section-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .section-title i {
+        width: 40px;
+        height: 40px;
+        background: var(--primary-gradient);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 18px;
+    }
+
+    .form-floating {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .form-floating .form-control {
+        border: 2px solid #e0e7ff;
+        border-radius: 12px;
+        padding: 20px 18px 8px;
+        transition: all 0.3s ease;
+        font-size: 15px;
+        background: #f8fafc;
+        height: auto;
+    }
+
+    .form-floating .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+        outline: none;
+        background: white;
+    }
+
+    .form-floating label {
+        position: absolute;
+        top: 10px;
+        left: 18px;
+        font-size: 13px;
+        color: #667eea;
+        font-weight: 600;
+        pointer-events: none;
+        transition: all 0.2s ease;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 10px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .req {
+        color: #e53e3e;
+        font-weight: 700;
+    }
+
+    .form-control, .form-select {
+        border: 2px solid #e0e7ff;
+        border-radius: 12px;
+        padding: 14px 18px;
+        transition: all 0.3s ease;
+        font-size: 15px;
+        background: #f8fafc;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+        outline: none;
+        background: white;
+    }
+
+    textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .switch-group {
+        background: linear-gradient(135deg, #667eea10, #764ba210);
+        border-radius: 15px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .form-check.form-switch {
+        padding-left: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .form-check-input {
+        width: 50px;
+        height: 26px;
+        cursor: pointer;
+        border: 2px solid #cbd5e0;
+        background-color: #e2e8f0;
+        margin: 0;
+        flex-shrink: 0;
+    }
+
+    .form-check-input:checked {
+        background-color: #667eea;
+        border-color: #667eea;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+    }
+
+    .form-check-input:focus {
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+        border-color: #667eea;
+    }
+
+    .form-check-label {
+        font-weight: 600;
+        color: #2d3748;
+        font-size: 15px;
+        cursor: pointer;
+        margin: 0;
+    }
+
+    .form-text {
+        font-size: 12px;
+        color: #64748b;
+        margin-top: 4px;
+        margin-left: 62px;
+    }
+
+    .tags-section {
+        background: linear-gradient(135deg, #4facfe10, #00f2fe10);
+        border-radius: 15px;
+        padding: 25px;
+        border: 2px dashed #4facfe;
+    }
+
+    .tag-search-input {
+        border: 2px solid #4facfe30;
+        border-radius: 12px;
+        padding: 14px 18px;
+        font-size: 15px;
+        background: white;
+        transition: all 0.3s ease;
+    }
+
+    .tag-search-input:focus {
+        border-color: #4facfe;
+        box-shadow: 0 0 0 4px rgba(79, 172, 254, 0.15);
+        outline: none;
+    }
+
+    #tagSuggestions {
+        max-height: 300px;
+        overflow-y: auto;
+        border-radius: 12px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    #tagSuggestions .list-group-item {
+        border: none;
+        padding: 15px 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border-bottom: 1px solid #f0f4f8;
+    }
+
+    #tagSuggestions .list-group-item:hover {
+        background: linear-gradient(135deg, #4facfe15, #00f2fe15);
+        transform: translateX(5px);
+        color: #4facfe;
+    }
+
+    #selectedTags {
+        min-height: 60px;
+        background: white;
+        border-radius: 12px;
+        padding: 15px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+    #selectedTags .badge {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 10px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        animation: fadeIn 0.3s ease;
+    }
+
+    #selectedTags .badge:hover {
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    #selectedTags .badge i {
+        font-size: 12px;
+    }
+
+    .empty-tags {
+        color: #94a3b8;
+        font-size: 14px;
+        font-style: italic;
+        width: 100%;
+        text-align: center;
+        padding: 20px;
+    }
+
+    .alert-danger {
+        background: linear-gradient(135deg, #ff6b6b15, #ee5a5a15);
+        border: 2px solid #ff6b6b;
+        border-radius: 15px;
+        padding: 20px;
+        color: #c92a2a;
+        font-weight: 600;
+        margin-bottom: 25px;
+        animation: shake 0.5s;
+    }
+
+    .text-danger {
+        display: block;
+        margin-top: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #e53e3e;
+    }
+
+    .btn-save {
+        background: var(--success-gradient);
+        border: none;
+        padding: 16px 40px;
+        border-radius: 15px;
+        color: white;
+        font-weight: 700;
+        font-size: 16px;
+        box-shadow: 0 10px 30px rgba(79, 172, 254, 0.3);
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-save:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(79, 172, 254, 0.5);
+        color: white;
+    }
+
+    .btn-cancel {
+        background: white;
+        border: 2px solid #e0e7ff;
+        padding: 16px 40px;
+        border-radius: 15px;
+        color: #667eea;
+        font-weight: 700;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-cancel:hover {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+        transform: translateY(-3px);
+    }
+
+    /* Estilos para la sección de imagen */
+    .image-section {
+        background: linear-gradient(135deg, #fa709a10, #fee14010);
+        border-radius: 15px;
+        padding: 25px;
+        border: 2px dashed #fa709a;
+    }
+
+    .current-image {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .current-image img {
+        max-width: 200px;
+        border-radius: 12px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+    }
+
+    .current-image img:hover {
+        transform: scale(1.05);
+        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+    }
+
+
+    /* Estado de carga */
+    .loading {
+        position: relative;
+        pointer-events: none;
+    }
+
+    .loading::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+    }
+</style>
+
+<div class="edit-container">
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="edit-header">
+            <h2>
+                <i class="fas fa-edit"></i>
+                Editar: @Model.Name
+            </h2>
+            <a class="btn-back" href="@Url.Action("Index")">
+                <i class="fas fa-arrow-left"></i>
+                Regresar
+            </a>
+        </div>
+
+        <!-- Alerta de errores -->
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger d-none">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Por favor, corrige los errores en el formulario.
+        </div>
+
+        <!-- Formulario -->
+        <div class="form-card">
+            <!-- REEMPLAZA SOLO EL FORM EN Edit.cshtml -->
+            <form method="post" asp-action="SaveProductWithTags" asp-route-id="@Model.Id" enctype="multipart/form-data" id="editForm">
+                @Html.AntiForgeryToken()
+
+                <!-- Sección: Imagen del Producto -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-image"></i>
+                        Imagen del Producto
+                    </div>
+
+                    <div class="image-section">
+                        @if (!string.IsNullOrEmpty(Model.MainImagePath))
+                        {
+                            <div class="current-image">
+                                <label class="form-label">
+                                    <i class="fas fa-eye me-2"></i>
+                                    Imagen Actual
+                                </label>
+                                <div>
+                                    <img src="@Model.MainImagePath" alt="Imagen actual del producto" class="img-thumbnail" />
+                                </div>
+                            </div>
+                        }
+                        
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-camera me-2"></i>
+                                @(string.IsNullOrEmpty(Model.MainImagePath) ? "Subir Imagen" : "Cambiar Imagen")
+                            </label>
+                            <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp,.gif" class="form-control" />
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Formatos: JPG/PNG/WebP/GIF — máximo 10MB
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección: Información Básica -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-info-circle"></i>
+                        Información Básica
+                    </div>
+
+                    <div class="row g-4">
+                        <!-- Nombre -->
+                        <div class="col-lg-6">
+                            <div class="form-floating">
+                                <input asp-for="Name" 
+                                       class="form-control" 
+                                       placeholder="Nombre" 
+                                       maxlength="100" 
+                                       required />
+                                <label asp-for="Name">
+                                    Nombre del Producto <span class="req">*</span>
+                                </label>
+                            </div>
+                            <span class="text-danger" asp-validation-for="Name"></span>
+                        </div>
+
+                        <!-- Precio Base -->
+                        <div class="col-lg-3">
+                            <div class="form-floating">
+                                <input asp-for="BasePrice" 
+                                       type="number" 
+                                       step="0.01" 
+                                       min="0" 
+                                       class="form-control" 
+                                       placeholder="0.00" 
+                                       required />
+                                <label asp-for="BasePrice">
+                                    Precio Base <span class="req">*</span>
+                                </label>
+                            </div>
+                            <span class="text-danger" asp-validation-for="BasePrice"></span>
+                        </div>
+
+                        <!-- Switches -->
+                        <div class="col-lg-3">
+                            <div class="switch-group">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" 
+                                           asp-for="IsCustomizable" 
+                                           id="IsCustomizable" 
+                                           role="switch" />
+                                    <label class="form-check-label" for="IsCustomizable">
+                                        Personalizable
+                                    </label>
+                                </div>
+                                <div class="form-text">
+                                    <i class="fas fa-magic me-1"></i>
+                                    Permite diseño personalizado
+                                </div>
+
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" 
+                                           asp-for="IsActive" 
+                                           id="IsActive" 
+                                           role="switch" />
+                                    <label class="form-check-label" for="IsActive">
+                                        Habilitado
+                                    </label>
+                                </div>
+                                <div class="form-text">
+                                    <i class="fas fa-eye me-1"></i>
+                                    Visible en el catálogo
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Descripción -->
+                        <div class="col-12">
+                            <label class="form-label">
+                                <i class="fas fa-align-left"></i>
+                                Descripción del Producto
+                            </label>
+                            <textarea asp-for="Description" 
+                                      class="form-control" 
+                                      rows="4" 
+                                      maxlength="2000"
+                                      placeholder="Describe las características del producto..."></textarea>
+                            <span class="text-danger" asp-validation-for="Description"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección: Etiquetas -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-tags"></i>
+                        Gestión de Etiquetas
+                    </div>
+
+                    <div class="tags-section">
+                        <label class="form-label">
+                            <i class="fas fa-search"></i>
+                            Buscar y Agregar Etiquetas
+                        </label>
+                        <input type="text" 
+                               id="tagSearch" 
+                               class="form-control tag-search-input" 
+                               placeholder="Escribe para buscar etiquetas (ej: mustang, rock, deportes)"/>
+                        
+                        <div id="tagSuggestions" class="list-group mt-2"></div>
+                        
+                        <label class="form-label mt-3">
+                            <i class="fas fa-check-circle"></i>
+                            Etiquetas Seleccionadas
+                        </label>
+                        <div id="selectedTags">
+                            <span class="empty-tags">
+                                <i class="fas fa-tag me-2"></i>
+                                No hay etiquetas seleccionadas
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Al final, antes de los botones, agrega el contenedor de tags ocultos -->
+                <div id="hiddenTags"></div>
+
+                <div class="d-flex gap-3 flex-wrap justify-content-center">
+                    <button class="btn btn-save" type="submit" id="submitBtn">
+                        <i class="fas fa-save"></i>
+                        Guardar Cambios
+                    </button>
+                    <a class="btn btn-cancel" href="@Url.Action("Index")">
+                        <i class="fas fa-times"></i>
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
-<div asp-validation-summary="ModelOnly" class="alert alert-danger d-none"></div>
+<!-- NUEVO SCRIPT SIMPLIFICADO -->
+<script>
+(async function(){
+    const prodId = @Model.Id;
+    const chosen = new Map();
+    const hiddenContainer = document.getElementById('hiddenTags');
 
-<div class="card shadow-sm">
-  <div class="card-body">
-    <form method="post" asp-action="Edit" asp-route-id="@Model.Id" class="row g-3">
-      @Html.AntiForgeryToken()
+    // Cargar etiquetas actuales
+    async function loadCurrentTags(){
+        try {
+            const response = await fetch(`/Products/GetTags?id=${prodId}`);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+            if (!Array.isArray(data)) return;
+            
+            chosen.clear();
+            data.forEach(tag => {
+                const tagId = (tag.tagId || tag.id).toString();
+                const name = tag.name || tag.Name;
+                const category = tag.category || tag.Category || '';
+                if (tagId && name) {
+                    chosen.set(tagId, { name, category });
+                }
+            });
+            
+            renderSelectedTags();
+        } catch(error) {
+            console.error('Error cargando tags:', error);
+            alert('Error al cargar las etiquetas: ' + error.message);
+        }
+    }
 
-      <div class="col-12 col-lg-6">
-        <div class="form-floating">
-          <input asp-for="Name" class="form-control" placeholder="Nombre" maxlength="100" required />
-          <label asp-for="Name">Nombre <span class="req">*</span></label>
-        </div>
-        <span class="text-danger small" asp-validation-for="Name"></span>
-      </div>
+    // Renderizar tags seleccionados
+    function renderSelectedTags(){
+        const container = document.getElementById('selectedTags');
+        container.innerHTML = '';
+        hiddenContainer.innerHTML = '';
+        
+        if(chosen.size === 0) {
+            container.innerHTML = '<span class="empty-tags"><i class="fas fa-tag me-2"></i>No hay etiquetas seleccionadas</span>';
+            return;
+        }
 
-      <div class="col-12 col-lg-3">
-        <div class="form-floating">
-          <input asp-for="BasePrice" type="number" step="0.01" min="0" class="form-control" placeholder="0.00" required />
-          <label asp-for="BasePrice">Precio base <span class="req">*</span></label>
-        </div>
-        <span class="text-danger small" asp-validation-for="BasePrice"></span>
-      </div>
+        chosen.forEach((tagInfo, tagId) => {
+            // Badge visible
+            const badge = document.createElement('span');
+            badge.className = 'badge';
+            badge.innerHTML = `${tagInfo.name} <i class="fas fa-times-circle"></i>`;
+            badge.title = `${tagInfo.category} - Click para quitar`;
+            badge.onclick = () => { 
+                chosen.delete(tagId); 
+                renderSelectedTags();
+            };
+            container.appendChild(badge);
 
-      <!-- SWITCHES: Personalizable / Habilitado -->
-      <div class="col-12 col-lg-3">
-        <div class="switch-group">
-          <div class="form-check form-switch m-0">
-            <input class="form-check-input" asp-for="IsCustomizable" id="IsCustomizable" role="switch" />
-            <label class="form-check-label" for="IsCustomizable">Personalizable</label>
-            <div class="form-text">Permite subir diseño propio</div>
-          </div>
+            // Input hidden para enviar al servidor
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'tagIds';
+            input.value = tagId;
+            hiddenContainer.appendChild(input);
+        });
+    }
 
-          <div class="form-check form-switch m-0">
-            <input class="form-check-input" asp-for="IsActive" id="IsActive" role="switch" />
-            <label class="form-check-label" for="IsActive">Habilitado</label>
-            <div class="form-text">Visible en el catálogo</div>
-          </div>
-        </div>
-      </div>
+    // Buscar tags
+    async function searchTags(query){
+        try {
+            const suggestionsContainer = document.getElementById('tagSuggestions');
+            
+            if (!query || query.length < 2) {
+                suggestionsContainer.innerHTML = '';
+                return;
+            }
 
-      <div class="col-12">
-        <label class="form-label">Descripción</label>
-        <textarea asp-for="Description" class="form-control" rows="4" maxlength="2000"></textarea>
-        <span class="text-danger small" asp-validation-for="Description"></span>
-      </div>
+            const response = await fetch(`/CategoryTags/FindTags?q=${encodeURIComponent(query)}`);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            
+            const suggestions = await response.json();
+            suggestionsContainer.innerHTML = '';
+            
+            if(!suggestions || suggestions.length === 0) {
+                suggestionsContainer.innerHTML = '<div class="list-group-item text-center text-muted"><i class="fas fa-search me-2"></i>No se encontraron etiquetas</div>';
+                return;
+            }
 
-      <div class="col-12 d-flex gap-2">
-        <button class="btn btn-primary" type="submit">
-          <i class="bi bi-save"></i> Guardar
-        </button>
-        <a class="btn btn-outline-secondary" href="@Url.Action("Index")">Cancelar</a>
-      </div>
-    </form>
-  </div>
-</div>
+            suggestions.forEach(tag => {
+                const tagId = (tag.id || tag.Id).toString();
+                const tagName = tag.name || tag.Name;
+                const categoryName = tag.category || tag.Category || 'Sin categoría';
+                const isSelected = chosen.has(tagId);
+                
+                const item = document.createElement('a');
+                item.className = `list-group-item list-group-item-action ${isSelected ? 'active' : ''}`;
+                item.innerHTML = `
+                    <i class="fas fa-tag me-2"></i>
+                    <strong>${tagName}</strong> 
+                    <span class="text-muted">— ${categoryName}</span>
+                    ${isSelected ? '<span class="float-end"><i class="fas fa-check"></i></span>' : ''}
+                `;
+                item.href = '#';
+                item.onclick = (e) => { 
+                    e.preventDefault(); 
+                    if (chosen.has(tagId)) {
+                        chosen.delete(tagId);
+                    } else {
+                        chosen.set(tagId, { name: tagName, category: categoryName });
+                    }
+                    renderSelectedTags();
+                    searchTags(query);
+                };
+                suggestionsContainer.appendChild(item);
+            });
+        } catch(error) {
+            console.error('Error buscando tags:', error);
+        }
+    }
 
-@section Scripts{
-  @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-  <script>
-    (function(){
-      var hasErrors = document.querySelectorAll(".field-validation-error").length > 0;
-      if(hasErrors){
-        var summary = document.querySelector('[asp-validation-summary="ModelOnly"]');
-        if(summary){ summary.classList.remove('d-none'); }
-      }
-    })();
-  </script>
-}
+    // Configurar búsqueda
+    const searchInput = document.getElementById('tagSearch');
+    let searchTimeout;
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        const query = this.value.trim();
+        if (query.length < 2) { 
+            document.getElementById('tagSuggestions').innerHTML = ''; 
+            return; 
+        }
+        searchTimeout = setTimeout(() => searchTags(query), 300);
+    });
+
+    // Manejar submit - SIMPLIFICADO
+    const form = document.getElementById('editForm');
+    form.addEventListener('submit', function(e) {
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Guardando...';
+        submitBtn.disabled = true;
+        // Los tagIds se envían automáticamente como inputs hidden
+    });
+
+    // Inicializar
+    await loadCurrentTags();
+    console.log('✅ Sistema de tags inicializado');
+})();
+</script>

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TiendaPlayeras.Web.Data;
@@ -11,9 +12,11 @@ using TiendaPlayeras.Web.Data;
 namespace TiendaPlayeras.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251010063454_ProductMainImagePath")]
+    partial class ProductMainImagePath
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -295,9 +298,7 @@ namespace TiendaPlayeras.Web.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -321,9 +322,6 @@ namespace TiendaPlayeras.Web.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("IsActive");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
 
                     b.HasIndex("Slug")
                         .IsUnique();
@@ -457,9 +455,7 @@ namespace TiendaPlayeras.Web.Migrations
                         .HasColumnType("numeric(10,2)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .HasMaxLength(2000)
@@ -489,11 +485,6 @@ namespace TiendaPlayeras.Web.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("IsActive");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
                     b.HasIndex("Slug")
                         .IsUnique();
 
@@ -509,9 +500,7 @@ namespace TiendaPlayeras.Web.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -521,9 +510,6 @@ namespace TiendaPlayeras.Web.Migrations
                     b.HasIndex("IsActive");
 
                     b.HasIndex("TagId");
-
-                    b.HasIndex("ProductId", "TagId")
-                        .IsUnique();
 
                     b.ToTable("ProductTags");
                 });
@@ -588,17 +574,15 @@ namespace TiendaPlayeras.Web.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
 
                     b.Property<string>("Slug")
                         .IsRequired()
@@ -611,12 +595,6 @@ namespace TiendaPlayeras.Web.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("IsActive");
-
-                    b.HasIndex("Slug")
-                        .IsUnique();
-
-                    b.HasIndex("CategoryId", "Name")
-                        .IsUnique();
 
                     b.HasIndex("CategoryId", "Slug")
                         .IsUnique();

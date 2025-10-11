@@ -2,13 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-
+using TiendaPlayeras.Web.Models;
 namespace TiendaPlayeras.Web.Models
 {
     /// <summary>Producto base (playera), sin especificar variante.</summary>
+
     public class Product
     {
+        public List<ProductTag> ProductTags { get; set; } = new();
         public int Id { get; set; }
+        public string? MainImagePath { get; set; }  // ej: /uploads/products/123/main.jpg
+
 
         [Required, StringLength(100)]
         public string Name { get; set; } = string.Empty;

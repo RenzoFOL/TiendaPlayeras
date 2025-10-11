@@ -1,0 +1,213 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using TiendaPlayeras.Web.Data;
+using TiendaPlayeras.Web.Models;
+using System.Text.RegularExpressions;
+using Slugify; // Slugify.Core
+namespace TiendaPlayeras.Web.Controllers
+{
+    // Solo Employee y Admin pueden entrar
+    [Authorize(Roles = "Employee,Admin")]
+    public class ProductsController : Controller
+    {
+        private readonly ApplicationDbContext _db;
+        public ProductsController(ApplicationDbContext db) => _db = db;
+
+        // GET /Products
+        [HttpGet("/Products")]
+        public async Task<IActionResult> Index()
+        {
+            var products = await _db.Products
+                .AsNoTracking()
+                .OrderBy(p => p.Name)
+                .ToListAsync();
+
+            return View("Index", products); // Views/Products/Index.cshtml
+        }
+
+        // GET /Products/Create
+        [HttpGet("/Products/Create")]
+        public IActionResult Create()
+            => View("Create", new Product { IsActive = true, IsCustomizable = false });
+
+        // POST /Products/Create
+        [HttpPost("/Products/Create")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(Product model)
+        {
+            if (string.IsNullOrWhiteSpace(model.Name))
+                ModelState.AddModelError(nameof(model.Name), "El nombre es obligatorio.");
+            if (model.BasePrice < 0)
+                ModelState.AddModelError(nameof(model.BasePrice), "El precio base no puede ser negativo.");
+
+            if (!ModelState.IsValid) return View("Create", model);
+
+            model.Slug = Slugify(model.Name);
+            model.CreatedAt = DateTime.UtcNow;
+
+            _db.Products.Add(model);
+            await _db.SaveChangesAsync();
+
+            TempData["Ok"] = "Producto creado correctamente.";
+            return Redirect("/Products");
+        }
+
+        // GET /Products/Edit/5
+        [HttpGet("/Products/Edit/{id:int}")]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var product = await _db.Products.FirstOrDefaultAsync(p => p.Id == id);
+            if (product == null) return NotFound();
+            return View("Edit", product); // Views/Products/Edit.cshtml
+        }
+
+        // POST /Products/Edit/5
+        [HttpPost("/Products/Edit/{id:int}")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, Product model)
+        {
+            var product = await _db.Products.FirstOrDefaultAsync(p => p.Id == id);
+            if (product == null) return NotFound();
+            if (!ModelState.IsValid) return View("Edit", model);
+
+            product.Name = model.Name;
+            product.Description = model.Description;
+            product.BasePrice = model.BasePrice;
+            product.IsCustomizable = model.IsCustomizable;
+            product.IsActive = model.IsActive;
+            product.Slug = Slugify(model.Name);
+            product.UpdatedAt = DateTime.UtcNow;
+
+            await _db.SaveChangesAsync();
+            TempData["Ok"] = "Producto actualizado.";
+            return Redirect("/Products");
+        }
+
+        // POST /Products/ToggleActive/5
+        [HttpPost("/Products/ToggleActive/{id:int}")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleActive(int id)
+        {
+            var product = await _db.Products.FirstOrDefaultAsync(p => p.Id == id);
+            if (product == null) return NotFound();
+
+            product.IsActive = !product.IsActive;
+            product.UpdatedAt = DateTime.UtcNow;
+
+            await _db.SaveChangesAsync();
+            TempData["Ok"] = product.IsActive ? "Producto habilitado." : "Producto inhabilitado.";
+            return Redirect("/Products");
+        }
+
+        [NonAction]
+        private static string Slugify(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input)) return string.Empty;
+            var slug = input.Trim().ToLowerInvariant();
+            slug = Regex.Replace(slug, @"[^a-z0-9\s-]", "");
+            slug = Regex.Replace(slug, @"\s+", "-");
+            slug = Regex.Replace(slug, @"-+", "-");
+            return slug;
+        }
+        // GET: devuelve tags del producto
+[HttpGet]
+public async Task<IActionResult> GetTags(int id)
+{
+    var tags = await _db.ProductTags
+        .Include(pt => pt.Tag)!.ThenInclude(t => t!.Category)
+        .Where(pt => pt.ProductId == id && pt.IsActive && pt.Tag!.IsActive)
+        .OrderBy(pt => pt.Tag!.Name)
+        .Select(pt => new { pt.TagId, Name = pt.Tag!.Name, Category = pt.Tag!.Category!.Name })
+        .ToListAsync();
+
+    return Json(tags);
+}
+
+// POST: reemplaza tags del producto con una lista de TagId[]
+[HttpPost, ValidateAntiForgeryToken]
+public async Task<IActionResult> SaveTags(int id, [FromForm] int[] tagIds)
+{
+    var product = await _db.Products.FindAsync(id);
+    if (product == null) return NotFound();
+
+    // Desactivar relaciones actuales
+    var current = await _db.ProductTags.Where(pt => pt.ProductId == id && pt.IsActive).ToListAsync();
+    foreach (var pt in current) pt.IsActive = false;
+
+    // Activar o crear relaciones para los tagIds recibidos
+    var set = new HashSet<int>(tagIds);
+    foreach (var tagId in set)
+    {
+        var existing = await _db.ProductTags.FindAsync(id, tagId);
+        if (existing != null)
+            existing.IsActive = true;
+        else
+            _db.ProductTags.Add(new ProductTag { ProductId = id, TagId = tagId, IsActive = true });
+    }
+    await _db.SaveChangesAsync();
+
+    return Json(new { ok = true });
+}
+private async Task<string?> SaveProductImageAsync(int productId, IFormFile? file)
+{
+    if (file == null || file.Length == 0) return null;
+    var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+    var allowed = new[] { ".jpg",".jpeg",".png",".webp",".gif" };
+    if (!allowed.Contains(ext)) throw new InvalidOperationException("Formato no permitido.");
+
+    var root = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "products", productId.ToString());
+    Directory.CreateDirectory(root);
+    var fileName = "main" + ext;
+    var path = Path.Combine(root, fileName);
+    using (var fs = System.IO.File.Create(path))
+        await file.CopyToAsync(fs);
+
+    // ruta pública
+    return $"/uploads/products/{productId}/{fileName}";
+}
+[HttpPost, ValidateAntiForgeryToken]
+public async Task<IActionResult> Create(Product model, IFormFile? image)
+{
+    if (!ModelState.IsValid) return View(model);
+
+    model.Slug = Slugify(model.Name); // Cambiar esta línea
+    model.CreatedAt = DateTime.UtcNow;
+    model.IsActive = true;
+    _db.Products.Add(model);
+    await _db.SaveChangesAsync();
+
+    if (image != null)
+    {
+        model.MainImagePath = await SaveProductImageAsync(model.Id, image);
+        await _db.SaveChangesAsync();
+    }
+
+    return RedirectToAction("Edit", new { id = model.Id });
+}
+
+[HttpPost, ValidateAntiForgeryToken]
+public async Task<IActionResult> Edit(Product model, IFormFile? image)
+{
+    if (!ModelState.IsValid) return View(model);
+
+    var existing = await _db.Products.FindAsync(model.Id);
+    if (existing == null) return NotFound();
+
+    existing.Name = model.Name;
+    existing.Description = model.Description;
+    existing.BasePrice = model.BasePrice;
+    existing.IsCustomizable = model.IsCustomizable;
+    existing.IsActive = model.IsActive;
+    existing.Slug = Slugify(model.Name); // Cambiar esta línea
+    existing.UpdatedAt = DateTime.UtcNow;
+
+    if (image != null)
+        existing.MainImagePath = await SaveProductImageAsync(existing.Id, image);
+
+    await _db.SaveChangesAsync();
+    return RedirectToAction(nameof(Index));
+}
+
+    }
+}

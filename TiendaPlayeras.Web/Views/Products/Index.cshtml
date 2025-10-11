@@ -1,64 +1,673 @@
-@model IEnumerable<TiendaPlayeras.Web.Models.Product>
+@using TiendaPlayeras.Web.Models
+@model IEnumerable<Product>
 @{
     ViewData["Title"] = "Productos";
+    int total = ViewBag.Total ?? 0;
+    int page = ViewBag.Page ?? 1;
+    int pageSize = ViewBag.PageSize ?? 20;
+    string q = ViewBag.Q as string ?? "";
+    string tag = ViewBag.Tag as string ?? "";
+    string sort = ViewBag.Sort as string ?? "az";
+    int totalPages = (int)Math.Ceiling((double)Math.Max(1, total) / Math.Max(1, pageSize));
+    Func<int, string> pageUrl = p => Url.Action("Index", "Products", new { q, tag, sort, page = p, pageSize })!;
+    
+    int startItem = total > 0 ? ((page - 1) * pageSize) + 1 : 0;
+    int endItem = Math.Min(page * pageSize, total);
 }
-<div class="container py-4">
-  <div class="d-flex align-items-center justify-content-between mb-3">
-    <h2 class="m-0">Productos</h2>
-    <div class="d-flex gap-2">
-      <a class="btn btn-success" href="/Products/Create">+ Nuevo producto</a>
-      <a class="btn btn-outline-secondary" href="@Url.Action("Index","Employee")">← Regresar</a>
-    </div>
-  </div>
+<link rel="stylesheet" type="text/css/kaira" href="producto_index.css">
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        --card-shadow-hover: 0 15px 50px rgba(0, 0, 0, 0.15);
+    }
 
-  @if (TempData["Ok"] != null) {
-    <div class="alert alert-success">@TempData["Ok"]</div>
-  }
+    .products-container {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        padding: 30px 20px;
+    }
 
-  @if (Model == null || !Model.Any())
-  {
-    <div class="alert alert-secondary">No hay productos aún.</div>
-  }
-  else
-  {
-    <div class="table-responsive">
-      <table class="table align-middle">
-        <thead class="table-light">
-          <tr>
-            <th>Nombre</th>
-            <th class="text-center">Precio base</th>
-            <th class="text-center">Personalizable</th>
-            <th class="text-center">Estado</th>
-            <th class="text-end">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          @foreach (var p in Model)
-          {
-            <tr>
-              <td>
-                <div class="fw-semibold">@p.Name</div>
-                <small class="text-muted">Slug: @p.Slug</small>
-              </td>
-              <td class="text-center">$ @p.BasePrice.ToString("0.00")</td>
-              <td class="text-center">@(p.IsCustomizable ? "Sí" : "No")</td>
-              <td class="text-center">
-                @if (p.IsActive) { <span class="badge bg-success">Activo</span> }
-                else { <span class="badge bg-secondary">Inhabilitado</span> }
-              </td>
-              <td class="text-end">
-                <a class="btn btn-sm btn-outline-primary" href="/Products/Edit/@p.Id">Editar</a>
-                <form method="post" action="/Products/ToggleActive/@p.Id" class="d-inline">
-                  @Html.AntiForgeryToken()
-                  <button class="btn btn-sm btn-outline-warning" type="submit">
-                    @(p.IsActive ? "Inhabilitar" : "Habilitar")
-                  </button>
-                </form>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+    .page-header {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: var(--card-shadow);
+        animation: slideDown 0.6s ease;
+    }
+
+    .page-header h2 {
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 700;
+        font-size: 32px;
+        margin: 0;
+    }
+
+    .stats-badge {
+        background: linear-gradient(135deg, #667eea15, #764ba215);
+        padding: 10px 20px;
+        border-radius: 50px;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+        color: #667eea;
+        font-size: 14px;
+    }
+
+    .btn-create-product {
+        background: var(--success-gradient);
+        border: none;
+        padding: 12px 30px;
+        border-radius: 15px;
+        color: white;
+        font-weight: 600;
+        box-shadow: 0 8px 20px rgba(79, 172, 254, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .btn-create-product:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px rgba(79, 172, 254, 0.5);
+        color: white;
+    }
+
+    .filters-card {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: var(--card-shadow);
+        animation: slideUp 0.6s ease;
+        border: none;
+    }
+
+    .filters-card .card-header {
+        background: linear-gradient(135deg, #667eea10, #764ba210);
+        border: none;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+
+    .filters-card .card-header h5 {
+        color: #667eea;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .form-control, .form-select {
+        border: 2px solid #e0e7ff;
+        border-radius: 12px;
+        padding: 12px 16px;
+        transition: all 0.3s ease;
+        font-size: 14px;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        outline: none;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .btn-filter {
+        background: var(--primary-gradient);
+        border: none;
+        padding: 12px 30px;
+        border-radius: 12px;
+        color: white;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-filter:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+
+    .btn-clear {
+        border: 2px solid #e0e7ff;
+        padding: 12px 30px;
+        border-radius: 12px;
+        color: #667eea;
+        font-weight: 600;
+        background: white;
+        transition: all 0.3s ease;
+    }
+
+    .btn-clear:hover {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+
+    .products-table-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+        animation: fadeIn 0.8s ease;
+    }
+
+    .table {
+        margin: 0;
+    }
+
+    .table thead {
+        background: linear-gradient(135deg, #667eea10, #764ba210);
+    }
+
+    .table thead th {
+        border: none;
+        padding: 20px 15px;
+        font-weight: 700;
+        color: #2d3748;
+        text-transform: uppercase;
+        font-size: 12px;
+        letter-spacing: 0.5px;
+    }
+
+    .table tbody tr {
+        transition: all 0.3s ease;
+        border-bottom: 1px solid #f7fafc;
+    }
+
+    .table tbody tr:hover {
+        background: linear-gradient(135deg, #667eea05, #764ba205);
+        transform: scale(1.01);
+    }
+
+    .table tbody td {
+        padding: 20px 15px;
+        vertical-align: middle;
+        border: none;
+    }
+
+    .product-id-badge {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 13px;
+        display: inline-block;
+    }
+
+    .product-name {
+        font-weight: 600;
+        color: #2d3748;
+        font-size: 15px;
+    }
+
+    .product-description {
+        color: #718096;
+        font-size: 13px;
+    }
+
+    .slug-code {
+        background: linear-gradient(135deg, #4facfe15, #00f2fe15);
+        color: #4facfe;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .status-badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .status-badge.active {
+        background: linear-gradient(135deg, #48bb78, #38a169);
+        color: white;
+    }
+
+    .status-badge.inactive {
+        background: linear-gradient(135deg, #a0aec0, #718096);
+        color: white;
+    }
+
+    .price-badge {
+        background: linear-gradient(135deg, #48bb7815, #38a16915);
+        color: #38a169;
+        padding: 8px 16px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 16px;
+    }
+
+    .tag-badge {
+        background: linear-gradient(135deg, #667eea15, #764ba215);
+        border: 2px solid #667eea30;
+        color: #667eea;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 11px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .btn-action {
+        padding: 8px 12px;
+        border-radius: 10px;
+        border: 2px solid;
+        transition: all 0.3s ease;
+        font-size: 14px;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-action i {
+        font-size: 14px;
+    }
+
+    .pagination {
+        gap: 8px;
+    }
+
+    .page-item .page-link {
+        border: 2px solid #e0e7ff;
+        border-radius: 12px;
+        padding: 12px 18px;
+        color: #667eea;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin: 0;
+    }
+
+    .page-item.active .page-link {
+        background: var(--primary-gradient);
+        border-color: #667eea;
+        color: white;
+    }
+
+    .page-item .page-link:hover {
+        background: #667eea10;
+        border-color: #667eea;
+        transform: translateY(-2px);
+    }
+
+    .page-item.disabled .page-link {
+        background: #f7fafc;
+        border-color: #e2e8f0;
+        color: #cbd5e0;
+    }
+
+    .empty-state {
+        background: white;
+        border-radius: 20px;
+        padding: 80px 40px;
+        text-align: center;
+        box-shadow: var(--card-shadow);
+        animation: fadeIn 0.8s ease;
+    }
+
+    .empty-state i {
+        background: linear-gradient(135deg, #667eea15, #764ba215);
+        padding: 40px;
+        border-radius: 50%;
+        color: #667eea;
+        margin-bottom: 30px;
+    }
+
+    .empty-state h4 {
+        color: #2d3748;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+    .empty-state p {
+        color: #718096;
+        font-size: 16px;
+    }
+
+</style>
+
+<div class="products-container">
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="page-header">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <h2 class="mb-2">
+                        <i class="fas fa-box-open me-2"></i>Gestión de Productos
+                    </h2>
+                    <div class="stats-badge">
+                        <i class="fas fa-chart-line"></i>
+                        @if (total > 0)
+                        {
+                            <span>Mostrando @startItem - @endItem de @total productos</span>
+                        }
+                        else
+                        {
+                            <span>No hay productos para mostrar</span>
+                        }
+                    </div>
+                </div>
+                <a class="btn btn-create-product" asp-action="Create">
+                    <i class="fas fa-plus-circle me-2"></i>Nuevo Producto
+                </a>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filters-card">
+            <div class="card-header">
+                <h5>
+                    <i class="fas fa-filter me-2"></i>Filtros y Búsqueda
+                </h5>
+            </div>
+            <form method="get" id="filterForm">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">
+                            <i class="fas fa-search me-1"></i>Buscar producto
+                        </label>
+                        <div class="input-group">
+                            <input name="q" value="@q" class="form-control" 
+                                   placeholder="Nombre, ID o descripción..." />
+                            @if (!string.IsNullOrEmpty(q))
+                            {
+                                <button type="button" class="btn btn-outline-secondary" onclick="clearSearch()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">
+                            <i class="fas fa-tag me-1"></i>Filtrar por etiqueta
+                        </label>
+                        <div class="input-group">
+                            <input name="tag" value="@tag" class="form-control" 
+                                   placeholder="Slug o nombre de etiqueta..." />
+                            @if (!string.IsNullOrEmpty(tag))
+                            {
+                                <button type="button" class="btn btn-outline-secondary" onclick="clearTag()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label">
+                            <i class="fas fa-sort me-1"></i>Ordenar
+                        </label>
+                        <select name="sort" class="form-select">
+                            <option value="az" selected="@(sort=="az")">A → Z</option>
+                            <option value="za" selected="@(sort=="za")">Z → A</option>
+                            <option value="price_asc" selected="@(sort=="price_asc")">Precio ↑</option>
+                            <option value="price_desc" selected="@(sort=="price_desc")">Precio ↓</option>
+                            <option value="id_asc" selected="@(sort=="id_asc")">ID ↑</option>
+                            <option value="id_desc" selected="@(sort=="id_desc")">ID ↓</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label">
+                            <i class="fas fa-list me-1"></i>Mostrar
+                        </label>
+                        <select name="pageSize" class="form-select">
+                            <option value="20" selected="@(pageSize==20)">20 items</option>
+                            <option value="40" selected="@(pageSize==40)">40 items</option>
+                            <option value="100" selected="@(pageSize==100)">100 items</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12 d-flex gap-2">
+                        <button type="submit" class="btn btn-filter">
+                            <i class="fas fa-check-circle me-2"></i>Aplicar Filtros
+                        </button>
+                        <a href="@Url.Action("Index", "Products")" class="btn btn-clear">
+                            <i class="fas fa-redo me-2"></i>Limpiar
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tabla de productos -->
+        @if (Model != null && Model.Any())
+        {
+            <div class="products-table-card">
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th class="text-center" style="width:100px;">ID</th>
+                                <th style="width:30%;">Producto</th>
+                                <th style="width:15%;">Slug</th>
+                                <th class="text-center" style="width:10%;">Estado</th>
+                                <th class="text-center" style="width:12%;">Precio</th>
+                                <th style="width:18%;">Etiquetas</th>
+                                <th class="text-center" style="width:15%;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var p in Model)
+                        {
+                            <tr>
+                                <td class="text-center">
+                                    <span class="product-id-badge">#@p.Id</span>
+                                </td>
+                                <td>
+                                    <div class="product-name">@p.Name</div>
+                                    @if (!string.IsNullOrEmpty(p.Description))
+                                    {
+                                        <div class="product-description text-truncate" style="max-width:300px;" title="@p.Description">
+                                            @p.Description
+                                        </div>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="slug-code">@p.Slug</span>
+                                </td>
+                                <td class="text-center">
+                                    @if (p.IsActive)
+                                    {
+                                        <span class="status-badge active">
+                                            <i class="fas fa-check-circle"></i>Activo
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge inactive">
+                                            <i class="fas fa-times-circle"></i>Inactivo
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <span class="price-badge">@p.BasePrice.ToString("C")</span>
+                                </td>
+                                <td>
+                                    @if (p.ProductTags != null && p.ProductTags.Any(x => x.IsActive && x.Tag != null))
+                                    {
+                                        <div class="d-flex flex-wrap gap-1">
+                                            @foreach (var pt in p.ProductTags.Where(x => x.IsActive && x.Tag != null).Take(3))
+                                            {
+                                                <span class="tag-badge">
+                                                    <i class="fas fa-tag"></i>@pt.Tag!.Name
+                                                </span>
+                                            }
+                                            @if (p.ProductTags.Count(x => x.IsActive && x.Tag != null) > 3)
+                                            {
+                                                <span class="tag-badge">
+                                                    +@(p.ProductTags.Count(x => x.IsActive && x.Tag != null) - 3)
+                                                </span>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <small class="text-muted fst-italic">Sin etiquetas</small>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a class="btn btn-outline-primary btn-action" 
+                                           asp-action="Edit" 
+                                           asp-route-id="@p.Id"
+                                           title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a class="btn btn-outline-info btn-action" 
+                                           href="@Url.Action("Index","Variants", new { productId = p.Id })"
+                                           title="Variantes">
+                                            <i class="fas fa-layer-group"></i>
+                                        </a>
+                                        <a class="btn btn-outline-dark btn-action" 
+                                           href="@Url.Action("Edit","Products", new { id = p.Id })#tags"
+                                           title="Etiquetas">
+                                            <i class="fas fa-tags"></i>
+                                        </a>
+                                        <button type="button" 
+                                                class="btn btn-outline-@(p.IsActive ? "warning" : "success") btn-action"
+                                                onclick="toggleActive(@p.Id, @p.IsActive.ToString().ToLower())"
+                                                title="@(p.IsActive ? "Desactivar" : "Activar")">
+                                            <i class="fas fa-@(p.IsActive ? "eye-slash" : "eye")"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Paginación -->
+            @if (totalPages > 1)
+            {
+                <nav class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item @(page<=1?"disabled":"")">
+                            <a class="page-link" href="@(page>1 ? pageUrl(1) : "#")">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item @(page<=1?"disabled":"")">
+                            <a class="page-link" href="@(page>1 ? pageUrl(page-1) : "#")">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        </li>
+                        
+                        @for (int i = Math.Max(1, page-2); i <= Math.Min(totalPages, page+2); i++)
+                        {
+                            <li class="page-item @(i==page?"active":"")">
+                                <a class="page-link" href="@pageUrl(i)">@i</a>
+                            </li>
+                        }
+                        
+                        <li class="page-item @(page>=totalPages?"disabled":"")">
+                            <a class="page-link" href="@(page<totalPages ? pageUrl(page+1) : "#")">
+                                <i class="fas fa-angle-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item @(page>=totalPages?"disabled":"")">
+                            <a class="page-link" href="@(page<totalPages ? pageUrl(totalPages) : "#")">
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            }
+        }
+        else
+        {
+            <!-- Estado vacío -->
+            <div class="empty-state">
+                <i class="fas fa-inbox fa-4x"></i>
+                <h4>No se encontraron productos</h4>
+                <p class="mb-4">
+                    @if (!string.IsNullOrEmpty(q) || !string.IsNullOrEmpty(tag))
+                    {
+                        <text>Intenta ajustar tus filtros de búsqueda</text>
+                    }
+                    else
+                    {
+                        <text>Comienza agregando tu primer producto</text>
+                    }
+                </p>
+                @if (string.IsNullOrEmpty(q) && string.IsNullOrEmpty(tag))
+                {
+                    <a class="btn btn-create-product" asp-action="Create">
+                        <i class="fas fa-plus-circle me-2"></i>Agregar Primer Producto
+                    </a>
+                }
+                else
+                {
+                    <a href="@Url.Action("Index", "Products")" class="btn btn-clear">
+                        <i class="fas fa-redo me-2"></i>Limpiar Filtros
+                    </a>
+                }
+            </div>
+        }
     </div>
-  }
 </div>
+
+<form id="toggleForm" method="post" style="display:none;">
+    @Html.AntiForgeryToken()
+</form>
+
+@section Scripts {
+<script>
+    function clearSearch() {
+        document.querySelector('input[name="q"]').value = '';
+        document.getElementById('filterForm').submit();
+    }
+
+    function clearTag() {
+        document.querySelector('input[name="tag"]').value = '';
+        document.getElementById('filterForm').submit();
+    }
+
+    function toggleActive(productId, isActive) {
+        const action = isActive ? 'desactivar' : 'activar';
+        if (confirm(`¿Estás seguro de que deseas ${action} este producto?`)) {
+            const form = document.getElementById('toggleForm');
+            form.action = '@Url.Action("ToggleActive", "Products")' + '/' + productId;
+            form.submit();
+        }
+    }
+
+    // Animación de entrada para las filas
+    document.querySelectorAll('.table tbody tr').forEach((row, index) => {
+        row.style.opacity = '0';
+        row.style.transform = 'translateX(-20px)';
+        setTimeout(() => {
+            row.style.transition = 'all 0.5s ease';
+            row.style.opacity = '1';
+            row.style.transform = 'translateX(0)';
+        }, index * 50);
+    });
+</script>
+}

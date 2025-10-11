@@ -1,60 +1,711 @@
 @model TiendaPlayeras.Web.Models.Product
 @{
-    ViewData["Title"] = "Nuevo producto";
+    ViewData["Title"] = "Agregar Producto";
 }
-<div class="container py-4">
-  <div class="d-flex align-items-center justify-content-between mb-3">
-    <h2 class="m-0">Nuevo producto</h2>
-    <a class="btn btn-outline-secondary" href="/Products">← Regresar</a>
-  </div>
 
-  @Html.ValidationSummary(false, "", new { @class="alert alert-danger" })
+<link rel="stylesheet" type="text/css/kaira" href="create_producto.css">
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --card-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    }
 
-  <form method="post" action="/Products/Create" class="row g-3">
-    @Html.AntiForgeryToken()
+    .create-container {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        padding: 40px 20px;
+    }
 
-    <div class="col-12 col-lg-6">
-      <label class="form-label">Nombre *</label>
-      <input asp-for="Name" class="form-control" required maxlength="100" />
-      <span class="text-danger small" asp-validation-for="Name"></span>
-    </div>
+    .create-header {
+        text-align: center;
+        margin-bottom: 40px;
+        animation: fadeInDown 0.8s ease;
+    }
 
-    <div class="col-12 col-lg-3">
-      <label class="form-label">Precio base *</label>
-      <input asp-for="BasePrice" type="number" step="0.01" min="0" class="form-control" required />
-      <span class="text-danger small" asp-validation-for="BasePrice"></span>
-    </div>
+    .create-header h1 {
+        font-size: 42px;
+        font-weight: 700;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 10px;
+    }
 
-        <!-- SWITCHES: Personalizable / Habilitado -->
-    <div class="col-12 col-lg-3">
-      <div class="switch-group">
-        <div class="form-check form-switch m-0">
-          <input class="form-check-input" asp-for="IsCustomizable" id="IsCustomizable" role="switch" />
-          <label class="form-check-label" for="IsCustomizable">Personalizable</label>
-          <div class="form-text">Permite subir diseño propio</div>
+    .create-header p {
+        color: #64748b;
+        font-size: 16px;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 25px;
+        padding: 40px;
+        box-shadow: var(--card-shadow);
+        max-width: 900px;
+        margin: 0 auto;
+        animation: slideUp 0.8s ease;
+    }
+
+    .form-section {
+        margin-bottom: 35px;
+        padding-bottom: 35px;
+        border-bottom: 2px solid #f0f4f8;
+    }
+
+    .form-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .section-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .section-title i {
+        width: 40px;
+        height: 40px;
+        background: var(--primary-gradient);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 18px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 10px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .form-label i {
+        color: #667eea;
+        font-size: 16px;
+    }
+
+    .form-label .required {
+        color: #e53e3e;
+        font-size: 18px;
+    }
+
+    .form-control, .form-select {
+        border: 2px solid #e0e7ff;
+        border-radius: 12px;
+        padding: 14px 18px;
+        transition: all 0.3s ease;
+        font-size: 15px;
+        background: #f8fafc;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+        outline: none;
+        background: white;
+    }
+
+    textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .input-icon {
+        position: relative;
+    }
+
+    .input-icon i {
+        position: absolute;
+        left: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #667eea;
+        font-size: 16px;
+        z-index: 1;
+    }
+
+    .input-icon .form-control {
+        padding-left: 50px;
+    }
+
+    .char-counter {
+        font-size: 12px;
+        color: #94a3b8;
+        text-align: right;
+        margin-top: 5px;
+    }
+
+    .form-check {
+        padding: 15px 20px;
+        background: linear-gradient(135deg, #667eea10, #764ba210);
+        border-radius: 12px;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .form-check:hover {
+        border-color: #667eea;
+        background: linear-gradient(135deg, #667eea15, #764ba215);
+    }
+
+    .form-check-input {
+        width: 24px;
+        height: 24px;
+        border: 2px solid #667eea;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-top: 0;
+    }
+
+    .form-check-input:checked {
+        background-color: #667eea;
+        border-color: #667eea;
+    }
+
+    .form-check-input:focus {
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+    }
+
+    .form-check-label {
+        font-weight: 600;
+        color: #2d3748;
+        font-size: 15px;
+        cursor: pointer;
+        margin-left: 10px;
+    }
+
+    .form-check-description {
+        font-size: 13px;
+        color: #64748b;
+        margin-left: 34px;
+        margin-top: 5px;
+    }
+
+    .price-input-group {
+        position: relative;
+    }
+
+    .price-input-group .currency-symbol {
+        position: absolute;
+        left: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-weight: 700;
+        color: #667eea;
+        font-size: 18px;
+        z-index: 1;
+    }
+
+    .price-input-group .form-control {
+        padding-left: 45px;
+        font-weight: 600;
+        font-size: 18px;
+    }
+
+    .btn-submit {
+        background: var(--primary-gradient);
+        border: none;
+        padding: 16px 40px;
+        border-radius: 15px;
+        color: white;
+        font-weight: 700;
+        font-size: 16px;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+        color: white;
+    }
+
+    .btn-submit:active {
+        transform: translateY(-1px);
+    }
+
+    .btn-cancel {
+        background: white;
+        border: 2px solid #e0e7ff;
+        padding: 16px 40px;
+        border-radius: 15px;
+        color: #667eea;
+        font-weight: 700;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-cancel:hover {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+        transform: translateY(-3px);
+    }
+
+    .text-danger {
+        display: block;
+        margin-top: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #e53e3e;
+        animation: shake 0.5s;
+    }
+
+    .form-actions {
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 2px solid #f0f4f8;
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+    }
+
+    .helper-text {
+        font-size: 13px;
+        color: #64748b;
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .helper-text i {
+        color: #667eea;
+    }
+
+    .slug-preview {
+        background: linear-gradient(135deg, #4facfe15, #00f2fe15);
+        border: 2px dashed #4facfe;
+        padding: 12px 18px;
+        border-radius: 12px;
+        margin-top: 10px;
+        font-family: 'Courier New', monospace;
+        color: #4facfe;
+        font-weight: 600;
+        display: none;
+    }
+
+    .slug-preview.show {
+        display: block;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .file-input-wrapper {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+        width: 100%;
+    }
+
+    .file-input-wrapper input[type=file] {
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+
+    .file-preview {
+        margin-top: 15px;
+        text-align: center;
+        display: none;
+    }
+
+    .file-preview img {
+        max-width: 200px;
+        max-height: 200px;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+</style>
+
+<div class="create-container">
+    <div class="container">
+        <!-- Header -->
+        <div class="create-header">
+            <h1>
+                <i class="fas fa-plus-circle"></i>
+                Crear Nuevo Producto
+            </h1>
+            <p>Completa la información para agregar un producto a tu catálogo</p>
         </div>
 
-        <div class="form-check form-switch m-0">
-          <input class="form-check-input" asp-for="IsActive" id="IsActive" role="switch" />
-          <label class="form-check-label" for="IsActive">Habilitado</label>
-          <div class="form-text">Visible en el catálogo</div>
+        <!-- Formulario -->
+        <div class="form-card">
+            <form asp-action="Create" method="post" enctype="multipart/form-data" id="productForm">
+                @Html.AntiForgeryToken()
+
+                <!-- Sección: Información Básica -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-info-circle"></i>
+                        Información Básica
+                    </div>
+
+                    <div class="row g-4">
+                        <!-- Nombre del Producto -->
+                        <div class="col-md-12">
+                            <label class="form-label">
+                                <i class="fas fa-tag"></i>
+                                Nombre del Producto
+                                <span class="required">*</span>
+                            </label>
+                            <div class="input-icon">
+                                <i class="fas fa-tshirt"></i>
+                                <input asp-for="Name" 
+                                       class="form-control" 
+                                       placeholder="Ej: Playera Mustang Classic"
+                                       required 
+                                       maxlength="200"
+                                       id="productName" />
+                            </div>
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                            <div class="char-counter">
+                                <span id="nameCounter">0</span> / 200 caracteres
+                            </div>
+                            <div class="slug-preview" id="slugPreview">
+                                <i class="fas fa-link me-2"></i>
+                                Slug: <span id="slugText"></span>
+                            </div>
+                        </div>
+
+                        <!-- Descripción -->
+                        <div class="col-md-12">
+                            <label class="form-label">
+                                <i class="fas fa-align-left"></i>
+                                Descripción del Producto
+                            </label>
+                            <textarea asp-for="Description" 
+                                      class="form-control" 
+                                      placeholder="Describe las características, materiales, y detalles importantes del producto..."
+                                      maxlength="1000"
+                                      id="productDescription"></textarea>
+                            <div class="helper-text">
+                                <i class="fas fa-lightbulb"></i>
+                                Una buena descripción ayuda a tus clientes a tomar decisiones de compra
+                            </div>
+                            <div class="char-counter">
+                                <span id="descCounter">0</span> / 1000 caracteres
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección: Imagen del Producto -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-image"></i>
+                        Imagen del Producto
+                    </div>
+
+                    <div class="row g-4">
+                        <!-- Imagen Principal -->
+                        <div class="col-md-12">
+                            <label class="form-label">
+                                <i class="fas fa-camera"></i>
+                                Imagen Principal
+                                <span >*</span>
+                            </label>
+                            <div class="file-input-wrapper">
+                                <input type="file" 
+                                       name="image" 
+                                       accept=".jpg,.jpeg,.png,.webp,.gif" 
+                                       class="form-control" 
+                                       id="imageInput"
+                                        />
+                            </div>
+                            <div class="helper-text">
+                                <i class="fas fa-info-circle"></i>
+                                Formatos: JPG/PNG/WebP/GIF — máximo 10MB
+                            </div>
+                            <div class="file-preview" id="filePreview">
+                                <img id="previewImage" src="#" alt="Vista previa" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección: Precio y Configuración -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-dollar-sign"></i>
+                        Precio y Configuración
+                    </div>
+
+                    <div class="row g-4">
+                        <!-- Precio Base -->
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                <i class="fas fa-money-bill-wave"></i>
+                                Precio Base
+                                <span class="required">*</span>
+                            </label>
+                            <div class="price-input-group">
+                                <span class="currency-symbol">$</span>
+                                <input asp-for="BasePrice" 
+                                       type="number" 
+                                       step="0.01" 
+                                       min="0" 
+                                       class="form-control" 
+                                       placeholder="0.00"
+                                       required />
+                            </div>
+                            <span asp-validation-for="BasePrice" class="text-danger"></span>
+                            <div class="helper-text">
+                                <i class="fas fa-info-circle"></i>
+                                Precio sin incluir variantes o personalizaciones
+                            </div>
+                        </div>
+
+                        <!-- Estado Activo -->
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                <i class="fas fa-toggle-on"></i>
+                                Estado del Producto
+                            </label>
+                            <div class="form-check">
+                                <input asp-for="IsActive" 
+                                       class="form-check-input" 
+                                       type="checkbox" 
+                                       checked 
+                                       id="isActiveCheck" />
+                                <label class="form-check-label" for="isActiveCheck">
+                                    Producto Activo
+                                </label>
+                                <div class="form-check-description">
+                                    Los productos activos son visibles en la tienda
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Personalizable -->
+                        <div class="col-md-12">
+                            <label class="form-label">
+                                <i class="fas fa-magic"></i>
+                                Opciones Especiales
+                            </label>
+                            <div class="form-check">
+                                <input asp-for="IsCustomizable" 
+                                       class="form-check-input" 
+                                       type="checkbox" 
+                                       id="isCustomizableCheck" />
+                                <label class="form-check-label" for="isCustomizableCheck">
+                                    Producto Personalizable
+                                </label>
+                                <div class="form-check-description">
+                                    Permite a los clientes agregar textos, imágenes o diseños personalizados
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Acciones del Formulario -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-submit">
+                        <i class="fas fa-save"></i>
+                        Guardar Producto
+                    </button>
+                    <a asp-action="Index" class="btn btn-cancel">
+                        <i class="fas fa-times"></i>
+                        Cancelar
+                    </a>
+                </div>
+            </form>
         </div>
-      </div>
     </div>
-
-    <div class="col-12">
-      <label class="form-label">Descripción</label>
-      <textarea asp-for="Description" class="form-control" rows="4" maxlength="2000"></textarea>
-      <span class="text-danger small" asp-validation-for="Description"></span>
-    </div>
-
-    <div class="col-12 d-flex gap-2">
-      <button class="btn btn-primary" type="submit">Guardar</button>
-      <a class="btn btn-outline-secondary" href="/Products">Cancelar</a>
-    </div>
-  </form>
 </div>
 
-@section Scripts{
-  @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const productName = document.getElementById('productName');
+            const productDescription = document.getElementById('productDescription');
+            const nameCounter = document.getElementById('nameCounter');
+            const descCounter = document.getElementById('descCounter');
+            const slugPreview = document.getElementById('slugPreview');
+            const slugText = document.getElementById('slugText');
+            const imageInput = document.getElementById('imageInput');
+            const filePreview = document.getElementById('filePreview');
+            const previewImage = document.getElementById('previewImage');
+
+            // Función para generar slug
+            function generateSlug(text) {
+                return text
+                    .toLowerCase()
+                    .trim()
+                    .replace(/[áàäâ]/g, 'a')
+                    .replace(/[éèëê]/g, 'e')
+                    .replace(/[íìïî]/g, 'i')
+                    .replace(/[óòöô]/g, 'o')
+                    .replace(/[úùüû]/g, 'u')
+                    .replace(/ñ/g, 'n')
+                    .replace(/[^a-z0-9\s-]/g, '')
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-');
+            }
+
+            // Contador de caracteres y generador de slug para nombre
+            if (productName) {
+                productName.addEventListener('input', function() {
+                    const length = this.value.length;
+                    nameCounter.textContent = length;
+
+                    // Generar slug preview
+                    if (length > 0) {
+                        const slug = generateSlug(this.value);
+                        slugText.textContent = slug;
+                        slugPreview.classList.add('show');
+                    } else {
+                        slugPreview.classList.remove('show');
+                    }
+
+                    // Cambiar color del contador según proximidad al límite
+                    if (length > 180) {
+                        nameCounter.style.color = '#e53e3e';
+                    } else if (length > 150) {
+                        nameCounter.style.color = '#f59e0b';
+                    } else {
+                        nameCounter.style.color = '#94a3b8';
+                    }
+                });
+
+                // Actualizar contador inicial
+                productName.dispatchEvent(new Event('input'));
+            }
+
+            // Contador de caracteres para descripción
+            if (productDescription) {
+                productDescription.addEventListener('input', function() {
+                    const length = this.value.length;
+                    descCounter.textContent = length;
+
+                    // Cambiar color del contador según proximidad al límite
+                    if (length > 900) {
+                        descCounter.style.color = '#e53e3e';
+                    } else if (length > 800) {
+                        descCounter.style.color = '#f59e0b';
+                    } else {
+                        descCounter.style.color = '#94a3b8';
+                    }
+                });
+
+                // Actualizar contador inicial
+                productDescription.dispatchEvent(new Event('input'));
+            }
+
+            // Vista previa de imagen
+            if (imageInput) {
+                imageInput.addEventListener('change', function() {
+                    const file = this.files[0];
+                    if (file) {
+                        // Validar tamaño (10MB)
+                        if (file.size > 10 * 1024 * 1024) {
+                            alert('El archivo es demasiado grande. Máximo 10MB permitidos.');
+                            this.value = '';
+                            filePreview.style.display = 'none';
+                            return;
+                        }
+
+                        // Validar tipo
+                        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+                        if (!validTypes.includes(file.type)) {
+                            alert('Formato de archivo no válido. Use JPG, PNG, WebP o GIF.');
+                            this.value = '';
+                            filePreview.style.display = 'none';
+                            return;
+                        }
+
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            previewImage.src = e.target.result;
+                            filePreview.style.display = 'block';
+                        }
+                        reader.readAsDataURL(file);
+                    } else {
+                        filePreview.style.display = 'none';
+                    }
+                });
+            }
+
+            // Animación de foco en inputs
+            const inputs = document.querySelectorAll('.form-control, .form-select');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.style.transform = 'scale(1.01)';
+                    this.parentElement.style.transition = 'transform 0.3s ease';
+                });
+
+                input.addEventListener('blur', function() {
+                    this.parentElement.style.transform = 'scale(1)';
+                });
+            });
+
+            // Validación en tiempo real para precio
+            const priceInput = document.querySelector('input[name="BasePrice"]');
+            if (priceInput) {
+                priceInput.addEventListener('input', function() {
+                    const value = parseFloat(this.value);
+                    if (value < 0) {
+                        this.value = 0;
+                    }
+                    if (value > 999999) {
+                        this.value = 999999;
+                    }
+                });
+            }
+
+            // Confirmación antes de cancelar si hay datos
+            const cancelBtn = document.querySelector('.btn-cancel');
+            const form = document.getElementById('productForm');
+            
+            if (cancelBtn && form) {
+                cancelBtn.addEventListener('click', function(e) {
+                    const hasData = productName.value.trim() !== '' || 
+                                   productDescription.value.trim() !== '' || 
+                                   (priceInput && priceInput.value !== '') ||
+                                   (imageInput && imageInput.files.length > 0);
+                    
+                    if (hasData) {
+                        if (!confirm('¿Estás seguro de que deseas cancelar? Los datos ingresados se perderán.')) {
+                            e.preventDefault();
+                        }
+                    }
+                });
+            }
+
+            // Animación de envío del formulario
+            form.addEventListener('submit', function(e) {
+                const submitBtn = this.querySelector('.btn-submit');
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Guardando...';
+                submitBtn.disabled = true;
+            });
+
+            console.log('✅ Formulario de creación de productos cargado');
+        });
+    </script>
 }

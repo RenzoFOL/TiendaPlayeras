@@ -1,0 +1,75 @@
+@model IEnumerable<TiendaPlayeras.Web.Models.Category>
+@{
+    ViewData["Title"] = "Categorías y Etiquetas";
+}
+<h3>Categorías & Etiquetas</h3>
+
+<form asp-action="CreateCategory" method="post" class="row g-2 mb-3">
+  @Html.AntiForgeryToken()
+  <div class="col-4"><input name="name" class="form-control" placeholder="Nueva categoría" required /></div>
+  <div class="col-5"><input name="description" class="form-control" placeholder="Descripción (opcional)" /></div>
+  <div class="col-3"><button class="btn btn-primary">Crear</button></div>
+</form>
+
+<div class="accordion" id="cats">
+@foreach (var c in Model)
+{
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="h@c.Id">
+      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#c@c.Id">
+        @c.Name (@(c.IsActive ? "Activa" : "Inactiva"))
+      </button>
+    </h2>
+    <div id="c@c.Id" class="accordion-collapse collapse" data-bs-parent="#cats">
+      <div class="accordion-body">
+        <form asp-action="EditCategory" method="post" class="row g-2 mb-2">
+          @Html.AntiForgeryToken()
+          <input type="hidden" name="id" value="@c.Id" />
+          <div class="col"><input name="name" class="form-control" value="@c.Name" /></div>
+          <div class="col"><input name="description" class="form-control" value="@c.Description" /></div>
+          <div class="col-auto">
+            <button class="btn btn-outline-secondary">Guardar</button>
+          </div>
+        </form>
+        <form asp-action="ToggleCategory" method="post" class="d-inline">
+          @Html.AntiForgeryToken()
+          <input type="hidden" name="id" value="@c.Id" />
+          <button class="btn btn-sm btn-outline-warning">@(c.IsActive?"Inhabilitar":"Habilitar")</button>
+        </form>
+
+        <hr />
+        <h6>Etiquetas</h6>
+        <ul class="list-group mb-2">
+          @foreach (var t in c.Tags.OrderBy(t=>t.Name))
+          {
+            <li class="list-group-item d-flex justify-content-between">
+              <span>@t.Name (@(t.IsActive?"Activa":"Inactiva"))</span>
+              <span>
+                <form asp-action="EditTag" method="post" class="d-inline">
+                  @Html.AntiForgeryToken()
+                  <input type="hidden" name="id" value="@t.Id" />
+                  <input type="hidden" name="categoryId" value="@c.Id" />
+                  <input name="name" value="@t.Name" class="form-control d-inline" style="width:180px" />
+                  <button class="btn btn-sm btn-outline-secondary">Guardar</button>
+                </form>
+                <form asp-action="ToggleTag" method="post" class="d-inline ms-2">
+                  @Html.AntiForgeryToken()
+                  <input type="hidden" name="id" value="@t.Id" />
+                  <button class="btn btn-sm btn-outline-warning">@(t.IsActive?"Inhabilitar":"Habilitar")</button>
+                </form>
+              </span>
+            </li>
+          }
+        </ul>
+
+        <form asp-action="CreateTag" method="post" class="row g-2">
+          @Html.AntiForgeryToken()
+          <input type="hidden" name="categoryId" value="@c.Id" />
+          <div class="col-6"><input name="name" class="form-control" placeholder="Nueva etiqueta" required /></div>
+          <div class="col-auto"><button class="btn btn-outline-primary">Agregar</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+}
+</div>

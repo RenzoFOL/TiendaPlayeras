@@ -1,0 +1,342 @@
+@using TiendaPlayeras.Web.Models
+@model IEnumerable<Product>
+@{
+    ViewData["Title"] = "Productos";
+    int total = ViewBag.Total ?? 0;
+    int page = ViewBag.Page ?? 1;
+    int pageSize = ViewBag.PageSize ?? 20;
+    string q = ViewBag.Q as string ?? "";
+    string tag = ViewBag.Tag as string ?? "";
+    string sort = ViewBag.Sort as string ?? "az";
+    int totalPages = (int)Math.Ceiling((double)Math.Max(1, total) / Math.Max(1, pageSize));
+    Func<int, string> pageUrl = p => Url.Action("Index", "Products", new { q, tag, sort, page = p, pageSize })!;
+    
+    int startItem = total > 0 ? ((page - 1) * pageSize) + 1 : 0;
+    int endItem = Math.Min(page * pageSize, total);
+}
+
+<div class="container-fluid py-3">
+    <!-- Header con título y botón de agregar -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">
+                <i class="bi bi-box-seam me-2"></i>Gestión de Productos
+            </h2>
+            <p class="text-muted mb-0">
+                @if (total > 0)
+                {
+                    <text>Mostrando @startItem - @endItem de @total productos</text>
+                }
+                else
+                {
+                    <text>No hay productos para mostrar</text>
+                }
+            </p>
+        </div>
+        <a class="btn btn-success btn-lg shadow-sm" asp-action="Create">
+            <i class="bi bi-plus-circle me-2"></i>Nuevo Producto
+        </a>
+    </div>
+
+    <!-- Filtros avanzados -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="bi bi-funnel me-2"></i>Filtros y Búsqueda
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="get" id="filterForm">
+                <div class="row g-3">
+                    <!-- Búsqueda general -->
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-search me-1"></i>Buscar producto
+                        </label>
+                        <div class="input-group">
+                            <input name="q" value="@q" class="form-control" 
+                                   placeholder="Nombre, ID o descripción..." 
+                                   aria-label="Búsqueda de productos" />
+                            @if (!string.IsNullOrEmpty(q))
+                            {
+                                <button type="button" class="btn btn-outline-secondary" onclick="clearSearch()">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            }
+                        </div>
+                        <small class="form-text text-muted">Ej: 'mustang', '123', 'playera'</small>
+                    </div>
+
+                    <!-- Búsqueda por etiqueta -->
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-tag me-1"></i>Filtrar por etiqueta
+                        </label>
+                        <div class="input-group">
+                            <input name="tag" value="@tag" class="form-control" 
+                                   placeholder="Slug o nombre de etiqueta..." 
+                                   aria-label="Filtro de etiquetas" />
+                            @if (!string.IsNullOrEmpty(tag))
+                            {
+                                <button type="button" class="btn btn-outline-secondary" onclick="clearTag()">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            }
+                        </div>
+                        <small class="form-text text-muted">Ej: 'rock', 'deportes', 'mustang'</small>
+                    </div>
+
+                    <!-- Ordenamiento -->
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-sort-down me-1"></i>Ordenar por
+                        </label>
+                        <select name="sort" class="form-select" onchange="this.form.submit()">
+                            <option value="az" selected="@(sort=="az")">A → Z</option>
+                            <option value="za" selected="@(sort=="za")">Z → A</option>
+                            <option value="price_asc" selected="@(sort=="price_asc")">Precio ↑</option>
+                            <option value="price_desc" selected="@(sort=="price_desc")">Precio ↓</option>
+                            <option value="id_asc" selected="@(sort=="id_asc")">ID ↑</option>
+                            <option value="id_desc" selected="@(sort=="id_desc")">ID ↓</option>
+                        </select>
+                    </div>
+
+                    <!-- Elementos por página -->
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-grid-3x3 me-1"></i>Mostrar
+                        </label>
+                        <select name="pageSize" class="form-select" onchange="this.form.submit()">
+                            <option value="20" selected="@(pageSize==20)">20 items</option>
+                            <option value="40" selected="@(pageSize==40)">40 items</option>
+                            <option value="100" selected="@(pageSize==100)">100 items</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="bi bi-check-circle me-1"></i>Aplicar Filtros
+                        </button>
+                        <a href="@Url.Action("Index", "Products")" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Limpiar Todo
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla de productos -->
+    @if (Model != null && Model.Any())
+    {
+        <div class="card shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:80px;" class="text-center">ID</th>
+                            <th style="width:35%;">Producto</th>
+                            <th style="width:15%;">Slug</th>
+                            <th style="width:10%;" class="text-center">Estado</th>
+                            <th style="width:12%;" class="text-end">Precio Base</th>
+                            <th style="width:18%;">Etiquetas</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var p in Model)
+                    {
+                        <tr>
+                            <td class="text-center fw-bold text-muted">#@p.Id</td>
+                            <td>
+                                <div class="d-flex flex-column">
+                                    <span class="fw-semibold">@p.Name</span>
+                                    @if (!string.IsNullOrEmpty(p.Description))
+                                    {
+                                        <small class="text-muted text-truncate" style="max-width:300px;" title="@p.Description">
+                                            @p.Description
+                                        </small>
+                                    }
+                                </div>
+                            </td>
+                            <td>
+                                <code class="text-primary">@p.Slug</code>
+                            </td>
+                            <td class="text-center">
+                                @if (p.IsActive)
+                                {
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-check-circle me-1"></i>Activo
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">
+                                        <i class="bi bi-x-circle me-1"></i>Inactivo
+                                    </span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <span class="fs-6 fw-semibold text-success">@p.BasePrice.ToString("C")</span>
+                            </td>
+                            <td>
+                                @if (p.ProductTags != null && p.ProductTags.Any(x => x.IsActive && x.Tag != null))
+                                {
+                                    <div class="d-flex flex-wrap gap-1">
+                                        @foreach (var pt in p.ProductTags.Where(x => x.IsActive && x.Tag != null).Take(3))
+                                        {
+                                            <span class="badge bg-info bg-opacity-10 text-info border border-info">
+                                                <i class="bi bi-tag-fill me-1"></i>@pt.Tag!.Name
+                                            </span>
+                                        }
+                                        @if (p.ProductTags.Count(x => x.IsActive && x.Tag != null) > 3)
+                                        {
+                                            <span class="badge bg-secondary bg-opacity-10 text-secondary">
+                                                +@(p.ProductTags.Count(x => x.IsActive && x.Tag != null) - 3)
+                                            </span>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <small class="text-muted fst-italic">Sin etiquetas</small>
+                                }
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a class="btn btn-outline-primary" 
+                                       asp-action="Edit" 
+                                       asp-route-id="@p.Id"
+                                       title="Editar producto">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a class="btn btn-outline-info" 
+                                       href="@Url.Action("Index","Variants", new { productId = p.Id })"
+                                       title="Gestionar variantes">
+                                        <i class="bi bi-collection"></i>
+                                    </a>
+                                    <a class="btn btn-outline-dark" 
+                                       href="@Url.Action("Edit","Products", new { id = p.Id })#tags"
+                                       title="Gestionar etiquetas">
+                                        <i class="bi bi-tags"></i>
+                                    </a>
+                                    <button type="button" 
+                                            class="btn btn-outline-@(p.IsActive ? "warning" : "success")"
+                                            onclick="toggleActive(@p.Id, @p.IsActive.ToString().ToLower())"
+                                            title="@(p.IsActive ? "Desactivar" : "Activar") producto">
+                                        <i class="bi bi-@(p.IsActive ? "eye-slash" : "eye")"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Paginación mejorada -->
+        @if (totalPages > 1)
+        {
+            <nav aria-label="Navegación de productos" class="mt-4">
+                <ul class="pagination pagination-lg justify-content-center">
+                    <li class="page-item @(page<=1?"disabled":"")">
+                        <a class="page-link" href="@(page>1 ? pageUrl(1) : "#")" aria-label="Primera">
+                            <i class="bi bi-chevron-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item @(page<=1?"disabled":"")">
+                        <a class="page-link" href="@(page>1 ? pageUrl(page-1) : "#")" aria-label="Anterior">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    
+                    @for (int i = Math.Max(1, page-2); i <= Math.Min(totalPages, page+2); i++)
+                    {
+                        <li class="page-item @(i==page?"active":"")">
+                            <a class="page-link" href="@pageUrl(i)">@i</a>
+                        </li>
+                    }
+                    
+                    <li class="page-item @(page>=totalPages?"disabled":"")">
+                        <a class="page-link" href="@(page<totalPages ? pageUrl(page+1) : "#")" aria-label="Siguiente">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item @(page>=totalPages?"disabled":"")">
+                        <a class="page-link" href="@(page<totalPages ? pageUrl(totalPages) : "#")" aria-label="Última">
+                            <i class="bi bi-chevron-double-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        }
+    }
+    else
+    {
+        <!-- Estado vacío -->
+        <div class="card shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-inbox display-1 text-muted mb-3"></i>
+                <h4 class="text-muted mb-3">No se encontraron productos</h4>
+                <p class="text-muted mb-4">
+                    @if (!string.IsNullOrEmpty(q) || !string.IsNullOrEmpty(tag))
+                    {
+                        <text>Intenta ajustar tus filtros de búsqueda o</text>
+                        <a href="@Url.Action("Index", "Products")" class="link-primary">limpiar los filtros</a>
+                    }
+                    else
+                    {
+                        <text>Comienza agregando tu primer producto</text>
+                    }
+                </p>
+                @if (string.IsNullOrEmpty(q) && string.IsNullOrEmpty(tag))
+                {
+                    <a class="btn btn-success" asp-action="Create">
+                        <i class="bi bi-plus-circle me-2"></i>Agregar Primer Producto
+                    </a>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Formulario oculto para toggle de estado -->
+<form id="toggleForm" method="post" style="display:none;">
+    @Html.AntiForgeryToken()
+</form>
+
+@section Scripts {
+<script>
+    function clearSearch() {
+        document.querySelector('input[name="q"]').value = '';
+        document.getElementById('filterForm').submit();
+    }
+
+    function clearTag() {
+        document.querySelector('input[name="tag"]').value = '';
+        document.getElementById('filterForm').submit();
+    }
+
+    function toggleActive(productId, isActive) {
+        const action = isActive ? 'desactivar' : 'activar';
+        if (confirm(`¿Estás seguro de que deseas ${action} este producto?`)) {
+            const form = document.getElementById('toggleForm');
+            form.action = '@Url.Action("ToggleActive", "Products")' + '/' + productId;
+            form.submit();
+        }
+    }
+
+    // Auto-submit al cambiar filtros (opcional, comentar si no se desea)
+    document.querySelector('select[name="sort"]')?.addEventListener('change', function() {
+        this.form.submit();
+    });
+    
+    document.querySelector('select[name="pageSize"]')?.addEventListener('change', function() {
+        this.form.submit();
+    });
+</script>
+}
