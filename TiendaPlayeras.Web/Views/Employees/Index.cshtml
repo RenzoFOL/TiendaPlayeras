@@ -1,0 +1,45 @@
+@model IEnumerable<TiendaPlayeras.Web.Models.ApplicationUser>
+@{
+    ViewData["Title"] = "Empleados";
+}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Empleados</h2>
+    <a class="btn btn-primary" asp-action="Create"><i class="fas fa-user-plus me-1"></i> Nuevo empleado</a>
+</div>
+
+@if (TempData["Success"] != null)
+{ <div class="alert alert-success">@TempData["Success"]</div> }
+
+<table class="table table-striped align-middle">
+    <thead>
+        <tr>
+            <th>Correo</th>
+            <th>Teléfono</th>
+            <th>Bloqueado</th>
+            <th style="width:200px;"></th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var u in Model)
+    {
+        var locked = u.LockoutEnd != null && u.LockoutEnd > DateTimeOffset.UtcNow;
+        <tr>
+            <td>@u.Email</td>
+            <td>@u.PhoneNumber</td>
+            <td>@(locked ? "Sí" : "No")</td>
+            <td class="text-end">
+                <a class="btn btn-sm btn-outline-secondary" asp-action="ResetPassword" asp-route-id="@u.Id">
+                    <i class="fas fa-key"></i> Reset pass
+                </a>
+                <form asp-action="ToggleLock" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@u.Id" />
+                    <button class="btn btn-sm @(locked ? "btn-success" : "btn-warning")">
+                        @(locked ? "Desbloquear" : "Bloquear")
+                    </button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

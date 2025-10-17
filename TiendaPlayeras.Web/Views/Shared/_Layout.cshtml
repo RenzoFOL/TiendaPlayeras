@@ -266,6 +266,30 @@
 
                     </ul>
                 </div>
+                @* --- Admin/Employee quick menu en navbar --- *@
+                    @if (User.Identity?.IsAuthenticated == true && (User.IsInRole("Admin") || User.IsInRole("Employee")))
+                    {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Admin
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" asp-controller="Products" asp-action="Index">Gestión de Productos</a></li>
+                                <li><a class="dropdown-item" asp-controller="Products" asp-action="Create">Crear Producto</a></li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li><a class="dropdown-item" asp-controller="CategoryTags" asp-action="Index">Etiquetas / Categorías</a></li>
+                                <li><hr class="dropdown-divider" /></li>
+                                @* Gestión de empleados (solo Admin) *@
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <li><a class="dropdown-item" asp-area="" asp-controller="Employees" asp-action="Index">Empleados</a></li>
+                                    <li><a class="dropdown-item" asp-area="" asp-controller="Employees" asp-action="Create">Registrar empleado</a></li>
+                                }
+                                <li><hr class="dropdown-divider" /></li>
+                                <li><a class="dropdown-item" asp-controller="Products" asp-action="Catalog">Ver Catálogo público</a></li>
+                            </ul>
+                        </li>
+                    }
             </div>
         </div>
     </nav>
