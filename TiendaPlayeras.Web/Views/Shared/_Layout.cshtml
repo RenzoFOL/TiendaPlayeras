@@ -38,6 +38,8 @@
             --primary-color: #111;
             --secondary-color: #666;
             --hover-color: #66513e;
+            --admin-color: #667eea;
+            --employee-color: #4facfe;
             --transition-speed: 0.3s;
             --shadow: 0 4px 20px rgba(0,0,0,0.1);
         }
@@ -49,6 +51,39 @@
         .nav-link-enhanced::before { content: ''; position: absolute; bottom: 0; left: 50%; width: 0; height: 2px; background: var(--hover-color); transition: all var(--transition-speed) ease; transform: translateX(-50%); }
         .nav-link-enhanced:hover::before, .nav-link-enhanced.active::before { width: 80%; }
         .nav-link-enhanced:hover, .nav-link-enhanced.active { color: var(--hover-color)!important; transform: translateY(-2px); }
+        
+        /* Admin/Employee Panel Button */
+        .panel-button {
+            background: linear-gradient(135deg, var(--admin-color), #764ba2);
+            color: white!important;
+            padding: .6rem 1.5rem!important;
+            border-radius: 25px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all .3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+        }
+        .panel-button.employee {
+            background: linear-gradient(135deg, var(--employee-color), #00f2fe);
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+        }
+        .panel-button:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4);
+            color: white!important;
+        }
+        .panel-button.employee:hover {
+            box-shadow: 0 6px 25px rgba(79, 172, 254, 0.4);
+        }
+        .panel-button i {
+            font-size: 1.1em;
+        }
+        
         .dropdown-menu-enhanced { border: none; border-radius: 12px; box-shadow: var(--shadow); padding: 1rem 0; margin-top: .5rem; opacity: 0; transform: translateY(-10px); transition: all var(--transition-speed) ease; pointer-events: none; }
         .dropdown:hover .dropdown-menu-enhanced, .dropdown-menu-enhanced.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
         .dropdown-item-enhanced { padding: .75rem 1.5rem; transition: all .2s ease; border-radius: 8px; margin: 0 .5rem; font-weight: 500; }
@@ -64,6 +99,10 @@
         .navbar-toggler { border: none; transition: all .2s ease; }
         .navbar-toggler:hover { transform: scale(1.1); }
         .navbar-toggler:focus { box-shadow: none; }
+        
+        /* Admin/Employee specific styles */
+        .admin-nav { background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05))!important; }
+        .employee-nav { background: linear-gradient(135deg, rgba(79, 172, 254, 0.05), rgba(0, 242, 254, 0.05))!important; }
     </style>
 
     @RenderSection("Styles", required: false)
@@ -91,13 +130,13 @@
     <div class="preloader text-white fs-6 text-uppercase overflow-hidden"></div>
 
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-enhanced text-uppercase fs-6 p-3 border-bottom align-items-center">
+    <nav class="navbar navbar-expand-lg navbar-enhanced text-uppercase fs-6 p-3 border-bottom align-items-center @(User.IsInRole("Admin") ? "admin-nav" : User.IsInRole("Employee") ? "employee-nav" : "")">
         <div class="container-fluid">
             <div class="row justify-content-between align-items-center w-100">
 
                 <!-- Logo -->
                 <div class="col-auto">
-                    <a class="navbar-brand text-dark" href="/Home">
+                    <a class="navbar-brand text-dark" href="@(User.IsInRole("Admin") ? "/Admin" : User.IsInRole("Employee") ? "/Employee" : "/Home")">
                         <svg width="112" height="45" viewBox="0 0 112 45" xmlns="http://www.w3.org/2000/svg" fill="#111">
                             <path d="M2.51367 34.9297C2.58398 34.6836 2.64844 34.3789 2.70703 34.0156C2.77734 33.6523 2.83594 33.2012 2.88281 32.6621C2.92969 32.123 2.96484 31.4844 2.98828 30.7461C3.01172 29.9961 3.02344 29.123 3.02344 28.127V16.6836C3.02344 15.6875 3.01172 14.8203 2.98828 14.082C2.96484 13.332 2.92969 12.6875 2.88281 12.1484C2.83594 11.5977 2.77734 11.1406 2.70703 10.7773C2.64844 10.4141 2.58398 10.1094 2.51367 9.86328V9.79297H6.73242V9.86328C6.66211 10.1094 6.5918 10.4141 6.52148 10.7773C6.46289 11.1406 6.41016 11.5977 6.36328 12.1484C6.32812 12.6875 6.29297 13.332 6.25781 14.082C6.23438 14.8203 6.22266 15.6875 6.22266 16.6836V20.6035L16.4883 12.2188C17.6367 11.2813 18.2109 10.4727 18.2109 9.79297H23.1504V9.86328C22.459 10.0273 21.7559 10.3437 21.041 10.8125C20.3379 11.2695 19.5879 11.832 18.791 12.5L9.7207 20.0938L20.6367 32.082C21.0938 32.5508 21.4805 32.9434 21.7969 33.2598C22.125 33.5645 22.4121 33.8223 22.6582 34.0332C22.9043 34.2324 23.127 34.4023 23.3262 34.543C23.5371 34.6719 23.7539 34.8008 23.9766 34.9297V35H18.8262C18.7793 34.8945 18.6973 34.7598 18.5801 34.5957C18.4746 34.4316 18.3457 34.2617 18.1934 34.0859C18.0527 33.9102 17.8945 33.7285 17.7188 33.541C17.5547 33.3535 17.3965 33.1777 17.2441 33.0137L6.22266 20.9199V28.127C6.22266 29.123 6.23438 29.9961 6.25781 30.7461C6.29297 31.4844 6.32812 32.123 6.36328 32.6621C6.41016 33.2012 6.46289 33.6523 6.52148 34.0156C6.5918 34.3789 6.66211 34.6836 6.73242 34.9297V35H2.51367V34.9297Z"/>
                         </svg>
@@ -120,106 +159,134 @@
                         </div>
 
                         <div class="offcanvas-body">
-                            <ul class="navbar-nav justify-content-center flex-grow-1 gap-1 gap-md-5 pe-3">
-                                <li class="nav-item dropdown nav-item-enhanced">
-                                    <a class="nav-link dropdown-toggle nav-link-enhanced active" href="#" id="dropdownHome" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        <i class="fas fa-home me-1 d-lg-none"></i>Home
-                                    </a>
-                                    <ul class="dropdown-menu dropdown-menu-enhanced list-unstyled" aria-labelledby="dropdownHome">
-                                        <li><a href="/Home" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Home Layout 1</a></li>
-                                        <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Home Layout 2</a></li>
-                                        <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Home Layout 3</a></li>
-                                    </ul>
-                                </li>
-                                <li class="nav-item dropdown nav-item-enhanced">
-                                    <a class="nav-link dropdown-toggle nav-link-enhanced" href="#" id="dropdownShop" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        <i class="fas fa-shopping-bag me-1 d-lg-none"></i>Shop
-                                    </a>
-                                    <ul class="dropdown-menu dropdown-menu-enhanced list-unstyled" aria-labelledby="dropdownShop">
-                                        <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Shop Sidebar</a></li>
-                                        <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Shop Grid</a></li>
-                                        <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Single Product</a></li>
-                                    </ul>
-                                </li>
-                                <li class="nav-item dropdown nav-item-enhanced">
-                                    <a class="nav-link dropdown-toggle nav-link-enhanced" href="#" id="dropdownBlog" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        <i class="fas fa-blog me-1 d-lg-none"></i>Blog
-                                    </a>
-                                    <ul class="dropdown-menu dropdown-menu-enhanced list-unstyled" aria-labelledby="dropdownBlog">
-                                        <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Blog Classic</a></li>
-                                        <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Single Post</a></li>
-                                    </ul>
-                                </li>
-                                <li class="nav-item dropdown nav-item-enhanced">
-                                    <a class="nav-link dropdown-toggle nav-link-enhanced" href="#" id="dropdownPages" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        <i class="fas fa-file-alt me-1 d-lg-none"></i>Pages
-                                    </a>
-                                    <ul class="dropdown-menu dropdown-menu-enhanced list-unstyled" aria-labelledby="dropdownPages">
-                                        <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>About</a></li>
-                                        <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Cart</a></li>
-                                        <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Contact</a></li>
-                                        <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Wishlist</a></li>
-                                    </ul>
-                                </li>
-                                <li class="nav-item nav-item-enhanced">
-                                    <a class="nav-link nav-link-enhanced" href="#">
-                                        <i class="fas fa-envelope me-1 d-lg-none"></i>Contact
-                                    </a>
-                                </li>
-                            </ul>
+                            @if (User.IsInRole("Admin") || User.IsInRole("Employee"))
+                            {
+                                <!-- Admin/Employee Menu -->
+                                <ul class="navbar-nav justify-content-center flex-grow-1 gap-1 gap-md-5 pe-3">
+                                    <li class="nav-item">
+                                        <a class="nav-link nav-link-enhanced" href="@(User.IsInRole("Admin") ? "/Admin" : "/Employee")">
+                                            <i class="fas fa-tachometer-alt me-1 d-lg-none"></i>Dashboard
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link nav-link-enhanced" href="/catalogo" target="_blank">
+                                            <i class="fas fa-store me-1 d-lg-none"></i>Ver Catálogo
+                                        </a>
+                                    </li>
+                                </ul>
+                            }
+                            else
+                            {
+                                <!-- Customer Menu -->
+                                <ul class="navbar-nav justify-content-center flex-grow-1 gap-1 gap-md-5 pe-3">
+                                    <li class="nav-item dropdown nav-item-enhanced">
+                                        <a class="nav-link dropdown-toggle nav-link-enhanced active" href="#" id="dropdownHome" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fas fa-home me-1 d-lg-none"></i>Home
+                                        </a>
+                                        <ul class="dropdown-menu dropdown-menu-enhanced list-unstyled" aria-labelledby="dropdownHome">
+                                            <li><a href="/Home" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Home Layout 1</a></li>
+                                            <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Home Layout 2</a></li>
+                                            <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Home Layout 3</a></li>
+                                        </ul>
+                                    </li>
+                                    <li class="nav-item dropdown nav-item-enhanced">
+                                        <a class="nav-link dropdown-toggle nav-link-enhanced" href="#" id="dropdownShop" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fas fa-shopping-bag me-1 d-lg-none"></i>Shop
+                                        </a>
+                                        <ul class="dropdown-menu dropdown-menu-enhanced list-unstyled" aria-labelledby="dropdownShop">
+                                            <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Shop Sidebar</a></li>
+                                            <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Shop Grid</a></li>
+                                            <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Single Product</a></li>
+                                        </ul>
+                                    </li>
+                                    <li class="nav-item dropdown nav-item-enhanced">
+                                        <a class="nav-link dropdown-toggle nav-link-enhanced" href="#" id="dropdownBlog" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fas fa-blog me-1 d-lg-none"></i>Blog
+                                        </a>
+                                        <ul class="dropdown-menu dropdown-menu-enhanced list-unstyled" aria-labelledby="dropdownBlog">
+                                            <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Blog Classic</a></li>
+                                            <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Single Post</a></li>
+                                        </ul>
+                                    </li>
+                                    <li class="nav-item dropdown nav-item-enhanced">
+                                        <a class="nav-link dropdown-toggle nav-link-enhanced" href="#" id="dropdownPages" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fas fa-file-alt me-1 d-lg-none"></i>Pages
+                                        </a>
+                                        <ul class="dropdown-menu dropdown-menu-enhanced list-unstyled" aria-labelledby="dropdownPages">
+                                            <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>About</a></li>
+                                            <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Cart</a></li>
+                                            <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Contact</a></li>
+                                            <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Wishlist</a></li>
+                                        </ul>
+                                    </li>
+                                    <li class="nav-item nav-item-enhanced">
+                                        <a class="nav-link nav-link-enhanced" href="#">
+                                            <i class="fas fa-envelope me-1 d-lg-none"></i>Contact
+                                        </a>
+                                    </li>
+                                </ul>
+                            }
                         </div>
                     </div>
                 </div>
 
                 <!-- Actions -->
-                <div class="col-3 col-lg-auto">
-                    <ul class="list-unstyled d-flex m-0 align-items-center">
-                        <!-- Desktop Wishlist -->
-                        <li class="d-none d-lg-block">
-                            <a href="#" class="text-uppercase mx-3 text-decoration-none nav-link-enhanced position-relative" title="Lista de deseos">
-                                <i class="fas fa-heart me-1"></i>Wishlist
-                                <span class="wishlist-count badge-enhanced">(0)</span>
-                            </a>
-                        </li>
-
-                        <!-- Desktop Cart -->
-                        <li class="d-none d-lg-block">
-                            <a href="#" class="text-uppercase mx-3 text-decoration-none nav-link-enhanced position-relative" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart" title="Carrito de compras">
-                                <i class="fas fa-shopping-cart me-1"></i>Cart
-                                <span class="cart-count badge-enhanced">(0)</span>
-                            </a>
-                        </li>
-
-                        <!-- Mobile Icons -->
-                        <li class="d-lg-none">
-                            <a href="#" class="mx-2 nav-icon-enhanced" title="Lista de deseos">
-                                <svg width="24" height="24" viewBox="0 0 24 24" class="mobile-icon-enhanced">
-                                    <use xlink:href="#heart"></use>
-                                </svg>
-                            </a>
-                        </li>
-                        <li class="d-lg-none">
-                            <a href="#" class="mx-2 nav-icon-enhanced" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart" title="Carrito">
-                                <svg width="24" height="24" viewBox="0 0 24 24" class="mobile-icon-enhanced">
-                                    <use xlink:href="#cart"></use>
-                                </svg>
-                            </a>
-                        </li>
-
-                        <!-- Search -->
-                        <li class="search-box mx-2">
-                            <a href="#" class="search-button nav-icon-enhanced" title="Buscar">
-                                <svg width="24" height="24" viewBox="0 0 24 24" class="mobile-icon-enhanced">
-                                    <use xlink:href="#search"></use>
-                                </svg>
-                            </a>
-                        </li>
+                <div class="col-auto">
+                    <ul class="list-unstyled d-flex m-0 align-items-center gap-3">
+                        @if (User.IsInRole("Admin") || User.IsInRole("Employee"))
+                        {
+                            <!-- Admin/Employee Panel Button -->
+                            <li class="d-none d-lg-block">
+                                <a href="@(User.IsInRole("Admin") ? "/Admin" : "/Employee")" 
+                                   class="panel-button @(User.IsInRole("Employee") ? "employee" : "")" 
+                                   title="Panel de @(User.IsInRole("Admin") ? "Administración" : "Empleado")">
+                                    <i class="fas fa-@(User.IsInRole("Admin") ? "shield-alt" : "user-tie")"></i>
+                                    <span class="d-none d-xl-inline">Panel @(User.IsInRole("Admin") ? "Admin" : "Empleado")</span>
+                                </a>
+                            </li>
+                        }
+                        else
+                        {
+                            <!-- Customer Wishlist & Cart -->
+                            <li class="d-none d-lg-block">
+                                <a href="#" class="text-uppercase mx-2 text-decoration-none nav-link-enhanced position-relative" title="Lista de deseos">
+                                    <i class="fas fa-heart me-1"></i>Wishlist
+                                    <span class="wishlist-count badge-enhanced">(0)</span>
+                                </a>
+                            </li>
+                            <li class="d-none d-lg-block">
+                                <a href="#" class="text-uppercase mx-2 text-decoration-none nav-link-enhanced position-relative" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart" title="Carrito">
+                                    <i class="fas fa-shopping-cart me-1"></i>Cart
+                                    <span class="cart-count badge-enhanced">(0)</span>
+                                </a>
+                            </li>
+                            <li class="d-lg-none">
+                                <a href="#" class="nav-icon-enhanced" title="Lista de deseos">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" class="mobile-icon-enhanced">
+                                        <use xlink:href="#heart"></use>
+                                    </svg>
+                                </a>
+                            </li>
+                            <li class="d-lg-none">
+                                <a href="#" class="nav-icon-enhanced" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart" title="Carrito">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" class="mobile-icon-enhanced">
+                                        <use xlink:href="#cart"></use>
+                                    </svg>
+                                </a>
+                            </li>
+                            <li class="search-box">
+                                <a href="#" class="search-button nav-icon-enhanced" title="Buscar">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" class="mobile-icon-enhanced">
+                                        <use xlink:href="#search"></use>
+                                    </svg>
+                                </a>
+                            </li>
+                        }
 
                         <!-- User Menu -->
-                        <li class="nav-item dropdown mx-2 user-box">
+                        <li class="nav-item dropdown user-box">
                             @if (!User.Identity.IsAuthenticated)
                             {
-                                @* Not authenticated *@
                                 <a class="nav-link nav-icon-enhanced user-button-enhanced" href="/Account" title="Mi cuenta">
                                     <svg width="24" height="24" viewBox="0 0 24 24" class="mobile-icon-enhanced">
                                         <use xlink:href="#user"></use>
@@ -228,30 +295,40 @@
                             }
                             else
                             {
-                                @* Authenticated *@
                                 <a class="nav-link nav-icon-enhanced dropdown-toggle user-button-enhanced" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="Mi cuenta">
                                     <svg width="24" height="24" viewBox="0 0 24 24" class="mobile-icon-enhanced">
                                         <use xlink:href="#user"></use>
                                     </svg>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-enhanced dropdown-menu-end" aria-labelledby="userMenu">
-                                    <li>
-                                        <a class="dropdown-item dropdown-item-enhanced"
-                                           asp-controller="Account" asp-action="Profile">
-                                            <i class="fas fa-user-edit me-2"></i>Editar perfil
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item dropdown-item-enhanced" asp-controller="Pedidos" asp-action="Index">
-                                            <i class="fas fa-shopping-bag me-2"></i>Mis pedidos
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item dropdown-item-enhanced" href="#">
-                                            <i class="fas fa-heart me-2"></i>Lista de deseos
-                                        </a>
-                                    </li>
-                                    <li><hr class="dropdown-divider" /></li>
+                                    @if (!User.IsInRole("Admin") && !User.IsInRole("Employee"))
+                                    {
+                                        <li>
+                                            <a class="dropdown-item dropdown-item-enhanced" asp-controller="Account" asp-action="Profile">
+                                                <i class="fas fa-user-edit me-2"></i>Editar perfil
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item dropdown-item-enhanced" asp-controller="Pedidos" asp-action="Index">
+                                                <i class="fas fa-shopping-bag me-2"></i>Mis pedidos
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item dropdown-item-enhanced" href="#">
+                                                <i class="fas fa-heart me-2"></i>Lista de deseos
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider" /></li>
+                                    }
+                                    else
+                                    {
+                                        <li>
+                                            <a class="dropdown-item dropdown-item-enhanced" asp-controller="Account" asp-action="Profile">
+                                                <i class="fas fa-user-circle me-2"></i>Mi perfil
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider" /></li>
+                                    }
                                     <li>
                                         <form method="post" action="/Account/Logout" class="px-3 py-1">
                                             @Html.AntiForgeryToken()
@@ -263,56 +340,34 @@
                                 </ul>
                             }
                         </li>
-
                     </ul>
                 </div>
-                @* --- Admin/Employee quick menu en navbar --- *@
-                    @if (User.Identity?.IsAuthenticated == true && (User.IsInRole("Admin") || User.IsInRole("Employee")))
-                    {
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Admin
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" asp-controller="Products" asp-action="Index">Gestión de Productos</a></li>
-                                <li><a class="dropdown-item" asp-controller="Products" asp-action="Create">Crear Producto</a></li>
-                                <li><hr class="dropdown-divider" /></li>
-                                <li><a class="dropdown-item" asp-controller="CategoryTags" asp-action="Index">Etiquetas / Categorías</a></li>
-                                <li><hr class="dropdown-divider" /></li>
-                                @* Gestión de empleados (solo Admin) *@
-                                @if (User.IsInRole("Admin"))
-                                {
-                                    <li><a class="dropdown-item" asp-area="" asp-controller="Employees" asp-action="Index">Empleados</a></li>
-                                    <li><a class="dropdown-item" asp-area="" asp-controller="Employees" asp-action="Create">Registrar empleado</a></li>
-                                }
-                                <li><hr class="dropdown-divider" /></li>
-                                <li><a class="dropdown-item" asp-controller="Products" asp-action="Catalog">Ver Catálogo público</a></li>
-                            </ul>
-                        </li>
-                    }
             </div>
         </div>
     </nav>
 
-    <!-- Offcanvas Cart -->
-    <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="offcanvasCart" aria-labelledby="offcanvasCartLabel">
-        <div class="offcanvas-header border-bottom">
-            <h5 class="offcanvas-title" id="offcanvasCartLabel">
-                <i class="fas fa-shopping-cart me-2"></i>Mi Carrito
-            </h5>
-            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
-        <div class="offcanvas-body">
-            <div class="text-center py-5">
-                <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
-                <h6>Tu carrito está vacío</h6>
-                <p class="text-muted">Agrega algunos productos para comenzar</p>
-                <a href="/Shop" class="btn btn-primary">
-                    <i class="fas fa-shopping-bag me-2"></i>Ir a la tienda
-                </a>
+    <!-- Offcanvas Cart (Solo para clientes) -->
+    @if (!User.IsInRole("Admin") && !User.IsInRole("Employee"))
+    {
+        <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="offcanvasCart" aria-labelledby="offcanvasCartLabel">
+            <div class="offcanvas-header border-bottom">
+                <h5 class="offcanvas-title" id="offcanvasCartLabel">
+                    <i class="fas fa-shopping-cart me-2"></i>Mi Carrito
+                </h5>
+                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                <div class="text-center py-5">
+                    <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                    <h6>Tu carrito está vacío</h6>
+                    <p class="text-muted">Agrega algunos productos para comenzar</p>
+                    <a href="/Shop" class="btn btn-primary">
+                        <i class="fas fa-shopping-bag me-2"></i>Ir a la tienda
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
+    }
 
     <!-- Main Content -->
     <div>

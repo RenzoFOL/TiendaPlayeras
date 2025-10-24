@@ -1,14 +1,402 @@
 @{
     ViewData["Title"] = "Panel Empleado";
 }
-<div class="container py-4">
-    <h2 class="mb-3">Panel de Empleado</h2>
+<link rel="stylesheet" type="text/css/kaira" href="empleado-vista-panel.css">
+<style> 
+:root {
+    --primary-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    --secondary-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    --success-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    --info-gradient: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+    --purple-gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+}
 
-    <div class="mb-3">
-        <a class="btn btn-primary" href="@Url.Action("Index","Products")">
-            Gestión de productos
-        </a>
+.employee-panel-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #e0f7ff 0%, #c3e6ff 100%);
+    padding: 60px 20px;
+}
+
+.panel-header {
+    text-align: center;
+    margin-bottom: 50px;
+    animation: fadeInDown 0.8s ease;
+}
+
+.panel-header h1 {
+    font-size: 48px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.panel-header p {
+    font-size: 18px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.welcome-banner {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    margin-bottom: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    animation: fadeInUp 0.8s ease;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.welcome-content {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.welcome-icon {
+    width: 70px;
+    height: 70px;
+    background: var(--primary-gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    color: white;
+    box-shadow: 0 8px 20px rgba(79, 172, 254, 0.3);
+}
+
+.welcome-text h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.welcome-text p {
+    margin: 5px 0 0 0;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.menu-card {
+    position: relative;
+    background: white;
+    border-radius: 20px;
+    padding: 40px 30px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    cursor: pointer;
+    animation: fadeInUp 0.8s ease;
+    animation-fill-mode: both;
+}
+
+.menu-card:nth-child(1) { animation-delay: 0.1s; }
+.menu-card:nth-child(2) { animation-delay: 0.2s; }
+.menu-card:nth-child(3) { animation-delay: 0.3s; }
+.menu-card:nth-child(4) { animation-delay: 0.4s; }
+
+.menu-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--card-gradient);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: 0;
+}
+
+.menu-card:hover {
+    transform: translateY(-15px) scale(1.02);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.menu-card:hover::before {
+    opacity: 1;
+}
+
+.card-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.menu-card:hover .card-content {
+    color: white;
+}
+
+.card-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 25px;
+    background: var(--card-gradient);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    transition: all 0.4s ease;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.menu-card:hover .card-icon {
+    transform: scale(1.1) rotate(5deg);
+    background: white;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+}
+
+.card-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+}
+
+.card-description {
+    font-size: 15px;
+    color: #64748b;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.menu-card:hover .card-description {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.card-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    background: rgba(79, 172, 254, 0.1);
+    color: #4facfe;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.menu-card:hover .card-badge {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.card-arrow {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background: rgba(79, 172, 254, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: all 0.4s ease;
+}
+
+.menu-card:hover .card-arrow {
+    opacity: 1;
+    transform: translateX(0);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Gradientes específicos para cada card */
+.menu-card[data-card="products"]::before,
+.menu-card[data-card="products"] .card-icon {
+    --card-gradient: var(--primary-gradient);
+}
+
+.menu-card[data-card="catalog"]::before,
+.menu-card[data-card="catalog"] .card-icon {
+    --card-gradient: var(--secondary-gradient);
+}
+
+.menu-card[data-card="orders"]::before,
+.menu-card[data-card="orders"] .card-icon {
+    --card-gradient: var(--success-gradient);
+}
+
+.menu-card[data-card="store"]::before,
+.menu-card[data-card="store"] .card-icon {
+    --card-gradient: var(--purple-gradient);
+}
+
+</style>
+
+<div class="employee-panel-container">
+    <div class="panel-header">
+        <h1>
+            <i class="fas fa-user-tie"></i> Panel de Empleado
+        </h1>
+        <p>Gestiona productos y pedidos de manera eficiente</p>
     </div>
 
-    <a class="btn btn-outline-secondary" href="@Url.Content("~/")">← Regresar a la tienda</a>
+    <!-- Banner de bienvenida -->
+    <div class="welcome-banner">
+        <div class="welcome-content">
+            <div class="welcome-icon">
+                <i class="fas fa-hand-wave"></i>
+            </div>
+            <div class="welcome-text">
+                <h2>¡Bienvenido, @User.Identity.Name!</h2>
+                <p>Tienes acceso a las herramientas esenciales de gestión</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grid de opciones -->
+    <div class="cards-grid">
+        <!-- Card: Lista de Productos -->
+        <a href="@Url.Action("Index", "Products", new { page = 1, sort = "az" })" 
+           class="menu-card" data-card="products">
+            <div class="card-content">
+                <div class="card-icon">
+                    <i class="fas fa-list-ul"></i>
+                </div>
+                <h3 class="card-title">Lista de Productos</h3>
+                <p class="card-description">
+                    Ver, buscar y filtrar todos los productos disponibles en el inventario
+                </p>
+                <span class="card-badge">Ver lista</span>
+            </div>
+            <div class="card-arrow">
+                <i class="fas fa-arrow-right"></i>
+            </div>
+        </a>
+
+        <!-- Card: Ver Catálogo -->
+        <a href="/catalogo" target="_blank" 
+           class="menu-card" data-card="catalog">
+            <div class="card-content">
+                <div class="card-icon">
+                    <i class="fas fa-store"></i>
+                </div>
+                <h3 class="card-title">Ver Catálogo</h3>
+                <p class="card-description">
+                    Previsualiza cómo se ven los productos en la tienda pública
+                </p>
+                <span class="card-badge">Previsualizar</span>
+            </div>
+            <div class="card-arrow">
+                <i class="fas fa-external-link-alt"></i>
+            </div>
+        </a>
+
+        <!-- Card: Gestión de Pedidos -->
+        <a href="@Url.Action("Index", "Orders")" 
+           class="menu-card" data-card="orders">
+            <div class="card-content">
+                <div class="card-icon">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <h3 class="card-title">Gestión de Pedidos</h3>
+                <p class="card-description">
+                    Administra y procesa los pedidos de los clientes
+                </p>
+                <span class="card-badge">Gestionar</span>
+            </div>
+            <div class="card-arrow">
+                <i class="fas fa-arrow-right"></i>
+            </div>
+        </a>
+
+        <!-- Card: Regresar a la Tienda -->
+        <a href="@Url.Content("~/")" 
+           class="menu-card" data-card="store">
+            <div class="card-content">
+                <div class="card-icon">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <h3 class="card-title">Ver Tienda</h3>
+                <p class="card-description">
+                    Regresa a la vista principal de la tienda en línea
+                </p>
+                <span class="card-badge">Ir a tienda</span>
+            </div>
+            <div class="card-arrow">
+                <i class="fas fa-arrow-right"></i>
+            </div>
+        </a>
+    </div>
 </div>
+
+@section Scripts {
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.menu-card');
+        
+        // Ripple effect en click
+        cards.forEach(card => {
+            card.addEventListener('click', function(e) {
+                // No aplicar ripple si es un enlace externo
+                if (this.getAttribute('target') === '_blank') return;
+                
+                const ripple = document.createElement('span');
+                ripple.style.cssText = `
+                    position: absolute;
+                    border-radius: 50%;
+                    background: rgba(255, 255, 255, 0.6);
+                    transform: scale(0);
+                    animation: ripple 0.6s ease-out;
+                    pointer-events: none;
+                `;
+                
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                
+                this.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+
+        console.log('✅ Panel de empleado cargado correctamente');
+    });
+
+    // Animación de ripple
+    const style = document.createElement('style');
+    style.textContent = `
+        @@keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+</script>
+}
