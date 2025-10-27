@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace TiendaPlayeras.Web.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitialCreateWithMultipleImages : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -55,16 +55,38 @@ namespace TiendaPlayeras.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Categories",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(120)", maxLength: 120, nullable: false),
+                    Slug = table.Column<string>(type: "character varying(140)", maxLength: 140, nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Categories", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Products",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    Slug = table.Column<string>(type: "text", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: true),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Slug = table.Column<string>(type: "character varying(140)", maxLength: 140, nullable: false),
+                    Description = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
+                    BasePrice = table.Column<decimal>(type: "numeric(10,2)", nullable: false),
+                    AvailableSizes = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false, defaultValue: "S,M,L,XL"),
                     IsCustomizable = table.Column<bool>(type: "boolean", nullable: false),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -250,25 +272,47 @@ namespace TiendaPlayeras.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ProductVariants",
+                name: "Tags",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CategoryId = table.Column<int>(type: "integer", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Slug = table.Column<string>(type: "character varying(140)", maxLength: 140, nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Tags", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Tags_Categories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "Categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProductImages",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     ProductId = table.Column<int>(type: "integer", nullable: false),
-                    Size = table.Column<string>(type: "text", nullable: false),
-                    Fit = table.Column<string>(type: "text", nullable: false),
-                    Color = table.Column<string>(type: "text", nullable: false),
-                    DesignCode = table.Column<string>(type: "text", nullable: false),
-                    Price = table.Column<decimal>(type: "numeric", nullable: false),
-                    Stock = table.Column<int>(type: "integer", nullable: false),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
+                    Path = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    DisplayOrder = table.Column<int>(type: "integer", nullable: false),
+                    IsMain = table.Column<bool>(type: "boolean", nullable: false),
+                    AltText = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ProductVariants", x => x.Id);
+                    table.PrimaryKey("PK_ProductImages", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ProductVariants_Products_ProductId",
+                        name: "FK_ProductImages_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
                         principalColumn: "Id",
@@ -276,33 +320,30 @@ namespace TiendaPlayeras.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Orders",
+                name: "WishlistItems",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UserId = table.Column<string>(type: "text", nullable: true),
-                    ShippingAddressId = table.Column<int>(type: "integer", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Status = table.Column<string>(type: "text", nullable: false),
-                    Subtotal = table.Column<decimal>(type: "numeric", nullable: false),
-                    Shipping = table.Column<decimal>(type: "numeric", nullable: false),
-                    Total = table.Column<decimal>(type: "numeric", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    ProductId = table.Column<int>(type: "integer", nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Orders", x => x.Id);
+                    table.PrimaryKey("PK_WishlistItems", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Orders_AspNetUsers_UserId",
+                        name: "FK_WishlistItems_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Orders_UserAddresses_ShippingAddressId",
-                        column: x => x.ShippingAddressId,
-                        principalTable: "UserAddresses",
-                        principalColumn: "Id");
+                        name: "FK_WishlistItems_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -312,7 +353,8 @@ namespace TiendaPlayeras.Web.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     CartId = table.Column<int>(type: "integer", nullable: false),
-                    ProductVariantId = table.Column<int>(type: "integer", nullable: false),
+                    ProductId = table.Column<int>(type: "integer", nullable: false),
+                    Size = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
                     Quantity = table.Column<int>(type: "integer", nullable: false),
                     UnitPrice = table.Column<decimal>(type: "numeric", nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false)
@@ -327,36 +369,68 @@ namespace TiendaPlayeras.Web.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_CartItems_ProductVariants_ProductVariantId",
-                        column: x => x.ProductVariantId,
-                        principalTable: "ProductVariants",
+                        name: "FK_CartItems_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
-                name: "WishlistItems",
+                name: "Orders",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UserId = table.Column<string>(type: "text", nullable: false),
-                    ProductVariantId = table.Column<int>(type: "integer", nullable: false),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
+                    UserId = table.Column<string>(type: "text", nullable: true),
+                    ShippingAddressId = table.Column<int>(type: "integer", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
+                    Status = table.Column<string>(type: "text", nullable: false, defaultValue: "Pending"),
+                    Subtotal = table.Column<decimal>(type: "numeric", nullable: false),
+                    Shipping = table.Column<decimal>(type: "numeric", nullable: false),
+                    Total = table.Column<decimal>(type: "numeric", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_WishlistItems", x => x.Id);
+                    table.PrimaryKey("PK_Orders", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_WishlistItems_AspNetUsers_UserId",
+                        name: "FK_Orders_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Orders_UserAddresses_ShippingAddressId",
+                        column: x => x.ShippingAddressId,
+                        principalTable: "UserAddresses",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProductTags",
+                columns: table => new
+                {
+                    ProductId = table.Column<int>(type: "integer", nullable: false),
+                    TagId = table.Column<int>(type: "integer", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductTags", x => new { x.ProductId, x.TagId });
+                    table.ForeignKey(
+                        name: "FK_ProductTags_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_WishlistItems_ProductVariants_ProductVariantId",
-                        column: x => x.ProductVariantId,
-                        principalTable: "ProductVariants",
+                        name: "FK_ProductTags_Tags_TagId",
+                        column: x => x.TagId,
+                        principalTable: "Tags",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -368,10 +442,11 @@ namespace TiendaPlayeras.Web.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     OrderId = table.Column<int>(type: "integer", nullable: false),
-                    ProductVariantId = table.Column<int>(type: "integer", nullable: false),
+                    ProductId = table.Column<int>(type: "integer", nullable: false),
+                    Size = table.Column<string>(type: "varchar(10)", maxLength: 10, nullable: false),
                     Quantity = table.Column<int>(type: "integer", nullable: false),
                     UnitPrice = table.Column<decimal>(type: "numeric", nullable: false),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true)
                 },
                 constraints: table =>
                 {
@@ -383,11 +458,11 @@ namespace TiendaPlayeras.Web.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_OrderItems_ProductVariants_ProductVariantId",
-                        column: x => x.ProductVariantId,
-                        principalTable: "ProductVariants",
+                        name: "FK_OrderItems_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -428,14 +503,30 @@ namespace TiendaPlayeras.Web.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_CartItems_CartId",
+                name: "IX_CartItems_CartId_ProductId_Size",
                 table: "CartItems",
-                column: "CartId");
+                columns: new[] { "CartId", "ProductId", "Size" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_CartItems_ProductVariantId",
+                name: "IX_CartItems_IsActive",
                 table: "CartItems",
-                column: "ProductVariantId");
+                column: "IsActive");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CartItems_ProductId",
+                table: "CartItems",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Carts_IsActive",
+                table: "Carts",
+                column: "IsActive");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Carts_SessionId",
+                table: "Carts",
+                column: "SessionId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Carts_UserId",
@@ -443,9 +534,38 @@ namespace TiendaPlayeras.Web.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Carts_UserId_IsActive",
+                table: "Carts",
+                columns: new[] { "UserId", "IsActive" },
+                unique: true,
+                filter: "\"UserId\" IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Categories_IsActive",
+                table: "Categories",
+                column: "IsActive");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Categories_Name",
+                table: "Categories",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Categories_Slug",
+                table: "Categories",
+                column: "Slug",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_DesignUploads_UserId",
                 table: "DesignUploads",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OrderItems_IsActive",
+                table: "OrderItems",
+                column: "IsActive");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrderItems_OrderId",
@@ -453,9 +573,19 @@ namespace TiendaPlayeras.Web.Migrations
                 column: "OrderId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_OrderItems_ProductVariantId",
+                name: "IX_OrderItems_ProductId",
                 table: "OrderItems",
-                column: "ProductVariantId");
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_CreatedAt",
+                table: "Orders",
+                column: "CreatedAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_IsActive",
+                table: "Orders",
+                column: "IsActive");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Orders_ShippingAddressId",
@@ -463,9 +593,40 @@ namespace TiendaPlayeras.Web.Migrations
                 column: "ShippingAddressId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Orders_Status",
+                table: "Orders",
+                column: "Status");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Orders_UserId",
                 table: "Orders",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductImages_DisplayOrder",
+                table: "ProductImages",
+                column: "DisplayOrder");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductImages_IsMain",
+                table: "ProductImages",
+                column: "IsMain");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductImages_ProductId",
+                table: "ProductImages",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_IsActive",
+                table: "Products",
+                column: "IsActive");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_Name",
+                table: "Products",
+                column: "Name",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_Slug",
@@ -474,9 +635,42 @@ namespace TiendaPlayeras.Web.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProductVariants_ProductId_Size_Fit_Color_DesignCode",
-                table: "ProductVariants",
-                columns: new[] { "ProductId", "Size", "Fit", "Color", "DesignCode" },
+                name: "IX_ProductTags_IsActive",
+                table: "ProductTags",
+                column: "IsActive");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductTags_ProductId_TagId",
+                table: "ProductTags",
+                columns: new[] { "ProductId", "TagId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductTags_TagId",
+                table: "ProductTags",
+                column: "TagId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tags_CategoryId_Name",
+                table: "Tags",
+                columns: new[] { "CategoryId", "Name" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tags_CategoryId_Slug",
+                table: "Tags",
+                columns: new[] { "CategoryId", "Slug" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tags_IsActive",
+                table: "Tags",
+                column: "IsActive");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tags_Slug",
+                table: "Tags",
+                column: "Slug",
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -485,14 +679,19 @@ namespace TiendaPlayeras.Web.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_WishlistItems_ProductVariantId",
+                name: "IX_WishlistItems_IsActive",
                 table: "WishlistItems",
-                column: "ProductVariantId");
+                column: "IsActive");
 
             migrationBuilder.CreateIndex(
-                name: "IX_WishlistItems_UserId_ProductVariantId",
+                name: "IX_WishlistItems_ProductId",
                 table: "WishlistItems",
-                columns: new[] { "UserId", "ProductVariantId" },
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WishlistItems_UserId_ProductId",
+                table: "WishlistItems",
+                columns: new[] { "UserId", "ProductId" },
                 unique: true);
         }
 
@@ -524,6 +723,12 @@ namespace TiendaPlayeras.Web.Migrations
                 name: "OrderItems");
 
             migrationBuilder.DropTable(
+                name: "ProductImages");
+
+            migrationBuilder.DropTable(
+                name: "ProductTags");
+
+            migrationBuilder.DropTable(
                 name: "WishlistItems");
 
             migrationBuilder.DropTable(
@@ -536,13 +741,16 @@ namespace TiendaPlayeras.Web.Migrations
                 name: "Orders");
 
             migrationBuilder.DropTable(
-                name: "ProductVariants");
+                name: "Tags");
+
+            migrationBuilder.DropTable(
+                name: "Products");
 
             migrationBuilder.DropTable(
                 name: "UserAddresses");
 
             migrationBuilder.DropTable(
-                name: "Products");
+                name: "Categories");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

@@ -249,7 +249,15 @@ namespace TiendaPlayeras.Web.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("IsActive");
+
+                    b.HasIndex("SessionId");
+
                     b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "IsActive")
+                        .IsUnique()
+                        .HasFilter("\"UserId\" IS NOT NULL");
 
                     b.ToTable("Carts");
                 });
@@ -268,20 +276,28 @@ namespace TiendaPlayeras.Web.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("ProductVariantId")
+                    b.Property<int>("ProductId")
                         .HasColumnType("integer");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Size")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
 
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("numeric");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CartId");
+                    b.HasIndex("IsActive");
 
-                    b.HasIndex("ProductVariantId");
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("CartId", "ProductId", "Size")
+                        .IsUnique();
 
                     b.ToTable("CartItems");
                 });
@@ -380,10 +396,14 @@ namespace TiendaPlayeras.Web.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
 
                     b.Property<decimal>("Shipping")
                         .HasColumnType("numeric");
@@ -393,7 +413,9 @@ namespace TiendaPlayeras.Web.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("Pending");
 
                     b.Property<decimal>("Subtotal")
                         .HasColumnType("numeric");
@@ -401,12 +423,21 @@ namespace TiendaPlayeras.Web.Migrations
                     b.Property<decimal>("Total")
                         .HasColumnType("numeric");
 
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("UserId")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("IsActive");
+
                     b.HasIndex("ShippingAddressId");
+
+                    b.HasIndex("Status");
 
                     b.HasIndex("UserId");
 
@@ -422,25 +453,34 @@ namespace TiendaPlayeras.Web.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
 
                     b.Property<int>("OrderId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("ProductVariantId")
+                    b.Property<int>("ProductId")
                         .HasColumnType("integer");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Size")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
 
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("numeric");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("IsActive");
+
                     b.HasIndex("OrderId");
 
-                    b.HasIndex("ProductVariantId");
+                    b.HasIndex("ProductId");
 
                     b.ToTable("OrderItems");
                 });
@@ -453,17 +493,12 @@ namespace TiendaPlayeras.Web.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AllowedColorsCsv")
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)");
-
-                    b.Property<string>("AllowedFitsCsv")
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)");
-
-                    b.Property<string>("AllowedSizesCsv")
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)");
+                    b.Property<string>("AvailableSizes")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasDefaultValue("S,M,L,XL");
 
                     b.Property<decimal>("BasePrice")
                         .HasColumnType("numeric(10,2)");
@@ -483,9 +518,6 @@ namespace TiendaPlayeras.Web.Migrations
                     b.Property<bool>("IsCustomizable")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("MainImagePath")
-                        .HasColumnType("text");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -499,15 +531,6 @@ namespace TiendaPlayeras.Web.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("UseColor")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("UseFit")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("UseSize")
-                        .HasColumnType("boolean");
-
                     b.HasKey("Id");
 
                     b.HasIndex("IsActive");
@@ -519,6 +542,48 @@ namespace TiendaPlayeras.Web.Migrations
                         .IsUnique();
 
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("TiendaPlayeras.Web.Models.ProductImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AltText")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsMain")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DisplayOrder");
+
+                    b.HasIndex("IsMain");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductImages");
                 });
 
             modelBuilder.Entity("TiendaPlayeras.Web.Models.ProductTag", b =>
@@ -547,54 +612,6 @@ namespace TiendaPlayeras.Web.Migrations
                         .IsUnique();
 
                     b.ToTable("ProductTags");
-                });
-
-            modelBuilder.Entity("TiendaPlayeras.Web.Models.ProductVariant", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Color")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)");
-
-                    b.Property<string>("DesignCode")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("Fit")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("numeric(10,2)");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Size")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<int>("Stock")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId", "Size", "Fit", "Color", "DesignCode")
-                        .IsUnique();
-
-                    b.ToTable("ProductVariants");
                 });
 
             modelBuilder.Entity("TiendaPlayeras.Web.Models.Tag", b =>
@@ -704,7 +721,7 @@ namespace TiendaPlayeras.Web.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("ProductVariantId")
+                    b.Property<int>("ProductId")
                         .HasColumnType("integer");
 
                     b.Property<string>("UserId")
@@ -713,9 +730,11 @@ namespace TiendaPlayeras.Web.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductVariantId");
+                    b.HasIndex("IsActive");
 
-                    b.HasIndex("UserId", "ProductVariantId")
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("UserId", "ProductId")
                         .IsUnique();
 
                     b.ToTable("WishlistItems");
@@ -789,15 +808,15 @@ namespace TiendaPlayeras.Web.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TiendaPlayeras.Web.Models.ProductVariant", "ProductVariant")
+                    b.HasOne("TiendaPlayeras.Web.Models.Product", "Product")
                         .WithMany()
-                        .HasForeignKey("ProductVariantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Cart");
 
-                    b.Navigation("ProductVariant");
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("TiendaPlayeras.Web.Models.DesignUpload", b =>
@@ -815,11 +834,13 @@ namespace TiendaPlayeras.Web.Migrations
                 {
                     b.HasOne("TiendaPlayeras.Web.Models.UserAddress", "ShippingAddress")
                         .WithMany()
-                        .HasForeignKey("ShippingAddressId");
+                        .HasForeignKey("ShippingAddressId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TiendaPlayeras.Web.Models.ApplicationUser", "User")
                         .WithMany()
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("ShippingAddress");
 
@@ -834,15 +855,26 @@ namespace TiendaPlayeras.Web.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TiendaPlayeras.Web.Models.ProductVariant", "ProductVariant")
+                    b.HasOne("TiendaPlayeras.Web.Models.Product", "Product")
                         .WithMany()
-                        .HasForeignKey("ProductVariantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Order");
 
-                    b.Navigation("ProductVariant");
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("TiendaPlayeras.Web.Models.ProductImage", b =>
+                {
+                    b.HasOne("TiendaPlayeras.Web.Models.Product", "Product")
+                        .WithMany("ProductImages")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("TiendaPlayeras.Web.Models.ProductTag", b =>
@@ -862,17 +894,6 @@ namespace TiendaPlayeras.Web.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("Tag");
-                });
-
-            modelBuilder.Entity("TiendaPlayeras.Web.Models.ProductVariant", b =>
-                {
-                    b.HasOne("TiendaPlayeras.Web.Models.Product", "Product")
-                        .WithMany("Variants")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("TiendaPlayeras.Web.Models.Tag", b =>
@@ -899,9 +920,9 @@ namespace TiendaPlayeras.Web.Migrations
 
             modelBuilder.Entity("TiendaPlayeras.Web.Models.WishlistItem", b =>
                 {
-                    b.HasOne("TiendaPlayeras.Web.Models.ProductVariant", "ProductVariant")
+                    b.HasOne("TiendaPlayeras.Web.Models.Product", "Product")
                         .WithMany()
-                        .HasForeignKey("ProductVariantId")
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -911,7 +932,7 @@ namespace TiendaPlayeras.Web.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("ProductVariant");
+                    b.Navigation("Product");
 
                     b.Navigation("User");
                 });
@@ -938,9 +959,9 @@ namespace TiendaPlayeras.Web.Migrations
 
             modelBuilder.Entity("TiendaPlayeras.Web.Models.Product", b =>
                 {
-                    b.Navigation("ProductTags");
+                    b.Navigation("ProductImages");
 
-                    b.Navigation("Variants");
+                    b.Navigation("ProductTags");
                 });
 
             modelBuilder.Entity("TiendaPlayeras.Web.Models.Tag", b =>

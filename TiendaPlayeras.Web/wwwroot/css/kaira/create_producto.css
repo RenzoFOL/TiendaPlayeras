@@ -1,59 +1,862 @@
- @keyframes fadeInDown {
-        from {
-            opacity: 0;
-            transform: translateY(-30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+/* ================================================
+   VARIABLES CSS - Unificadas con Index
+   ================================================ */
+:root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    --danger-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    --card-shadow-hover: 0 15px 50px rgba(0, 0, 0, 0.15);
+    --border-radius: 20px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ================================================
+   CONTENEDOR PRINCIPAL
+   ================================================ */
+.create-container {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    padding: 30px 20px;
+}
+
+/* ================================================
+   HEADER DEL FORMULARIO
+   ================================================ */
+.create-header {
+    text-align: center;
+    margin-bottom: 30px;
+    animation: slideDown 0.6s ease;
+}
+
+.create-header h1 {
+    font-size: 32px;
+    font-weight: 700;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.create-header h1 i {
+    background: var(--primary-gradient);
+    -webkit-background-clip: initial;
+    -webkit-text-fill-color: white;
+    background-clip: initial;
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+.create-header p {
+    color: #64748b;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* ================================================
+   TARJETA DEL FORMULARIO
+   ================================================ */
+.form-card {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 40px;
+    box-shadow: var(--card-shadow);
+    max-width: 900px;
+    margin: 0 auto;
+    animation: slideUp 0.6s ease;
+    border: none;
+}
+
+/* ================================================
+   SECCIONES DEL FORMULARIO
+   ================================================ */
+.form-section {
+    margin-bottom: 35px;
+    padding-bottom: 35px;
+    border-bottom: 2px solid #f0f4f8;
+    animation: fadeIn 0.8s ease;
+    animation-fill-mode: both;
+}
+
+.form-section:nth-child(1) { animation-delay: 0.1s; }
+.form-section:nth-child(2) { animation-delay: 0.2s; }
+.form-section:nth-child(3) { animation-delay: 0.3s; }
+.form-section:nth-child(4) { animation-delay: 0.4s; }
+
+.form-section:last-of-type {
+    border-bottom: none;
+}
+
+.section-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+}
+
+.section-title i {
+    width: 45px;
+    height: 45px;
+    background: var(--primary-gradient);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    transition: var(--transition);
+}
+
+.section-title:hover i {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 12px 30px rgba(102, 126, 234, 0.5);
+}
+
+.section-title .badge {
+    animation: pulse 2s infinite;
+}
+
+/* ================================================
+   LABELS Y CONTROLES DE FORMULARIO
+   ================================================ */
+.form-label {
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 10px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-label i {
+    color: #667eea;
+    font-size: 16px;
+    transition: var(--transition);
+}
+
+.form-label:hover i {
+    transform: scale(1.2);
+}
+
+.form-label .required {
+    color: #e53e3e;
+    font-size: 18px;
+    animation: pulse 2s infinite;
+}
+
+.form-control, .form-select {
+    border: 2px solid #e0e7ff;
+    border-radius: 12px;
+    padding: 14px 18px;
+    transition: var(--transition);
+    font-size: 15px;
+    background: #f8fafc;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    outline: none;
+    background: white;
+    transform: translateY(-2px);
+}
+
+.form-control:hover, .form-select:hover {
+    border-color: #667eea50;
+}
+
+textarea.form-control {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.input-icon {
+    position: relative;
+}
+
+.input-icon i {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #667eea;
+    font-size: 16px;
+    z-index: 1;
+    transition: var(--transition);
+}
+
+.input-icon .form-control:focus + i,
+.input-icon:hover i {
+    color: #764ba2;
+    transform: translateY(-50%) scale(1.2);
+}
+
+.input-icon .form-control {
+    padding-left: 50px;
+}
+
+/* ================================================
+   CONTADORES DE CARACTERES
+   ================================================ */
+.char-counter {
+    font-size: 12px;
+    color: #94a3b8;
+    text-align: right;
+    margin-top: 8px;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.char-counter.warning {
+    color: #f59e0b;
+}
+
+.char-counter.danger {
+    color: #e53e3e;
+    animation: shake 0.5s;
+}
+
+/* ================================================
+   CHECKBOXES Y RADIOS
+   ================================================ */
+.form-check {
+    padding: 15px 20px;
+    background: linear-gradient(135deg, #667eea10, #764ba210);
+    border-radius: 12px;
+    border: 2px solid transparent;
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.form-check:hover {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #667eea15, #764ba215);
+    transform: translateX(5px);
+}
+
+.form-check-input {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #667eea;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 0;
+    transition: var(--transition);
+}
+
+.form-check-input:checked {
+    background-color: #667eea;
+    border-color: #667eea;
+    transform: scale(1.1);
+}
+
+.form-check-input:focus {
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+}
+
+.form-check-label {
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 15px;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: var(--transition);
+}
+
+.form-check:hover .form-check-label {
+    color: #667eea;
+}
+
+.form-check-description {
+    font-size: 13px;
+    color: #64748b;
+    margin-left: 34px;
+    margin-top: 5px;
+}
+
+/* ================================================
+   GRUPO DE ENTRADA DE PRECIO
+   ================================================ */
+.price-input-group {
+    position: relative;
+}
+
+.price-input-group .currency-symbol {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: 700;
+    color: #667eea;
+    font-size: 18px;
+    z-index: 1;
+    transition: var(--transition);
+}
+
+.price-input-group:hover .currency-symbol {
+    color: #764ba2;
+    transform: translateY(-50%) scale(1.2);
+}
+
+.price-input-group .form-control {
+    padding-left: 45px;
+    font-weight: 600;
+    font-size: 18px;
+}
+
+/* ================================================
+   BOTONES
+   ================================================ */
+.btn-submit {
+    background: var(--primary-gradient);
+    border: none;
+    padding: 16px 40px;
+    border-radius: 15px;
+    color: white;
+    font-weight: 700;
+    font-size: 16px;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-submit::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-submit:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn-submit:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+    color: white;
+}
+
+.btn-submit:active {
+    transform: translateY(-1px);
+}
+
+.btn-submit:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.btn-cancel {
+    background: white;
+    border: 2px solid #e0e7ff;
+    padding: 16px 40px;
+    border-radius: 15px;
+    color: #667eea;
+    font-weight: 700;
+    font-size: 16px;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-cancel:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+/* ================================================
+   VALIDACIÓN Y MENSAJES
+   ================================================ */
+.text-danger {
+    display: block;
+    margin-top: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #e53e3e;
+    animation: shake 0.5s;
+}
+
+.form-actions {
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 2px solid #f0f4f8;
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    animation: slideUp 1s ease;
+}
+
+.helper-text {
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    animation: fadeIn 0.5s ease;
+}
+
+.helper-text i {
+    color: #667eea;
+    transition: var(--transition);
+}
+
+.helper-text:hover i {
+    transform: scale(1.2) rotate(10deg);
+}
+
+/* ================================================
+   VISTA PREVIA DEL SLUG
+   ================================================ */
+.slug-preview {
+    background: linear-gradient(135deg, #4facfe15, #00f2fe15);
+    border: 2px dashed #4facfe;
+    padding: 12px 18px;
+    border-radius: 12px;
+    margin-top: 10px;
+    font-family: 'Courier New', monospace;
+    color: #4facfe;
+    font-weight: 600;
+    display: none;
+    transition: var(--transition);
+}
+
+.slug-preview.show {
+    display: flex;
+    align-items: center;
+    animation: slideDown 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.slug-preview:hover {
+    border-color: #00f2fe;
+    background: linear-gradient(135deg, #4facfe20, #00f2fe20);
+    transform: translateX(5px);
+}
+
+.slug-preview i {
+    transition: var(--transition);
+}
+
+.slug-preview:hover i {
+    transform: rotate(360deg);
+}
+
+/* ================================================
+   SISTEMA DE IMÁGENES
+   ================================================ */
+.images-upload-area {
+    background: linear-gradient(135deg, #fa709a10, #fee14010);
+    border: 2px dashed #fa709a;
+    border-radius: 15px;
+    padding: 40px 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.images-upload-area::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(250, 112, 154, 0.1), transparent);
+    transform: rotate(45deg);
+    transition: var(--transition);
+}
+
+.images-upload-area:hover::before {
+    animation: shimmer 2s infinite;
+}
+
+.images-upload-area:hover {
+    border-color: #f55;
+    background: linear-gradient(135deg, #fa709a15, #fee14015);
+    transform: scale(1.02);
+    box-shadow: 0 10px 30px rgba(250, 112, 154, 0.2);
+}
+
+.upload-icon {
+    font-size: 48px;
+    color: #fa709a;
+    margin-bottom: 15px;
+    transition: var(--transition);
+}
+
+.images-upload-area:hover .upload-icon {
+    transform: scale(1.2) translateY(-5px);
+    color: #f55;
+}
+
+.images-upload-area h5 {
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 8px;
+}
+
+.images-upload-area p {
+    color: #64748b;
+}
+
+.images-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.image-preview-item {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    animation: scaleIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    transition: var(--transition);
+}
+
+.image-preview-item:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--card-shadow-hover);
+}
+
+.image-preview-item img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    display: block;
+    transition: var(--transition);
+}
+
+.image-preview-item:hover img {
+    transform: scale(1.1);
+}
+
+.image-preview-item .remove-image {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(229, 62, 62, 0.9);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 14px;
+    z-index: 2;
+    opacity: 0;
+}
+
+.image-preview-item:hover .remove-image {
+    opacity: 1;
+    animation: bounceIn 0.5s;
+}
+
+.image-preview-item .remove-image:hover {
+    background: #c53030;
+    transform: scale(1.2) rotate(90deg);
+}
+
+.image-preview-item .main-badge {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    background: var(--primary-gradient);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    z-index: 1;
+    animation: pulse 2s infinite;
+}
+
+.image-info {
+    font-size: 11px;
+    color: #64748b;
+    text-align: center;
+    padding: 8px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    font-weight: 600;
+}
+
+.image-info div:first-child {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #2d3748;
+}
+
+.no-images-message {
+    text-align: center;
+    color: #94a3b8;
+    font-style: italic;
+    padding: 40px 20px;
+    grid-column: 1 / -1;
+}
+
+.upload-status {
+    margin-top: 15px;
+    padding: 12px 18px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    display: none;
+    animation: slideDown 0.3s ease;
+}
+
+.upload-status.show {
+    display: block;
+}
+
+.upload-status.success {
+    background: linear-gradient(135deg, #48bb7815, #38a16915);
+    color: #38a169;
+    border: 2px solid #48bb7830;
+}
+
+.upload-status.error {
+    background: linear-gradient(135deg, #ef444415, #dc262615);
+    color: #dc2626;
+    border: 2px solid #ef444430;
+}
+
+.upload-status.info {
+    background: linear-gradient(135deg, #4facfe15, #00f2fe15);
+    color: #4facfe;
+    border: 2px solid #4facfe30;
+}
+
+/* ================================================
+   SISTEMA DE TALLAS
+   ================================================ */
+.size-options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 12px;
+}
+
+.form-check-size {
+    background: linear-gradient(135deg, #667eea10, #764ba210);
+    border: 2px solid #e0e7ff;
+    border-radius: 12px;
+    padding: 20px 15px;
+    text-align: center;
+    transition: var(--transition);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.form-check-size::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.form-check-size:hover::before {
+    left: 100%;
+}
+
+.form-check-size:hover {
+    border-color: #667eea;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+}
+
+.form-check-size .form-check-input:checked ~ .form-check-label {
+    color: white;
+}
+
+.form-check-size:has(.form-check-input:checked) {
+    background: var(--primary-gradient);
+    border-color: #667eea;
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.form-check-size .form-check-input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.form-check-size .form-check-label {
+    font-weight: 700;
+    font-size: 18px;
+    cursor: pointer;
+    margin: 0;
+    color: #667eea;
+    transition: var(--transition);
+    display: block;
+}
+
+.form-check-size:hover .form-check-label {
+    transform: scale(1.1);
+}
+
+/* ================================================
+   ANIMACIONES
+   ================================================ */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+@keyframes pulse {
+    0%, 100% { 
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% { 
+        opacity: 0.8;
+        transform: scale(1.05);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%) translateY(-100%) rotate(45deg);
+    }
+    100% {
+        transform: translateX(100%) translateY(100%) rotate(45deg);
+    }
+}
+
+/* ================================================
+   RESPONSIVE
+   ================================================ */
+@media (max-width: 768px) {
+    .create-header h1 {
+        font-size: 24px;
     }
 
-    @keyframes slideUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    .form-card {
+        padding: 25px;
     }
 
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-        }
-        to {
-            opacity: 1;
-        }
+    .section-title {
+        font-size: 18px;
     }
 
-    @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        25% { transform: translateX(-5px); }
-        75% { transform: translateX(5px); }
+    .form-actions {
+        flex-direction: column;
     }
 
-    @media (max-width: 768px) {
-        .form-card {
-            padding: 25px;
-        }
-
-        .create-header h1 {
-            font-size: 32px;
-        }
-
-        .section-title {
-            font-size: 18px;
-        }
-
-        .form-actions {
-            flex-direction: column;
-        }
-
-        .btn-submit, .btn-cancel {
-            width: 100%;
-            justify-content: center;
-        }
+    .btn-submit, .btn-cancel {
+        width: 100%;
+        justify-content: center;
     }
+
+    .size-options-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .images-preview-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+}

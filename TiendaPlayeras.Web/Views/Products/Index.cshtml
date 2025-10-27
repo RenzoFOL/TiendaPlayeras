@@ -533,28 +533,27 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm" role="group">
+                                        <!-- Editar producto -->
                                         <a class="btn btn-outline-primary btn-action" 
                                            asp-action="Edit" 
                                            asp-route-id="@p.Id"
-                                           title="Editar">
+                                           title="Editar producto">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <a class="btn btn-outline-info btn-action" 
-                                           href="@Url.Action("Index","Variants", new { productId = p.Id })"
-                                           title="Variantes">
-                                            <i class="fas fa-layer-group"></i>
-                                        </a>
-                                        <a class="btn btn-outline-dark btn-action" 
-                                           href="@Url.Action("Edit","Products", new { id = p.Id })#tags"
-                                           title="Etiquetas">
-                                            <i class="fas fa-tags"></i>
-                                        </a>
-                                        <button type="button" 
-                                                class="btn btn-outline-@(p.IsActive ? "warning" : "success") btn-action"
-                                                onclick="toggleActive(@p.Id, @p.IsActive.ToString().ToLower())"
-                                                title="@(p.IsActive ? "Desactivar" : "Activar")">
-                                            <i class="fas fa-@(p.IsActive ? "eye-slash" : "eye")"></i>
-                                        </button>
+                                        
+                                        <!-- Activar/Desactivar -->
+                                        <form method="post" 
+                                              asp-action="ToggleActive" 
+                                              asp-route-id="@p.Id" 
+                                              class="d-inline"
+                                              onsubmit="return confirmToggle(this, @p.IsActive.ToString().ToLower())">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" 
+                                                    class="btn btn-outline-@(p.IsActive ? "warning" : "success") btn-action"
+                                                    title="@(p.IsActive ? "Desactivar" : "Activar") producto">
+                                                <i class="fas fa-@(p.IsActive ? "eye-slash" : "eye")"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
@@ -634,10 +633,6 @@
     </div>
 </div>
 
-<form id="toggleForm" method="post" style="display:none;">
-    @Html.AntiForgeryToken()
-</form>
-
 @section Scripts {
 <script>
     function clearSearch() {
@@ -650,24 +645,33 @@
         document.getElementById('filterForm').submit();
     }
 
-    function toggleActive(productId, isActive) {
+    function confirmToggle(form, isActive) {
         const action = isActive ? 'desactivar' : 'activar';
-        if (confirm(`¿Estás seguro de que deseas ${action} este producto?`)) {
-            const form = document.getElementById('toggleForm');
-            form.action = '@Url.Action("ToggleActive", "Products")' + '/' + productId;
-            form.submit();
-        }
+        return confirm(`¿Estás seguro de que deseas ${action} este producto?`);
     }
 
     // Animación de entrada para las filas
-    document.querySelectorAll('.table tbody tr').forEach((row, index) => {
-        row.style.opacity = '0';
-        row.style.transform = 'translateX(-20px)';
-        setTimeout(() => {
-            row.style.transition = 'all 0.5s ease';
-            row.style.opacity = '1';
-            row.style.transform = 'translateX(0)';
-        }, index * 50);
+    document.addEventListener('DOMContentLoaded', function() {
+        const rows = document.querySelectorAll('.table tbody tr');
+        rows.forEach((row, index) => {
+            row.style.opacity = '0';
+            row.style.transform = 'translateX(-20px)';
+            setTimeout(() => {
+                row.style.transition = 'all 0.5s ease';
+                row.style.opacity = '1';
+                row.style.transform = 'translateX(0)';
+            }, index * 50);
+        });
+    });
+
+    // Auto-submit al cambiar pageSize
+    document.querySelector('select[name="pageSize"]')?.addEventListener('change', function() {
+        document.getElementById('filterForm').submit();
+    });
+
+    // Auto-submit al cambiar sort
+    document.querySelector('select[name="sort"]')?.addEventListener('change', function() {
+        document.getElementById('filterForm').submit();
     });
 </script>
 }

@@ -26,6 +26,98 @@
     }
 }
 
+<style>
+.product-card {
+    transition: all 0.3s ease;
+    border: 1px solid #dee2e6;
+}
+
+.product-card:hover {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.product-image-container {
+    position: relative;
+    overflow: hidden;
+}
+
+.product-image {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.product-card:hover .product-image {
+    transform: scale(1.05);
+}
+
+.product-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.product-card:hover .product-overlay {
+    opacity: 1;
+}
+
+.overlay-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-overlay {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.btn-cart { background: #28a745; }
+.btn-cart:hover { background: #218838; transform: scale(1.1); }
+
+.btn-favorite { background: #dc3545; }
+.btn-favorite:hover { background: #c82333; transform: scale(1.1); }
+
+.btn-view { background: #007bff; }
+.btn-view:hover { background: #0056b3; transform: scale(1.1); }
+
+.tag-badge {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    color: #6c757d;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    margin-right: 4px;
+    margin-bottom: 4px;
+    display: inline-block;
+}
+
+/* Animación para el click en imagen */
+.image-click-animation {
+    transition: transform 0.3s ease;
+}
+.image-click-animation:active {
+    transform: scale(0.95);
+}
+</style>
+
 <div class="container my-4">
     <div class="row g-4">
         <!-- Sidebar filtros -->
@@ -33,7 +125,8 @@
             <div class="card">
                 <div class="card-header fw-bold">Filtros</div>
                 <div class="card-body">
-                    <form method="get" action="@Url.Action("Index","Products")" class="mb-3">
+                    <!-- Acción corregida al controlador público Catalog -->
+                    <form method="get" action="@Url.Action("Index","Catalog")" id="filterForm">
                         <div class="mb-3">
                             <label class="form-label">Buscar</label>
                             <input name="q" value="@q" class="form-control" placeholder="Buscar playeras" />
@@ -63,11 +156,19 @@
                             </select>
                         </div>
 
-                        <button class="btn btn-primary w-100">Aplicar</button>
+                        <button class="btn btn-primary w-100 mb-2" type="submit">Aplicar</button>
+                        <a href="@Url.Action("Index", "Catalog")" class="btn btn-outline-secondary w-100">Limpiar</a>
                     </form>
 
-                    <div class="small text-muted">
-                        Mostrando @((total==0)?0:((page-1)*pageSize + 1))–@Math.Min(page*pageSize, total) de @total
+                    <div class="small text-muted mt-3">
+                        @if (total > 0)
+                        {
+                            <text>Mostrando @((page-1)*pageSize + 1)–@Math.Min(page*pageSize, total) de @total productos</text>
+                        }
+                        else
+                        {
+                            <text>No hay productos</text>
+                        }
                     </div>
                 </div>
             </div>
@@ -77,51 +178,117 @@
         <section class="col-12 col-md-9">
             @if (Model is null || !Model.Any())
             {
-                <div class="alert alert-info">No hay productos que coincidan con tu búsqueda.</div>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No hay productos que coincidan con tu búsqueda.
+                    @if (!string.IsNullOrEmpty(q) || !string.IsNullOrEmpty(tag))
+                    {
+                        <div class="mt-2">
+                            <a href="@Url.Action("Index", "Catalog")" class="btn btn-sm btn-outline-primary">
+                                Limpiar filtros
+                            </a>
+                        </div>
+                    }
+                </div>
             }
             else
             {
-                <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="d-flex justify-content-between align-items-center mb-4">
                     <h5 class="mb-0">Resultados</h5>
-                    <div>
-                        <!-- Dropdowns con enlaces precalculados (sin JS complejo) -->
-                        <select class="form-select form-select-sm d-inline w-auto me-2"
-                                onchange="location.href=this.selectedOptions[0].dataset.href">
-                            <option data-href="@Url.Action("Index","Products", Merge(new { sort="az", page=1 }))"         selected="@(sort=="az")">A–Z</option>
-                            <option data-href="@Url.Action("Index","Products", Merge(new { sort="za", page=1 }))"         selected="@(sort=="za")">Z–A</option>
-                            <option data-href="@Url.Action("Index","Products", Merge(new { sort="price_asc", page=1 }))"  selected="@(sort=="price_asc")">Precio ↑</option>
-                            <option data-href="@Url.Action("Index","Products", Merge(new { sort="price_desc", page=1 }))" selected="@(sort=="price_desc")">Precio ↓</option>
-                        </select>
+                    <div class="d-flex gap-2">
+                        <!-- Acción definida directamente a Catalog/Index -->
+                        <form method="get" id="sortForm" action="@Url.Action("Index","Catalog")" class="d-flex gap-2">
+                            <input type="hidden" name="q" value="@q" />
+                            <input type="hidden" name="tag" value="@tag" />
+                            <input type="hidden" name="pageSize" value="@pageSize" />
+                            
+                            <select class="form-select form-select-sm" name="sort" onchange="this.form.submit()">
+                                <option value="az"         selected="@(sort=="az")">A–Z</option>
+                                <option value="za"         selected="@(sort=="za")">Z–A</option>
+                                <option value="price_asc"  selected="@(sort=="price_asc")">Precio ↑</option>
+                                <option value="price_desc" selected="@(sort=="price_desc")">Precio ↓</option>
+                            </select>
 
-                        <select class="form-select form-select-sm d-inline w-auto"
-                                onchange="location.href=this.selectedOptions[0].dataset.href">
-                            <option data-href="@Url.Action("Index","Products", Merge(new { pageSize=20, page=1 }))" selected="@(pageSize==20)">20</option>
-                            <option data-href="@Url.Action("Index","Products", Merge(new { pageSize=50, page=1 }))" selected="@(pageSize==50)">50</option>
-                        </select>
+                            <select class="form-select form-select-sm" name="pageSize" onchange="this.form.submit()">
+                                <option value="20" selected="@(pageSize==20)">20</option>
+                                <option value="50" selected="@(pageSize==50)">50</option>
+                            </select>
+                        </form>
                     </div>
                 </div>
 
-                <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3">
+                <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
                     @foreach (var p in Model)
                     {
+                        var mainImage = !string.IsNullOrWhiteSpace(p.MainImagePath) ? p.MainImagePath : "/images/placeholder.png";
+                        var productImages = p.ProductImages?.Where(pi => !string.IsNullOrWhiteSpace(pi.Path)).OrderBy(pi => pi.DisplayOrder).ToList();
+                        var firstImage = productImages?.FirstOrDefault()?.Path ?? mainImage;
+                        
                         <div class="col">
-                            <div class="card h-100">
-                                <div class="ratio ratio-1x1 bg-light">
-                                    <img src="@(string.IsNullOrWhiteSpace(p.MainImagePath) ? "/img/placeholder.png" : p.MainImagePath)"
-                                         class="card-img-top object-fit-cover" alt="@p.Name" />
+                            <div class="card h-100 product-card">
+                                <div class="product-image-container">
+                                    <div class="ratio ratio-1x1 bg-light">
+                                        <!-- Navega a Catalog/Product -->
+                                        <img src="@firstImage"
+                                             class="card-img-top object-fit-cover product-image image-click-animation"
+                                             alt="@p.Name"
+                                             onclick="goToProduct('@p.Slug')"
+                                             style="cursor: pointer;" />
+                                    </div>
+                                    
+                                    <div class="product-overlay">
+                                        <div class="overlay-buttons">
+                                            <a href="@Url.Action("Product","Catalog", new { slug = p.Slug })" 
+                                               class="btn-overlay btn-view"
+                                               title="Ver detalles">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <button type="button" 
+                                                    class="btn-overlay btn-cart" 
+                                                    onclick="addToCart(@p.Id)"
+                                                    title="Agregar al carrito">
+                                                <i class="fas fa-shopping-cart"></i>
+                                            </button>
+                                            <button type="button" 
+                                                    class="btn-overlay btn-favorite" 
+                                                    onclick="addToWishlist(@p.Id)"
+                                                    title="Agregar a favoritos">
+                                                <i class="fas fa-heart"></i>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
+                                
                                 <div class="card-body d-flex flex-column">
                                     <h6 class="card-title mb-1">@p.Name</h6>
+                                    
                                     @if (!string.IsNullOrWhiteSpace(p.Description))
                                     {
-                                        <p class="card-text text-muted small mb-2">@(
-                                            p.Description.Length > 110 ? p.Description.Substring(0, 110) + "…" : p.Description
-                                        )</p>
+                                        <p class="card-text text-muted small mb-2 flex-grow-1">
+                                            @(p.Description.Length > 110 ? p.Description.Substring(0, 110) + "…" : p.Description)
+                                        </p>
                                     }
+                                    
+                                    @if (p.ProductTags?.Any(pt => pt.IsActive && pt.Tag != null) == true)
+                                    {
+                                        <div class="mb-2">
+                                            @foreach (var pt in p.ProductTags.Where(pt => pt.IsActive && pt.Tag != null).Take(3))
+                                            {
+                                                <span class="tag-badge">@pt.Tag!.Name</span>
+                                            }
+                                            @if (p.ProductTags.Count(pt => pt.IsActive && pt.Tag != null) > 3)
+                                            {
+                                                <span class="tag-badge">+@(p.ProductTags.Count(pt => pt.IsActive && pt.Tag != null) - 3)</span>
+                                            }
+                                        </div>
+                                    }
+                                    
                                     <div class="mt-auto d-flex justify-content-between align-items-center">
-                                        <div class="fw-bold">@p.BasePrice.ToString("C")</div>
+                                        <div class="fw-bold text-primary">@p.BasePrice.ToString("C")</div>
                                         <a class="btn btn-outline-primary btn-sm"
-                                           href="@Url.Action("Details","Products", new { slug = p.Slug })">Ver</a>
+                                           href="@Url.Action("Product","Catalog", new { slug = p.Slug })">
+                                            Ver
+                                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -132,19 +299,23 @@
                 <!-- Paginación -->
                 <nav class="mt-4">
                     <ul class="pagination justify-content-center">
-                        <li class="page-item @(page<=1 ? "disabled" : "")">
-                            <a class="page-link" href="@Url.Action("Index","Products", Merge(new { page = page-1 }))">Anterior</a>
+                        <li class="page-item @(page <= 1 ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("Index","Catalog", Merge(new { page = page-1 }))">
+                                <i class="fas fa-chevron-left me-1"></i>Anterior
+                            </a>
                         </li>
 
                         @for (var i = Math.Max(1, page - 2); i <= Math.Min(totalPages, page + 2); i++)
                         {
-                            <li class="page-item @(i==page ? "active" : "")">
-                                <a class="page-link" href="@Url.Action("Index","Products", Merge(new { page = i }))">@i</a>
+                            <li class="page-item @(i == page ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("Index","Catalog", Merge(new { page = i }))">@i</a>
                             </li>
                         }
 
-                        <li class="page-item @(page>=totalPages ? "disabled" : "")">
-                            <a class="page-link" href="@Url.Action("Index","Products", Merge(new { page = page+1 }))">Siguiente</a>
+                        <li class="page-item @(page >= totalPages ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("Index","Catalog", Merge(new { page = page+1 }))">
+                                Siguiente<i class="fas fa-chevron-right ms-1"></i>
+                            </a>
                         </li>
                     </ul>
                 </nav>
@@ -152,3 +323,61 @@
         </section>
     </div>
 </div>
+
+@section Scripts {
+<script>
+// Función para redirigir a la página del producto con animación
+function goToProduct(slug) {
+    const image = event.target;
+    image.style.transform = 'scale(0.95)';
+    setTimeout(() => {
+        image.style.transform = 'scale(1)';
+        window.location.href = '@Url.Action("Product", "Catalog")' + '?slug=' + encodeURIComponent(slug);
+    }, 150);
+}
+
+// Funciones para los botones de acción (demo)
+function addToCart(productId) {
+    console.log('Agregando al carrito producto ID:', productId);
+    alert('Producto agregado al carrito');
+    const button = event.target.closest('.btn-cart');
+    const originalHtml = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check"></i>';
+    button.style.background = '#28a745';
+    setTimeout(() => {
+        button.innerHTML = originalHtml;
+        button.style.background = '';
+    }, 1000);
+}
+
+function addToWishlist(productId) {
+    console.log('Agregando a favoritos producto ID:', productId);
+    alert('Producto agregado a favoritos');
+    const button = event.target.closest('.btn-favorite');
+    const originalHtml = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-check"></i>';
+    button.style.background = '#28a745';
+    setTimeout(() => {
+        button.innerHTML = originalHtml;
+        button.style.background = '';
+    }, 1000);
+}
+
+// Inicialización
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Catálogo inicializado correctamente');
+
+    // Efecto de entrada
+    const cards = document.querySelectorAll('.product-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+}

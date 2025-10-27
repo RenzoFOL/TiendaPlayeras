@@ -1,24 +1,52 @@
 @model TiendaPlayeras.Web.Models.Product
+@using TiendaPlayeras.Web.Models
 @{
     ViewData["Title"] = Model.Name;
     
-    // ✅ SISTEMA SIMPLIFICADO - Solo ProductImages
-    var productImages = Model.ProductImages?
-        .OrderBy(x => x.DisplayOrder)
-        .Select(x => x.Path)
-        .ToList() ?? new List<string>();
+    // SISTEMA HÍBRIDO OPTIMIZADO
+    var productImages = new List<string>();
+    var images = Model.ProductImages as List<ProductImage> ?? Model.ProductImages?.ToList();
     
-    // Si no hay imágenes, usar placeholder
+    // PRIMERO: Nuevo sistema (ProductImages)
+    if (images != null && images.Any())
+    {
+        foreach (var img in images.OrderBy(x => x.DisplayOrder))
+        {
+            if (!string.IsNullOrWhiteSpace(img.Path))
+            {
+                productImages.Add(img.Path);
+            }
+        }
+    }
+    
+    // SEGUNDO: Sistema antiguo (MainImagePath) - backup
+    if (!productImages.Any() && !string.IsNullOrWhiteSpace(Model.MainImagePath))
+    {
+        productImages.Add(Model.MainImagePath);
+    }
+    
+    // TERCERO: Placeholder como último recurso
     if (!productImages.Any())
     {
         productImages.Add("/images/placeholder.png");
     }
     
     bool showThumbnails = productImages.Count > 1;
-    var mainImage = productImages.FirstOrDefault();
+    bool usingOldSystem = (images == null || !images.Any()) && !string.IsNullOrWhiteSpace(Model.MainImagePath);
+    
+    // DEBUG: Para ver qué sistema se está usando
+    if (usingOldSystem)
+    {
+        <text><!-- 🔄 Usando sistema antiguo de imágenes --></text>
+    }
+    else if (images != null && images.Any())
+    {
+        <text><!-- ✅ Usando nuevo sistema de imágenes --></text>
+    }
 }
 
 <link rel="stylesheet" type="text/css/kaira" href="/css/kaira/catalog_producto.css">
+
 
 <section class="single-product-section">
     <div class="container">
@@ -26,7 +54,7 @@
         <div class="breadcrumb-custom">
             <a href="/">Inicio</a>
             <span>/</span>
-            <a href="/catalogo">Catálogo</a>
+            <a href="/Catalog">Catálogo</a>
             <span>/</span>
             <span>@Model.Name</span>
         </div>
@@ -36,21 +64,19 @@
             <div class="col-lg-6">
                 <div class="product-gallery">
                     <div class="main-image-container">
-                        <img src="@mainImage" alt="@Model.Name" class="main-product-image" id="mainProductImage"
+                        <img src="@productImages[0]" alt="@Model.Name" class="main-product-image" id="mainProductImage"
                              onerror="this.src='/images/placeholder.png'">
-                        @if (Model.IsCustomizable)
-                        {
-                            <div class="product-badge">Personalizable</div>
-                        }
                     </div>
 
-                    @if (showThumbnails)
+                     @if (showThumbnails)
                     {
                         <div class="thumbnail-gallery">
                             @for (int i = 0; i < productImages.Count; i++)
                             {
-                                <div class="thumbnail-item @(i == 0 ? "active" : "")" data-image="@productImages[i]">
-                                    <img src="@productImages[i]" alt="Imagen @(i + 1) de @Model.Name"
+                                <div class="thumbnail-item @(i == 0 ? "active" : "")" 
+                                     data-image="@productImages[i]">
+                                    <img src="@productImages[i]" 
+                                         alt="Imagen @(i + 1) de @Model.Name"
                                          onerror="this.src='/images/placeholder.png'">
                                 </div>
                             }
@@ -71,7 +97,7 @@
                     @if (!string.IsNullOrWhiteSpace(Model.Description))
                     {
                         <div class="product-description-text">
-                            @Html.Raw(Model.Description.Replace("\n", "<br>"))
+                            @Model.Description
                         </div>
                     }
 
@@ -111,15 +137,18 @@
                     <!-- Botones de acción -->
                     <div class="product-actions">
                         <button type="button" class="btn-kaira btn-kaira-primary" id="btnAddToCart">
-                            <i class="fas fa-shopping-cart me-2"></i>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+                            </svg>
                             Agregar al carrito
                         </button>
                         <button type="button" class="btn-kaira btn-kaira-success" id="btnBuyNow">
-                            <i class="fas fa-bolt me-2"></i>
                             Comprar ahora
                         </button>
                         <button type="button" class="btn-wishlist-kaira" id="btnWishlist">
-                            <i class="fas fa-heart"></i>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                            </svg>
                         </button>
                     </div>
 
@@ -127,7 +156,9 @@
                     <div class="product-features">
                         <div class="feature-item">
                             <div class="feature-icon">
-                                <i class="fas fa-shipping-fast"></i>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 0 0-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z"/>
+                                </svg>
                             </div>
                             <div class="feature-content">
                                 <h6>Envío gratis</h6>
@@ -136,7 +167,9 @@
                         </div>
                         <div class="feature-item">
                             <div class="feature-icon">
-                                <i class="fas fa-undo-alt"></i>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8c-.45-.83-.7-1.79-.7-2.8 0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z"/>
+                                </svg>
                             </div>
                             <div class="feature-content">
                                 <h6>Devoluciones gratuitas</h6>
@@ -145,7 +178,9 @@
                         </div>
                         <div class="feature-item">
                             <div class="feature-icon">
-                                <i class="fas fa-award"></i>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-1.99.9-1.99 2L3 20c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm0 10c-2.76 0-5-2.24-5-5h2c0 1.66 1.34 3 3 3s3-1.34 3-3h2c0 2.76-2.24 5-5 5z"/>
+                                </svg>
                             </div>
                             <div class="feature-content">
                                 <h6>100% Algodón premium</h6>
@@ -192,25 +227,26 @@
     const btnAddToCart = document.getElementById('btnAddToCart');
     const btnBuyNow = document.getElementById('btnBuyNow');
     const btnWishlist = document.getElementById('btnWishlist');
-
+    
     // Datos del producto
     const productData = {
         id: @Model.Id,
         name: '@Html.Raw(Model.Name.Replace("'", "\\'"))',
         price: @Model.BasePrice,
-        image: '@Html.Raw(mainImage.Replace("'", "\\'"))'
+        image: '@Html.Raw((productImages.Any() ? productImages[0] : "/images/placeholder.png").Replace("'", "\\'"))'
     };
 
     // Imágenes del producto
     const productImagesArray = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(productImages));
     const showThumbnails = productImagesArray.length > 1;
 
-    console.log('📷 Sistema simplificado - Imágenes cargadas:', {
+     console.log('📷 Sistema híbrido - Imágenes cargadas:', {
         total: productImagesArray.length,
-        images: productImagesArray
+        images: productImagesArray,
+        source: @(usingOldSystem ? "'sistema-antiguo'" : "'sistema-nuevo'")
     });
 
-    // Galería de imágenes
+    // Galería de imágenes (solo si hay múltiples imágenes)
     if (showThumbnails) {
         thumbnails.forEach((thumb) => {
             thumb.addEventListener('click', function() {
@@ -231,6 +267,14 @@
             });
         });
     }
+
+    // Manejo de errores en imágenes
+    mainImage.addEventListener('error', function() {
+        console.warn('❌ Error cargando imagen principal, usando placeholder');
+        this.src = '/images/placeholder.png';
+    });
+
+
 
     // Selector de tallas
     sizeOptions.forEach(option => {
@@ -298,7 +342,7 @@
         
         // Animación del botón
         const originalText = this.innerHTML;
-        this.innerHTML = '<i class="fas fa-check me-2"></i> ¡Agregado!';
+        this.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> ¡Agregado!';
         this.style.background = '#4CAF50';
         
         setTimeout(() => {
@@ -325,23 +369,20 @@
     // Lista de deseos
     btnWishlist.addEventListener('click', function() {
         this.classList.toggle('active');
+        const svg = this.querySelector('svg');
         
         if (this.classList.contains('active')) {
-            this.innerHTML = '<i class="fas fa-heart" style="color: #fff;"></i>';
+            svg.setAttribute('fill', 'currentColor');
+            svg.setAttribute('stroke', 'none');
             console.log('💖 Agregado a favoritos');
         } else {
-            this.innerHTML = '<i class="fas fa-heart"></i>';
+            svg.setAttribute('fill', 'none');
+            svg.setAttribute('stroke', 'currentColor');
             console.log('💔 Removido de favoritos');
         }
     });
 
-    // Manejo de errores en imágenes
-    mainImage.addEventListener('error', function() {
-        console.warn('❌ Error cargando imagen principal, usando placeholder');
-        this.src = '/images/placeholder.png';
-    });
-
-    console.log('✅ Vista de producto inicializada - Sistema Simplificado');
+    console.log('✅ Vista de producto inicializada - Sistema Híbrido');
 })();
 </script>
 }

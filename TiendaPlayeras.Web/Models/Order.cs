@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TiendaPlayeras.Web.Models
 {
@@ -17,6 +18,12 @@ namespace TiendaPlayeras.Web.Models
         public decimal Total { get; set; }
         public bool IsActive { get; set; } = true;
         public List<OrderItem> Items { get; set; } = new();
+        
+        // Propiedad calculada para el número de orden
+        [NotMapped]
+        public string OrderNumber => $"ORD-{Id:D6}";
+
+        public DateTime UpdatedAt { get; internal set; }
     }
 
     public class OrderItem
@@ -24,11 +31,22 @@ namespace TiendaPlayeras.Web.Models
         public int Id { get; set; }
         public int OrderId { get; set; }
         public Order? Order { get; set; }
-        public int ProductVariantId { get; set; }
-        public ProductVariant? ProductVariant { get; set; }
+        
+        // ✅ ACTUALIZADO: Referencia directa a Product (no a ProductVariant)
+        public int ProductId { get; set; }
+        public Product? Product { get; set; }
+        
+        // ✅ NUEVO: Talla seleccionada
+        [Column(TypeName = "varchar(10)")]
+        public string Size { get; set; } = string.Empty; // S, M, L, XL
+        
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
         public bool IsActive { get; set; } = true;
+        
+        // Propiedad calculada
+        [NotMapped]
+        public decimal Subtotal => UnitPrice * Quantity;
     }
 
     // Clase demo opcional para listados/ejemplos (no es entidad EF)

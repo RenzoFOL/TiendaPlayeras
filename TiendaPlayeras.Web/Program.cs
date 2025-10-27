@@ -39,6 +39,7 @@ builder.Services.AddRazorPages();
 
 // 4) Servicios personalizados
 builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<EmailSender>(); // MailKit sender
 
 // 5) Límite de carga (10 MB para diseños)
@@ -51,7 +52,7 @@ builder.Services.Configure<FormOptions>(o =>
 builder.Services.AddSession(options =>
 {
     options.Cookie.Name = ".TiendaPlayeras.Session"; // nombre de cookie de sesión
-    options.IdleTimeout = TimeSpan.FromHours(12);    // expira tras 12 h de inactividad
+    options.IdleTimeout = TimeSpan.FromMinutes(5);;    // expira tras 12 h de inactividad
     options.Cookie.HttpOnly = true;                  // mitiga XSS
     options.Cookie.IsEssential = true;               // requerida para funcionalidad básica
 });
