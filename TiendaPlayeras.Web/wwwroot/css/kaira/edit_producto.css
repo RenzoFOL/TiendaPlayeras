@@ -447,50 +447,67 @@ textarea.form-control {
     display: block;
 }
 
+/* Mejoras para botones de imágenes */
 .current-image-item .delete-image {
     position: absolute;
     top: 8px;
     right: 8px;
-    background: rgba(229, 62, 62, 0.9);
+    background: rgba(229, 62, 62, 0.95);
     color: white;
     border: none;
     border-radius: 50%;
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: var(--transition);
+    transition: all 0.3s ease;
     font-size: 14px;
+    z-index: 10;
+    opacity: 0.8;
+}
+
+.current-image-item:hover .delete-image {
+    opacity: 1;
+    transform: scale(1.1);
 }
 
 .current-image-item .delete-image:hover {
-    background: #c53030;
-    transform: scale(1.1);
+    background: #dc2626;
+    transform: scale(1.2);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
 }
 
 .set-main-btn {
     position: absolute;
     bottom: 8px;
     right: 8px;
-    background: rgba(255, 193, 7, 0.9);
+    background: rgba(245, 158, 11, 0.95);
     color: white;
     border: none;
     border-radius: 50%;
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: var(--transition);
+    transition: all 0.3s ease;
     font-size: 14px;
+    z-index: 10;
+    opacity: 0.8;
+}
+
+.current-image-item:hover .set-main-btn {
+    opacity: 1;
+    transform: scale(1.1);
 }
 
 .set-main-btn:hover {
-    background: #ffc107;
-    transform: scale(1.1);
+    background: #d97706;
+    transform: scale(1.2);
+    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.4);
 }
 
 .current-image-item .main-badge {
@@ -582,40 +599,90 @@ textarea.form-control {
 .size-options-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-    gap: 10px;
+    gap: 12px;
 }
 
 .form-check-size {
     background: linear-gradient(135deg, #667eea10, #764ba210);
     border: 2px solid #e0e7ff;
     border-radius: 12px;
-    padding: 15px;
+    padding: 20px 15px;
     text-align: center;
-    transition: var(--transition);
+    transition: all 0.3s ease;
     cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.form-check-size::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.form-check-size:hover::before {
+    left: 100%;
 }
 
 .form-check-size:hover {
     border-color: #667eea;
-    transform: translateY(-2px);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+}
+
+/* Estado seleccionado */
+.form-check-size:has(input:checked) {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-color: #667eea;
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.form-check-size:has(input:checked) .form-check-label {
+    color: white;
+    font-weight: 700;
+}
+
+/* Estado no seleccionado */
+.form-check-size:has(input:not(:checked)) {
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    border-color: #cbd5e0;
+}
+
+.form-check-size:has(input:not(:checked)) .form-check-label {
+    color: #64748b;
 }
 
 .form-check-size .form-check-input {
-    margin: 0;
-    width: 20px;
-    height: 20px;
-}
-
-.form-check-size .form-check-input:checked {
-    background-color: #667eea;
-    border-color: #667eea;
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
 }
 
 .form-check-size .form-check-label {
-    font-weight: 600;
-    font-size: 16px;
+    font-weight: 700;
+    font-size: 18px;
     cursor: pointer;
-    margin-left: 8px;
+    margin: 0;
+    transition: all 0.3s ease;
+    display: block;
+}
+
+.form-check-size:hover .form-check-label {
+    transform: scale(1.1);
+}
+
+/* Contador de tallas */
+#sizeCounter {
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    animation: pulse 2s infinite;
 }
 
 /* Estado de carga y utilidades */
@@ -729,4 +796,15 @@ textarea.form-control {
 
 @keyframes spin {
     to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0%, 100% { 
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% { 
+        opacity: 0.8;
+        transform: scale(1.05);
+    }
 }

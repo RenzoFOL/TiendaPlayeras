@@ -124,74 +124,77 @@
                 </div>
 
                 <!-- ================================================
-                     SECCIÓN: TALLAS DISPONIBLES
-                     ================================================ -->
-                <div class="form-section">
-                    <div class="section-title">
-                        <i class="fas fa-ruler"></i>
-                        Tallas Disponibles
-                    </div>
+     SECCIÓN: TALLAS DISPONIBLES - ACTUALIZADO PARA BOOLEANOS
+     ================================================ -->
+<div class="form-section">
+    <div class="section-title">
+        <i class="fas fa-ruler"></i>
+        Tallas Disponibles
+        <span class="badge bg-primary ms-2" id="sizeCounter">4 tallas</span>
+    </div>
 
-                    <div class="row g-4">
-                        <div class="col-12">
-                            <label class="form-label">
-                                <i class="fas fa-tshirt"></i>
-                                Selecciona las tallas disponibles para este producto
-                            </label>
-                            <div class="size-options-grid">
-                                <div class="form-check form-check-size">
-                                    <input class="form-check-input" 
-                                           type="checkbox" 
-                                           name="availableSizes" 
-                                           value="S" 
-                                           id="sizeS" 
-                                           checked>
-                                    <label class="form-check-label" for="sizeS">
-                                        S
-                                    </label>
-                                </div>
-                                <div class="form-check form-check-size">
-                                    <input class="form-check-input" 
-                                           type="checkbox" 
-                                           name="availableSizes" 
-                                           value="M" 
-                                           id="sizeM" 
-                                           checked>
-                                    <label class="form-check-label" for="sizeM">
-                                        M
-                                    </label>
-                                </div>
-                                <div class="form-check form-check-size">
-                                    <input class="form-check-input" 
-                                           type="checkbox" 
-                                           name="availableSizes" 
-                                           value="L" 
-                                           id="sizeL" 
-                                           checked>
-                                    <label class="form-check-label" for="sizeL">
-                                        L
-                                    </label>
-                                </div>
-                                <div class="form-check form-check-size">
-                                    <input class="form-check-input" 
-                                           type="checkbox" 
-                                           name="availableSizes" 
-                                           value="XL" 
-                                           id="sizeXL" 
-                                           checked>
-                                    <label class="form-check-label" for="sizeXL">
-                                        XL
-                                    </label>
-                                </div>
-                            </div>
-                            <input type="hidden" id="availableSizesHidden" name="availableSizes">
-                            <div class="helper-text">
-                                <i class="fas fa-info-circle"></i>
-                                Las tallas seleccionadas estarán disponibles para los clientes en la tienda
-                            </div>
-                        </div>
-                    </div>
+    <div class="row g-4">
+        <div class="col-12">
+            <label class="form-label">
+                <i class="fas fa-tshirt"></i>
+                Selecciona las tallas disponibles para este producto
+            </label>
+            
+            <div class="size-options-grid">
+                <!-- ✅ CRÍTICO: AHORA CON name="sizeS" para binding con booleanos -->
+                <div class="form-check form-check-size">
+                    <input class="form-check-input" 
+                           type="checkbox" 
+                           name="sizeS" 
+                           value="true" 
+                           id="sizeS" 
+                           checked>
+                    <label class="form-check-label" for="sizeS">
+                        S
+                    </label>
                 </div>
+                <div class="form-check form-check-size">
+                    <input class="form-check-input" 
+                           type="checkbox" 
+                           name="sizeM" 
+                           value="true" 
+                           id="sizeM" 
+                           checked>
+                    <label class="form-check-label" for="sizeM">
+                        M
+                    </label>
+                </div>
+                <div class="form-check form-check-size">
+                    <input class="form-check-input" 
+                           type="checkbox" 
+                           name="sizeL" 
+                           value="true" 
+                           id="sizeL" 
+                           checked>
+                    <label class="form-check-label" for="sizeL">
+                        L
+                    </label>
+                </div>
+                <div class="form-check form-check-size">
+                    <input class="form-check-input" 
+                           type="checkbox" 
+                           name="sizeXL" 
+                           value="true" 
+                           id="sizeXL" 
+                           checked>
+                    <label class="form-check-label" for="sizeXL">
+                        XL
+                    </label>
+                </div>
+            </div>
+        
+            <div class="helper-text">
+                <i class="fas fa-info-circle"></i>
+                Las tallas seleccionadas estarán disponibles para los clientes en la tienda
+            </div>
+        </div>
+    </div>
+</div>
 
                 <!-- ================================================
                      SECCIÓN: PRECIO Y CONFIGURACIÓN

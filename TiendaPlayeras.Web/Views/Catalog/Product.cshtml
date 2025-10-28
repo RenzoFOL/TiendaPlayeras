@@ -2,13 +2,11 @@
 @{
     ViewData["Title"] = Model.Name;
     
-    // ✅ SISTEMA SIMPLIFICADO - Solo ProductImages
     var productImages = Model.ProductImages?
         .OrderBy(x => x.DisplayOrder)
         .Select(x => x.Path)
         .ToList() ?? new List<string>();
     
-    // Si no hay imágenes, usar placeholder
     if (!productImages.Any())
     {
         productImages.Add("/images/placeholder.png");
@@ -16,332 +14,504 @@
     
     bool showThumbnails = productImages.Count > 1;
     var mainImage = productImages.FirstOrDefault();
+    var relatedProducts = ViewBag.RelatedProducts as List<Product> ?? new List<Product>();
 }
 
-<link rel="stylesheet" type="text/css/kaira" href="/css/kaira/catalog_producto.css">
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@Model.Name - TiendaPlayeras</title>
+    <link rel="stylesheet" href="~/css/kaira/catalog_producto.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="product-page">
+    
+    <!-- Main Content -->
+    <main class="single-product-section">
+        <div class="container">
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb-custom">
+                <a href="/">Inicio</a>
+                <span>/</span>
+                <a href="/Catalog">Catálogo</a>
+                <span>/</span>
+                <span class="current">@Model.Name</span>
+            </nav>
 
-<section class="single-product-section">
-    <div class="container">
-        <!-- Breadcrumb -->
-        <div class="breadcrumb-custom">
-            <a href="/">Inicio</a>
-            <span>/</span>
-            <a href="/catalogo">Catálogo</a>
-            <span>/</span>
-            <span>@Model.Name</span>
-        </div>
-
-        <div class="row">
-            <!-- Galería de imágenes -->
-            <div class="col-lg-6">
-                <div class="product-gallery">
-                    <div class="main-image-container">
-                        <img src="@mainImage" alt="@Model.Name" class="main-product-image" id="mainProductImage"
-                             onerror="this.src='/images/placeholder.png'">
-                        @if (Model.IsCustomizable)
-                        {
-                            <div class="product-badge">Personalizable</div>
-                        }
-                    </div>
-
-                    @if (showThumbnails)
-                    {
-                        <div class="thumbnail-gallery">
-                            @for (int i = 0; i < productImages.Count; i++)
+            <div class="row product-detail-row">
+                <!-- Galería de imágenes -->
+                <div class="col-lg-6">
+                    <div class="product-gallery">
+                        <div class="main-image-container">
+                            <img src="@mainImage" alt="@Model.Name" class="main-product-image" id="mainProductImage"
+                                 onerror="this.src='/images/placeholder.png'">
+                            @if (Model.IsCustomizable)
                             {
-                                <div class="thumbnail-item @(i == 0 ? "active" : "")" data-image="@productImages[i]">
-                                    <img src="@productImages[i]" alt="Imagen @(i + 1) de @Model.Name"
-                                         onerror="this.src='/images/placeholder.png'">
+                                <div class="product-badge customizable-badge">
+                                    <i class="fas fa-paint-brush me-1"></i>Personalizable
+                                </div>
+                            }
+                            @if (!Model.IsActive)
+                            {
+                                <div class="product-badge out-of-stock-badge">
+                                    <i class="fas fa-times-circle me-1"></i>Agotado
                                 </div>
                             }
                         </div>
-                    }
+
+                        @if (showThumbnails)
+                        {
+                            <div class="thumbnail-gallery">
+                                @for (int i = 0; i < productImages.Count; i++)
+                                {
+                                    <div class="thumbnail-item @(i == 0 ? "active" : "")" data-image="@productImages[i]">
+                                        <img src="@productImages[i]" alt="Imagen @(i + 1) de @Model.Name"
+                                             onerror="this.src='/images/placeholder.png'">
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Información del producto -->
+                <div class="col-lg-6">
+                    <div class="product-info-section" data-product-id="@Model.Id"
+     data-product-name="@Model.Name"
+     data-price="@Model.BasePrice.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)"
+     data-slug="@Model.Slug"
+     data-isactive="@Model.IsActive"
+     data-iscustomizable="@Model.IsCustomizable">
+                        <h1 class="product-title-main">@Model.Name</h1>
+                        
+                        <div class="product-price-main">
+                            @Model.BasePrice.ToString("C")
+                        </div>
+
+                        <!-- Rating -->
+                        <div class="product-rating">
+                            <div class="stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                            <span class="rating-text">(4.5) • 128 reseñas</span>
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(Model.Description))
+                        {
+                            <div class="product-description-text">
+                                @Html.Raw(Model.Description.Replace("\n", "<br>"))
+                            </div>
+                        }
+
+                        <!-- Selector de tallas -->
+                        <div class="size-selector-section">
+                            <label class="section-label-kaira">
+                                <i class="fas fa-ruler me-2"></i>Selecciona tu talla
+                            </label>
+                            <div class="size-options">
+                                @if (Model.SizeS)
+                                {
+                                    <label class="size-option-kaira">
+                                        <input type="radio" name="size" value="S">
+                                        <span class="size-label">S</span>
+                                    </label>
+                                }
+                                @if (Model.SizeM)
+                                {
+                                    <label class="size-option-kaira">
+                                        <input type="radio" name="size" value="M" checked>
+                                        <span class="size-label">M</span>
+                                    </label>
+                                }
+                                @if (Model.SizeL)
+                                {
+                                    <label class="size-option-kaira">
+                                        <input type="radio" name="size" value="L">
+                                        <span class="size-label">L</span>
+                                    </label>
+                                }
+                                @if (Model.SizeXL)
+                                {
+                                    <label class="size-option-kaira">
+                                        <input type="radio" name="size" value="XL">
+                                        <span class="size-label">XL</span>
+                                    </label>
+                                }
+                            </div>
+                            <div class="size-guide-link">
+                                <a href="#size-guide-modal" data-bs-toggle="modal">
+                                    <i class="fas fa-info-circle me-1"></i>Guía de tallas
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Cantidad -->
+                        <div class="quantity-selector">
+                            <label class="section-label-kaira">
+                                <i class="fas fa-list-ol me-2"></i>Cantidad
+                            </label>
+                            <div class="quantity-wrapper">
+                                <button type="button" class="qty-btn" id="decreaseQty">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <input type="number" class="qty-input" id="quantity" value="1" min="1" max="99" readonly>
+                                <button type="button" class="qty-btn" id="increaseQty">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="product-actions">
+                            <button type="button" class="btn-kaira btn-kaira-primary" id="btnAddToCart" 
+                                    @(!Model.IsActive ? "disabled" : "")>
+                                <i class="fas fa-shopping-cart me-2"></i>
+                                @(Model.IsActive ? "Agregar al carrito" : "Agotado")
+                            </button>
+                            <button type="button" class="btn-kaira btn-kaira-success" id="btnBuyNow"
+                                    @(!Model.IsActive ? "disabled" : "")>
+                                <i class="fas fa-bolt me-2"></i>
+                                Comprar ahora
+                            </button>
+                            <button type="button" class="btn-wishlist-kaira" id="btnWishlist">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+
+                        <!-- Características del producto -->
+                        <div class="product-features">
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-shipping-fast"></i>
+                                </div>
+                                <div class="feature-content">
+                                    <h6>Envío gratis</h6>
+                                    <p>En compras mayores a $500</p>
+                                </div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-undo-alt"></i>
+                                </div>
+                                <div class="feature-content">
+                                    <h6>Devoluciones gratuitas</h6>
+                                    <p>Dentro de 30 días</p>
+                                </div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-award"></i>
+                                </div>
+                                <div class="feature-content">
+                                    <h6>100% Algodón premium</h6>
+                                    <p>Calidad garantizada</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tags -->
+                        @if (Model.ProductTags?.Any(pt => pt.IsActive && pt.Tag != null && pt.Tag.IsActive) == true)
+                        {
+                            <div class="product-tags">
+                                <label class="section-label-kaira">
+                                    <i class="fas fa-tags me-2"></i>Colecciones
+                                </label>
+                                <div class="tags-list">
+                                    @foreach (var pt in Model.ProductTags
+                                        .Where(pt => pt.IsActive && pt.Tag != null && pt.Tag.IsActive)
+                                        .OrderBy(pt => pt.Tag!.Name))
+                                    {
+                                        <a href="/Catalog?tag=@pt.Tag!.Slug" class="tag-item">
+                                            <i class="fas fa-tag me-1"></i>@pt.Tag!.Name
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Información adicional -->
+                        <div class="additional-info">
+                            <div class="info-item">
+                                <i class="fas fa-box me-2"></i>
+                                <span>Disponibilidad: <strong>@(Model.IsActive ? "En stock" : "Agotado")</strong></span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-shield-alt me-2"></i>
+                                <span>Garantía: <strong>30 días</strong></span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-truck me-2"></i>
+                                <span>Envío: <strong>2-3 días hábiles</strong></span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Información del producto -->
-            <div class="col-lg-6">
-                <div class="product-info-section">
-                    <h1 class="product-title-main">@Model.Name</h1>
-                    
-                    <div class="product-price-main">
-                        @Model.BasePrice.ToString("C")
-                    </div>
-
-                    @if (!string.IsNullOrWhiteSpace(Model.Description))
-                    {
-                        <div class="product-description-text">
-                            @Html.Raw(Model.Description.Replace("\n", "<br>"))
-                        </div>
-                    }
-
-                    <!-- Selector de tallas -->
-                    <div class="size-selector-section">
-                        <label class="section-label-kaira">Selecciona tu talla</label>
-                        <div class="size-options">
-                            <label class="size-option-kaira">
-                                <input type="radio" name="size" value="S">
-                                S
-                            </label>
-                            <label class="size-option-kaira">
-                                <input type="radio" name="size" value="M" checked>
-                                M
-                            </label>
-                            <label class="size-option-kaira">
-                                <input type="radio" name="size" value="L">
-                                L
-                            </label>
-                            <label class="size-option-kaira">
-                                <input type="radio" name="size" value="XL">
-                                XL
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Cantidad -->
-                    <div class="quantity-selector">
-                        <label class="section-label-kaira">Cantidad</label>
-                        <div class="quantity-wrapper">
-                            <button type="button" class="qty-btn" id="decreaseQty">−</button>
-                            <input type="number" class="qty-input" id="quantity" value="1" min="1" max="99" readonly>
-                            <button type="button" class="qty-btn" id="increaseQty">+</button>
-                        </div>
-                    </div>
-
-                    <!-- Botones de acción -->
-                    <div class="product-actions">
-                        <button type="button" class="btn-kaira btn-kaira-primary" id="btnAddToCart">
-                            <i class="fas fa-shopping-cart me-2"></i>
-                            Agregar al carrito
+            <!-- Tabs de información adicional -->
+            <div class="product-tabs-section">
+                <ul class="nav nav-tabs" id="productTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="description-tab" data-bs-toggle="tab" 
+                                data-bs-target="#description" type="button" role="tab">
+                            <i class="fas fa-file-alt me-2"></i>Descripción
                         </button>
-                        <button type="button" class="btn-kaira btn-kaira-success" id="btnBuyNow">
-                            <i class="fas fa-bolt me-2"></i>
-                            Comprar ahora
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="specs-tab" data-bs-toggle="tab" 
+                                data-bs-target="#specs" type="button" role="tab">
+                            <i class="fas fa-info-circle me-2"></i>Especificaciones
                         </button>
-                        <button type="button" class="btn-wishlist-kaira" id="btnWishlist">
-                            <i class="fas fa-heart"></i>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" 
+                                data-bs-target="#reviews" type="button" role="tab">
+                            <i class="fas fa-star me-2"></i>Reseñas
                         </button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="productTabsContent">
+                    <div class="tab-pane fade show active" id="description" role="tabpanel">
+                        <div class="tab-content-inner">
+                            <h4>Descripción del Producto</h4>
+                            @if (!string.IsNullOrWhiteSpace(Model.Description))
+                            {
+                                <p>@Model.Description</p>
+                            }
+                            else
+                            {
+                                <p>Esta playera premium está diseñada para ofrecerte el máximo confort y estilo. Fabricada con algodón 100% premium, garantiza suavidad y durabilidad en cada uso.</p>
+                            }
+                            
+                            <div class="features-list">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="feature-detail">
+                                            <i class="fas fa-check text-success me-2"></i>
+                                            <span>Material: 100% Algodón Premium</span>
+                                        </div>
+                                        <div class="feature-detail">
+                                            <i class="fas fa-check text-success me-2"></i>
+                                            <span>Lavable a máquina</span>
+                                        </div>
+                                        <div class="feature-detail">
+                                            <i class="fas fa-check text-success me-2"></i>
+                                            <span>No se decolora</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="feature-detail">
+                                            <i class="fas fa-check text-success me-2"></i>
+                                            <span>Costuras reforzadas</span>
+                                        </div>
+                                        <div class="feature-detail">
+                                            <i class="fas fa-check text-success me-2"></i>
+                                            <span>Estampado de alta calidad</span>
+                                        </div>
+                                        <div class="feature-detail">
+                                            <i class="fas fa-check text-success me-2"></i>
+                                            <span>Comodidad garantizada</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-
-                    <!-- Características del producto -->
-                    <div class="product-features">
-                        <div class="feature-item">
-                            <div class="feature-icon">
-                                <i class="fas fa-shipping-fast"></i>
-                            </div>
-                            <div class="feature-content">
-                                <h6>Envío gratis</h6>
-                                <p>En compras mayores a $500</p>
-                            </div>
-                        </div>
-                        <div class="feature-item">
-                            <div class="feature-icon">
-                                <i class="fas fa-undo-alt"></i>
-                            </div>
-                            <div class="feature-content">
-                                <h6>Devoluciones gratuitas</h6>
-                                <p>Dentro de 30 días</p>
-                            </div>
-                        </div>
-                        <div class="feature-item">
-                            <div class="feature-icon">
-                                <i class="fas fa-award"></i>
-                            </div>
-                            <div class="feature-content">
-                                <h6>100% Algodón premium</h6>
-                                <p>Calidad garantizada</p>
+                    <div class="tab-pane fade" id="specs" role="tabpanel">
+                        <div class="tab-content-inner">
+                            <h4>Especificaciones Técnicas</h4>
+                            <div class="specs-table">
+                                <div class="spec-row">
+                                    <div class="spec-name">Material</div>
+                                    <div class="spec-value">100% Algodón Premium</div>
+                                </div>
+                                <div class="spec-row">
+                                    <div class="spec-name">Gramaje</div>
+                                    <div class="spec-value">180 g/m²</div>
+                                </div>
+                                <div class="spec-row">
+                                    <div class="spec-name">Cuidado</div>
+                                    <div class="spec-value">Lavable a máquina 30°C</div>
+                                </div>
+                                <div class="spec-row">
+                                    <div class="spec-name">Origen</div>
+                                    <div class="spec-value">Hecho en México</div>
+                                </div>
+                                <div class="spec-row">
+                                    <div class="spec-name">Tallas disponibles</div>
+                                    <div class="spec-value">
+                                        @{
+                                            var availableSizes = new List<string>();
+                                            if (Model.SizeS) availableSizes.Add("S");
+                                            if (Model.SizeM) availableSizes.Add("M");
+                                            if (Model.SizeL) availableSizes.Add("L");
+                                            if (Model.SizeXL) availableSizes.Add("XL");
+                                        }
+                                        @string.Join(", ", availableSizes)
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Tags -->
-                    @if (Model.ProductTags?.Any(pt => pt.IsActive && pt.Tag != null && pt.Tag.IsActive) == true)
-                    {
-                        <div class="product-tags">
-                            <label class="section-label-kaira">Colecciones</label>
-                            <div class="tags-list">
-                                @foreach (var pt in Model.ProductTags
-                                    .Where(pt => pt.IsActive && pt.Tag != null && pt.Tag.IsActive)
-                                    .OrderBy(pt => pt.Tag!.Name))
-                                {
-                                    <a href="/catalogo?tag=@pt.Tag!.Slug" class="tag-item">
-                                        @pt.Tag!.Name
-                                    </a>
-                                }
+                    <div class="tab-pane fade" id="reviews" role="tabpanel">
+                        <div class="tab-content-inner">
+                            <h4>Opiniones de Clientes</h4>
+                            <div class="reviews-summary">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="rating-overview text-center">
+                                            <div class="average-rating">4.5</div>
+                                            <div class="stars">
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star-half-alt"></i>
+                                            </div>
+                                            <div class="total-reviews">128 reseñas</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="rating-bars">
+                                            <div class="rating-bar">
+                                                <span class="rating-label">5 estrellas</span>
+                                                <div class="bar-container">
+                                                    <div class="bar-fill" style="width: 70%"></div>
+                                                </div>
+                                                <span class="rating-count">70%</span>
+                                            </div>
+                                            <div class="rating-bar">
+                                                <span class="rating-label">4 estrellas</span>
+                                                <div class="bar-container">
+                                                    <div class="bar-fill" style="width: 20%"></div>
+                                                </div>
+                                                <span class="rating-count">20%</span>
+                                            </div>
+                                            <div class="rating-bar">
+                                                <span class="rating-label">3 estrellas</span>
+                                                <div class="bar-container">
+                                                    <div class="bar-fill" style="width: 7%"></div>
+                                                </div>
+                                                <span class="rating-count">7%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Productos relacionados -->
+            @if (relatedProducts.Any())
+            {
+                <section class="related-products-section">
+                    <div class="section-header">
+                        <h3 class="section-title">Productos Relacionados</h3>
+                        <a href="/Catalog" class="view-all-link">Ver todos</a>
+                    </div>
+                    <div class="row">
+                        @foreach (var relatedProduct in relatedProducts.Take(4))
+                        {
+                            var relatedImage = relatedProduct.ProductImages?.FirstOrDefault()?.Path ?? "/images/placeholder.png";
+                            <div class="col-lg-3 col-md-6">
+                                <div class="related-product-item">
+                                    <div class="product-image">
+                                        <a href="/Catalog/Product?slug=@relatedProduct.Slug">
+                                            <img src="@relatedImage" alt="@relatedProduct.Name" 
+                                                 onerror="this.src='/images/placeholder.png'">
+                                        </a>
+                                        <button class="wishlist-btn">
+                                            <i class="fas fa-heart"></i>
+                                        </button>
+                                    </div>
+                                    <div class="product-info">
+                                        <h5 class="product-name">
+                                            <a href="/Catalog/Product?slug=@relatedProduct.Slug">@relatedProduct.Name</a>
+                                        </h5>
+                                        <div class="product-price">@relatedProduct.BasePrice.ToString("C")</div>
+                                        <button class="btn-add-to-cart">
+                                            <i class="fas fa-shopping-cart me-2"></i>Agregar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </section>
+            }
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer id="footer" class="mt-5">
+        <div class="container">
+            <!-- Tu footer aquí -->
+        </div>
+    </footer>
+
+    <!-- Modal Guía de Tallas -->
+    <div class="modal fade" id="size-guide-modal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Guía de Tallas</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="size-guide-table">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Talla</th>
+                                    <th>Pecho (cm)</th>
+                                    <th>Largo (cm)</th>
+                                    <th>Manga (cm)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>S</td>
+                                    <td>91-96</td>
+                                    <td>66</td>
+                                    <td>20</td>
+                                </tr>
+                                <tr>
+                                    <td>M</td>
+                                    <td>96-101</td>
+                                    <td>69</td>
+                                    <td>21</td>
+                                </tr>
+                                <tr>
+                                    <td>L</td>
+                                    <td>101-106</td>
+                                    <td>72</td>
+                                    <td>22</td>
+                                </tr>
+                                <tr>
+                                    <td>XL</td>
+                                    <td>106-111</td>
+                                    <td>74</td>
+                                    <td>23</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</section>
 
-@section Scripts {
-<script>
-(function() {
-    'use strict';
-
-    // Elementos del DOM
-    const mainImage = document.getElementById('mainProductImage');
-    const thumbnails = document.querySelectorAll('.thumbnail-item');
-    const sizeOptions = document.querySelectorAll('.size-option-kaira');
-    const quantityInput = document.getElementById('quantity');
-    const decreaseBtn = document.getElementById('decreaseQty');
-    const increaseBtn = document.getElementById('increaseQty');
-    const btnAddToCart = document.getElementById('btnAddToCart');
-    const btnBuyNow = document.getElementById('btnBuyNow');
-    const btnWishlist = document.getElementById('btnWishlist');
-
-    // Datos del producto
-    const productData = {
-        id: @Model.Id,
-        name: '@Html.Raw(Model.Name.Replace("'", "\\'"))',
-        price: @Model.BasePrice,
-        image: '@Html.Raw(mainImage.Replace("'", "\\'"))'
-    };
-
-    // Imágenes del producto
-    const productImagesArray = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(productImages));
-    const showThumbnails = productImagesArray.length > 1;
-
-    console.log('📷 Sistema simplificado - Imágenes cargadas:', {
-        total: productImagesArray.length,
-        images: productImagesArray
-    });
-
-    // Galería de imágenes
-    if (showThumbnails) {
-        thumbnails.forEach((thumb) => {
-            thumb.addEventListener('click', function() {
-                thumbnails.forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-                
-                const newImageSrc = this.getAttribute('data-image');
-                if (newImageSrc) {
-                    // Efecto de transición suave
-                    mainImage.style.opacity = '0.7';
-                    setTimeout(() => {
-                        mainImage.src = newImageSrc;
-                        mainImage.style.opacity = '1';
-                    }, 150);
-                    
-                    console.log('🖼️ Imagen cambiada a:', newImageSrc);
-                }
-            });
-        });
-    }
-
-    // Selector de tallas
-    sizeOptions.forEach(option => {
-        option.addEventListener('click', function() {
-            sizeOptions.forEach(opt => opt.classList.remove('selected'));
-            this.classList.add('selected');
-            this.querySelector('input').checked = true;
-            console.log('📏 Talla seleccionada:', this.querySelector('input').value);
-        });
-    });
-
-    // Seleccionar talla M por defecto
-    const defaultSize = document.querySelector('input[value="M"]');
-    if (defaultSize) {
-        defaultSize.closest('.size-option-kaira').classList.add('selected');
-    }
-
-    // Control de cantidad
-    decreaseBtn.addEventListener('click', function() {
-        let currentValue = parseInt(quantityInput.value);
-        if (currentValue > 1) {
-            quantityInput.value = currentValue - 1;
-        }
-    });
-
-    increaseBtn.addEventListener('click', function() {
-        let currentValue = parseInt(quantityInput.value);
-        let maxValue = parseInt(quantityInput.max);
-        if (currentValue < maxValue) {
-            quantityInput.value = currentValue + 1;
-        }
-    });
-
-    // Función para obtener datos del producto seleccionado
-    function getSelectedProduct() {
-        const selectedSize = document.querySelector('input[name="size"]:checked');
-        const quantity = parseInt(quantityInput.value);
-
-        return {
-            ...productData,
-            size: selectedSize ? selectedSize.value : null,
-            quantity: quantity,
-            total: productData.price * quantity
-        };
-    }
-
-    // Formatear precio
-    function formatPrice(amount) {
-        return new Intl.NumberFormat('es-MX', {
-            style: 'currency',
-            currency: 'MXN'
-        }).format(amount);
-    }
-
-    // Agregar al carrito
-    btnAddToCart.addEventListener('click', function() {
-        const product = getSelectedProduct();
-        
-        if (!product.size) {
-            alert('⚠️ Por favor selecciona una talla');
-            return;
-        }
-
-        console.log('🛒 Agregando al carrito:', product);
-        
-        // Animación del botón
-        const originalText = this.innerHTML;
-        this.innerHTML = '<i class="fas fa-check me-2"></i> ¡Agregado!';
-        this.style.background = '#4CAF50';
-        
-        setTimeout(() => {
-            this.innerHTML = originalText;
-            this.style.background = '';
-        }, 2000);
-
-        alert(`✅ Producto agregado al carrito\n\n${product.name}\nTalla: ${product.size}\nCantidad: ${product.quantity}\nTotal: ${formatPrice(product.total)}`);
-    });
-
-    // Comprar ahora
-    btnBuyNow.addEventListener('click', function() {
-        const product = getSelectedProduct();
-        
-        if (!product.size) {
-            alert('⚠️ Por favor selecciona una talla');
-            return;
-        }
-
-        console.log('⚡ Compra directa:', product);
-        alert(`⚡ Procesando compra directa\n\n${product.name}\nTalla: ${product.size}\nCantidad: ${product.quantity}\nTotal: ${formatPrice(product.total)}`);
-    });
-
-    // Lista de deseos
-    btnWishlist.addEventListener('click', function() {
-        this.classList.toggle('active');
-        
-        if (this.classList.contains('active')) {
-            this.innerHTML = '<i class="fas fa-heart" style="color: #fff;"></i>';
-            console.log('💖 Agregado a favoritos');
-        } else {
-            this.innerHTML = '<i class="fas fa-heart"></i>';
-            console.log('💔 Removido de favoritos');
-        }
-    });
-
-    // Manejo de errores en imágenes
-    mainImage.addEventListener('error', function() {
-        console.warn('❌ Error cargando imagen principal, usando placeholder');
-        this.src = '/images/placeholder.png';
-    });
-
-    console.log('✅ Vista de producto inicializada - Sistema Simplificado');
-})();
-</script>
-}
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/kaira/catalog_producto.js"></script>
+</body>
+</html>

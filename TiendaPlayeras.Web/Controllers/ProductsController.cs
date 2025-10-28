@@ -107,39 +107,22 @@ namespace TiendaPlayeras.Web.Controllers
         // POST /Products/Create - ACTUALIZADO
 [HttpPost("/Products/Create")]
 [ValidateAntiForgeryToken]
-public async Task<IActionResult> Create(Product model, [FromForm] string? availableSizes)
+public async Task<IActionResult> Create(Product model)
 {
     try
     {
         _logger.LogInformation("🔄 Iniciando creación de producto: {ProductName}", model.Name);
 
-        // ✅ DEBUG: Ver qué está llegando
-        _logger.LogInformation("🔍 availableSizes recibido: '{AvailableSizes}'", availableSizes);
-        _logger.LogInformation("🔍 Request.Form['availableSizes']: '{FormSizes}'", Request.Form["availableSizes"]);
-        
-        // Ver todos los valores del form
-        foreach (var key in Request.Form.Keys)
-        {
-            _logger.LogInformation("📋 Form key: {Key} = {Value}", key, Request.Form[key]);
-        }
-
         // Procesar tallas disponibles
-        if (!string.IsNullOrEmpty(availableSizes))
-        {
-            var sizes = availableSizes.Split(',', StringSplitOptions.RemoveEmptyEntries)
-                .Select(s => s.Trim().ToUpper())
-                .Where(s => new[] { "S", "M", "L", "XL" }.Contains(s))
-                .Distinct()
-                .ToList();
-            
-            model.AvailableSizes = sizes.Any() ? string.Join(",", sizes) : "S,M,L,XL";
-            _logger.LogInformation("📏 Tallas procesadas: {AvailableSizes}", model.AvailableSizes);
-        }
-        else
-        {
-            model.AvailableSizes = "S,M,L,XL";
-            _logger.LogInformation("📏 Usando tallas por defecto: {AvailableSizes}", model.AvailableSizes);
-        }
+        // ✅ NUEVO: Procesar tallas como booleanos
+        model.SizeS = Request.Form["sizeS"] == "true";
+        model.SizeM = Request.Form["sizeM"] == "true";
+        model.SizeL = Request.Form["sizeL"] == "true";
+        model.SizeXL = Request.Form["sizeXL"] == "true";
+        model.UpdateAvailableSizes(); // Mantener compatibilidad con AvailableSizes
+
+        _logger.LogInformation("📏 Tallas procesadas - S: {S}, M: {M}, L: {L}, XL: {XL}", 
+        model.SizeS, model.SizeM, model.SizeL, model.SizeXL);
 
         await ValidateProductModelAsync(model, null);
 
@@ -224,7 +207,7 @@ public async Task<IActionResult> Create(Product model, [FromForm] string? availa
 
         // POST: SaveProductWithTags - ACTUALIZADO
 [HttpPost, ValidateAntiForgeryToken]
-public async Task<IActionResult> SaveProductWithTags(int id, Product model, [FromForm] string? availableSizes, [FromForm] int[] tagIds)
+public async Task<IActionResult> SaveProductWithTags(int id, Product model, [FromForm] int[] tagIds)
 {
     using var transaction = await _db.Database.BeginTransactionAsync();
 
@@ -241,21 +224,14 @@ public async Task<IActionResult> SaveProductWithTags(int id, Product model, [Fro
         }
 
         // ✅ CORREGIDO: Manejar availableSizes cuando es null
-        if (!string.IsNullOrEmpty(availableSizes))
-        {
-            var sizes = availableSizes.Split(',', StringSplitOptions.RemoveEmptyEntries)
-                .Select(s => s.Trim().ToUpper())
-                .Where(s => new[] { "S", "M", "L", "XL" }.Contains(s))
-                .Distinct()
-                .ToList();
-            
-            existing.AvailableSizes = sizes.Any() ? string.Join(",", sizes) : "S,M,L,XL";
-        }
-        else
-        {
-            // ✅ Mantener las tallas existentes si no se enviaron nuevas
-            _logger.LogInformation("📏 Manteniendo tallas existentes: {AvailableSizes}", existing.AvailableSizes);
-        }
+        existing.SizeS = Request.Form["sizeS"] == "true";
+        existing.SizeM = Request.Form["sizeM"] == "true"; 
+        existing.SizeL = Request.Form["sizeL"] == "true";
+        existing.SizeXL = Request.Form["sizeXL"] == "true";
+        existing.UpdateAvailableSizes(); // Mantener compatibilidad
+
+        _logger.LogInformation("📏 Tallas actualizadas - S: {S}, M: {M}, L: {L}, XL: {XL}", 
+        existing.SizeS, existing.SizeM, existing.SizeL, existing.SizeXL);
 
         await ValidateProductModelAsync(model, id);
 
@@ -724,52 +700,53 @@ private async Task SaveProductImagesAsync(int productId, List<IFormFile> files)
         }
 
         // POST: Eliminar imagen
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteImage(int id)
+        // POST: Eliminar imagen
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> DeleteImage(int id)
+{
+    try
+    {
+        var image = await _db.ProductImages.FindAsync(id);
+        if (image == null)
         {
-            try
+            return Json(new { success = false, error = "Imagen no encontrada" });
+        }
+
+        var productId = image.ProductId;
+
+        // Eliminar archivo físico
+        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", image.Path.TrimStart('/'));
+        if (System.IO.File.Exists(filePath))
+        {
+            System.IO.File.Delete(filePath);
+        }
+
+        // Si era la imagen principal, marcar la siguiente como principal
+        if (image.IsMain)
+        {
+            var nextImage = await _db.ProductImages
+                .Where(i => i.ProductId == productId && i.Id != id)
+                .OrderBy(i => i.DisplayOrder)
+                .FirstOrDefaultAsync();
+
+            if (nextImage != null)
             {
-                var image = await _db.ProductImages.FindAsync(id);
-                if (image == null)
-                {
-                    return Json(new { success = false, error = "Imagen no encontrada" });
-                }
-
-                var productId = image.ProductId;
-
-                // Eliminar archivo físico
-                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", image.Path.TrimStart('/'));
-                if (System.IO.File.Exists(filePath))
-                {
-                    System.IO.File.Delete(filePath);
-                }
-
-                // Si era la imagen principal, marcar la siguiente como principal
-                if (image.IsMain)
-                {
-                    var nextImage = await _db.ProductImages
-                        .Where(i => i.ProductId == productId && i.Id != id)
-                        .OrderBy(i => i.DisplayOrder)
-                        .FirstOrDefaultAsync();
-
-                    if (nextImage != null)
-                    {
-                        nextImage.IsMain = true;
-                    }
-                }
-
-                _db.ProductImages.Remove(image);
-                await _db.SaveChangesAsync();
-
-                return Json(new { success = true });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al eliminar imagen");
-                return Json(new { success = false, error = "Error al eliminar la imagen" });
+                nextImage.IsMain = true;
             }
         }
+
+        _db.ProductImages.Remove(image);
+        await _db.SaveChangesAsync();
+
+        return Json(new { success = true });
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error al eliminar imagen");
+        return Json(new { success = false, error = "Error al eliminar la imagen" });
+    }
+}
 
         // POST: Marcar imagen como principal
         [HttpPost]

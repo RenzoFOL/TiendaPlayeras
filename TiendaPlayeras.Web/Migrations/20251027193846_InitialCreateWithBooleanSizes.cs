@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace TiendaPlayeras.Web.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreateWithMultipleImages : Migration
+    public partial class InitialCreateWithBooleanSizes : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -82,6 +82,10 @@ namespace TiendaPlayeras.Web.Migrations
                     Slug = table.Column<string>(type: "character varying(140)", maxLength: 140, nullable: false),
                     Description = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
                     BasePrice = table.Column<decimal>(type: "numeric(10,2)", nullable: false),
+                    SizeS = table.Column<bool>(type: "boolean", nullable: false),
+                    SizeM = table.Column<bool>(type: "boolean", nullable: false),
+                    SizeL = table.Column<bool>(type: "boolean", nullable: false),
+                    SizeXL = table.Column<bool>(type: "boolean", nullable: false),
                     AvailableSizes = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false, defaultValue: "S,M,L,XL"),
                     IsCustomizable = table.Column<bool>(type: "boolean", nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),

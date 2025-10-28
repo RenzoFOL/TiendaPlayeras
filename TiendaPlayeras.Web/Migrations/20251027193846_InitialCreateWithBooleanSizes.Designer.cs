@@ -12,8 +12,8 @@ using TiendaPlayeras.Web.Data;
 namespace TiendaPlayeras.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251027174157_InitialCreateWithMultipleImages")]
-    partial class InitialCreateWithMultipleImages
+    [Migration("20251027193846_InitialCreateWithBooleanSizes")]
+    partial class InitialCreateWithBooleanSizes
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -525,6 +525,18 @@ namespace TiendaPlayeras.Web.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<bool>("SizeL")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("SizeM")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("SizeS")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("SizeXL")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Slug")
                         .IsRequired()

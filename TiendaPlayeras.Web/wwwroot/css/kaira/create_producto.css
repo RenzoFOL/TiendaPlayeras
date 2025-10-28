@@ -860,3 +860,33 @@ textarea.form-control {
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     }
 }
+
+/* ================================================
+   CONTADOR DE TALLAS MEJORADO
+   ================================================ */
+#sizeCounter {
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+/* Estados visuales para checkboxes de tallas */
+.form-check-size:has(input:checked) {
+    background: var(--primary-gradient);
+    border-color: #667eea;
+}
+
+.form-check-size:has(input:checked) .form-check-label {
+    color: white;
+    font-weight: 700;
+}
+
+.form-check-size:has(input:not(:checked)) {
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    border-color: #cbd5e0;
+}
+
+.form-check-size:has(input:not(:checked)) .form-check-label {
+    color: #64748b;
+}

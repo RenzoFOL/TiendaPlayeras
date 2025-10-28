@@ -1,0 +1,913 @@
+/*
+===========================================
+HOME.CSS - Estilos Unificados para Página de Inicio
+Tienda de Playeras
+===========================================
+*/
+
+/* ============================================
+   1. VARIABLES Y CONFIGURACIÓN BASE
+   ============================================ */
+:root {
+  --primary-color: #8C907E;
+  --primary-hover: #5e624e;
+  --secondary-color: #667eea;
+  --secondary-hover: #764ba2;
+  --dark-color: #111;
+  --light-color: #F1F1F0;
+  --gray-color: #6c757d;
+  --white-color: #fff;
+  --transition-speed: 0.3s;
+  --transition-ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* ============================================
+   2. TIPOGRAFÍA
+   ============================================ */
+.homepage {
+  font-family: 'Jost', sans-serif;
+  letter-spacing: 0.03rem;
+}
+
+.section-title {
+  font-family: 'Marcellus', serif;
+  font-weight: 400;
+  line-height: 1.24;
+  color: var(--dark-color);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Marcellus', serif;
+  font-weight: 400;
+  color: var(--dark-color);
+}
+
+/* ============================================
+   3. PRELOADER
+   ============================================ */
+.preloader {
+  position: fixed;
+  z-index: 99;
+  background: var(--dark-color);
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: height 0.8s var(--transition-ease);
+}
+
+.preloader.loaded {
+  height: 0;
+}
+
+/* ============================================
+   4. ANIMACIONES PERSONALIZADAS
+   ============================================ */
+
+/* Open Up Animation */
+.open-up {
+  clip-path: inset(48% 34% 36% 35%);
+}
+
+.aos-animate.open-up {
+  animation: openUpClip 1s forwards;
+}
+
+@keyframes openUpClip {
+  0% {
+    clip-path: inset(48% 34% 36% 35%);
+  }
+  100% {
+    clip-path: inset(0% 0% 0% 0%);
+  }
+}
+
+/* Fade Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Text Effects */
+.txt-fx {
+  overflow: hidden;
+  line-height: 1;
+}
+
+.txt-fx .word {
+  overflow: hidden;
+  transform-origin: 0 100%;
+  display: inline-block;
+  line-height: 1em;
+}
+
+.txt-fx .letter {
+  transform-origin: 0 100%;
+  display: inline-block;
+  line-height: 1em;
+}
+
+/* Domino Text Effect */
+.txt-fx.domino .letter {
+  transform-origin: 50% 0;
+  transform: rotateY(90deg);
+  transition: transform 0.9s cubic-bezier(.5, 0, .53, 1);
+}
+
+.aos-animate .txt-fx.domino .letter {
+  transform: rotateY(0);
+}
+
+/* ============================================
+   5. EFECTOS DE IMAGEN
+   ============================================ */
+.image-zoom-effect {
+  display: flex;
+  flex-wrap: wrap;
+  overflow: hidden;
+}
+
+.image-zoom-effect .image-holder {
+  width: 100%;
+  height: auto;
+  overflow: hidden;
+  transition: transform var(--transition-speed) var(--transition-ease);
+}
+
+.image-zoom-effect:hover .image-holder {
+  transform: scale(0.95);
+}
+
+.image-zoom-effect img {
+  transform: scale(1);
+  will-change: transform;
+  transition: transform var(--transition-speed) var(--transition-ease);
+  z-index: 0;
+}
+
+.image-zoom-effect:hover img {
+  transform: scale(1.1);
+}
+
+/* ============================================
+   6. EFECTOS DE ENLACES
+   ============================================ */
+
+/* Border Animation */
+.border-animation a,
+.border-animation a:after,
+.border-animation a:before {
+  transition: all 0.5s;
+}
+
+.border-animation a {
+  position: relative;
+}
+
+.border-animation a:after {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  width: 0;
+  content: '.';
+  color: transparent;
+  background: var(--primary-color);
+  height: 2px;
+}
+
+.border-animation a:hover:after {
+  width: 100%;
+}
+
+/* Border Animation Left */
+.border-animation-left .item-anchor {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.border-animation-left .item-anchor:after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 1px;
+  left: 0;
+  bottom: 0;
+  z-index: 9;
+  background: var(--dark-color);
+  transition: all 0.5s ease;
+}
+
+.border-animation-left .item-anchor:hover:after,
+.border-animation-left .item-anchor:focus:after {
+  width: 100%;
+}
+
+/* Link Effect */
+.link-effect a {
+  position: relative;
+  padding: 0;
+  overflow: hidden;
+  transition: transform 0.5s;
+  display: block;
+}
+
+.link-effect a::after {
+  content: attr(data-after);
+  display: inline-block;
+  transform: translateY(100%);
+  position: absolute;
+  left: 0;
+  font-size: 1rem;
+  text-align: inherit;
+  text-transform: uppercase;
+  transition: inherit;
+}
+
+.link-effect a > span {
+  display: inline-block;
+  transform: translateY(0%);
+  transition: inherit;
+}
+
+.link-effect:hover a > span {
+  transform: translateY(-100%);
+}
+
+.link-effect:hover a::after {
+  transform: translateY(0%);
+}
+
+/* ============================================
+   7. BOTONES
+   ============================================ */
+.btn-common {
+  background: linear-gradient(135deg, var(--secondary-color) 0%, var(--secondary-hover) 100%);
+  border: none;
+  color: var(--white-color);
+  padding: 12px 30px;
+  border-radius: 25px;
+  transition: all var(--transition-speed) ease;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.btn-common:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+  color: var(--white-color);
+}
+
+.btn-link {
+  font-size: 0.875rem;
+  font-family: 'Jost', sans-serif;
+  letter-spacing: 0.0875rem;
+  text-transform: uppercase;
+  text-decoration: none;
+  position: relative;
+}
+
+.btn-link:before,
+.btn-link:after {
+  content: '';
+  display: block;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  background-color: var(--dark-color);
+  height: 1px;
+}
+
+.btn-link:before {
+  background-color: var(--gray-color);
+  width: 100%;
+}
+
+.btn-link:hover:after {
+  width: 100%;
+}
+
+/* ============================================
+   8. SECCIONES PRINCIPALES
+   ============================================ */
+
+/* Billboard/Hero Section */
+#billboard {
+  position: relative;
+}
+
+.banner-item {
+  position: relative;
+}
+
+.banner-content {
+  padding: 2rem 0;
+}
+
+/* Features Section */
+.features .py-5 {
+  padding: 3rem 0 !important;
+}
+
+.features svg {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.features h4 {
+  font-size: 1.2rem;
+  margin: 1rem 0;
+}
+
+/* ============================================
+   9. CATEGORÍAS
+   ============================================ */
+.categories {
+  overflow: hidden;
+  margin: 3rem 0;
+}
+
+.cat-item {
+  position: relative;
+  margin-bottom: 30px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.cat-item .image-holder {
+  position: relative;
+  overflow: hidden;
+}
+
+.category-content {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  text-align: center;
+  z-index: 2;
+}
+
+.category-content::before {
+  content: '';
+  position: absolute;
+  top: -50px;
+  left: -20px;
+  right: -20px;
+  bottom: -20px;
+  background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+  z-index: -1;
+}
+
+/* ============================================
+   10. PRODUCTOS
+   ============================================ */
+
+/* Product Carousel */
+.product-carousel {
+  position: relative;
+  padding: 3rem 0;
+}
+
+/* Product Item */
+.product-item {
+  padding: 15px;
+  position: relative;
+}
+
+.product-image {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.product-content {
+  padding: 1rem 0;
+  text-align: center;
+}
+
+.product-content h5 {
+  font-size: 1.1rem;
+  margin: 0.5rem 0;
+}
+
+.product-content a {
+  color: var(--dark-color);
+  text-decoration: none;
+  transition: color var(--transition-speed) ease;
+}
+
+.product-content a:hover {
+  color: var(--primary-color);
+}
+
+/* Wishlist Button */
+.btn-wishlist {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: var(--white-color);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all var(--transition-speed) ease;
+  z-index: 10;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.btn-wishlist svg {
+  width: 20px;
+  height: 20px;
+  color: var(--dark-color);
+}
+
+.product-item:hover .btn-wishlist {
+  opacity: 1;
+}
+
+.btn-wishlist:hover {
+  background: var(--primary-color);
+}
+
+.btn-wishlist:hover svg {
+  color: var(--white-color);
+}
+
+/* ============================================
+   11. SWIPER NAVIGATION
+   ============================================ */
+.icon-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 2em;
+  color: var(--dark-color);
+  z-index: 10;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border: 1px solid #d9d9d9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.4;
+  transition: opacity var(--transition-speed) ease;
+  background: var(--white-color);
+}
+
+.icon-arrow:hover {
+  opacity: 1;
+  border-color: var(--primary-color);
+}
+
+.icon-arrow-left {
+  left: 30px;
+}
+
+.icon-arrow-right {
+  right: 30px;
+}
+
+.swiper-pagination-bullet {
+  width: 12px;
+  height: 12px;
+  margin-right: 10px;
+  background: var(--gray-color);
+  opacity: 0.5;
+}
+
+.swiper-pagination-bullet-active {
+  background: var(--primary-color);
+  opacity: 1;
+}
+
+/* ============================================
+   12. COLECCIÓN
+   ============================================ */
+.collection {
+  position: relative;
+  background: var(--light-color);
+}
+
+.collection-item {
+  margin: 3rem 0;
+}
+
+.collection-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.title-xlarge {
+  font-size: calc(2rem + 10vw);
+  font-family: 'Marcellus', serif;
+  color: rgba(140, 144, 126, 0.15);
+  position: absolute;
+  top: -40px;
+  left: 0;
+  z-index: 0;
+  line-height: 1;
+}
+
+/* ============================================
+   13. VIDEO SECTION
+   ============================================ */
+.video .video-content {
+  position: relative;
+}
+
+.video .video-bg {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.video .video-bg img {
+  width: 100%;
+  height: auto;
+}
+
+.video .video-player {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.video .video-player a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 100px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  transition: all var(--transition-speed) ease;
+}
+
+.video .video-player a:hover {
+  transform: scale(1.1);
+  background: var(--white-color);
+}
+
+.video .video-player svg {
+  color: var(--primary-color);
+  width: 40px;
+  height: 40px;
+}
+
+.text-rotate {
+  animation: rotation 50s infinite linear;
+}
+
+@keyframes rotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(359deg);
+  }
+}
+
+/* ============================================
+   14. TESTIMONIALS
+   ============================================ */
+.testimonials {
+  background: var(--light-color);
+  padding: 4rem 0;
+}
+
+.testimonial-swiper .testimonial-item blockquote {
+  font-size: 2rem;
+  font-style: italic;
+  margin: 2rem 0;
+  color: var(--dark-color);
+}
+
+.testimonial-swiper .swiper-slide {
+  opacity: 0.3;
+  width: 42% !important;
+  transition: opacity var(--transition-speed) ease;
+}
+
+.testimonial-swiper .swiper-slide-active {
+  opacity: 1;
+}
+
+.testimonial-swiper.swiper-3d .swiper-slide-shadow-left,
+.testimonial-swiper.swiper-3d .swiper-slide-shadow-right {
+  background-image: none;
+}
+
+.review-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1rem;
+  color: var(--primary-color);
+}
+
+/* ============================================
+   15. BLOG
+   ============================================ */
+.blog {
+  padding: 4rem 0;
+}
+
+.post-item {
+  margin-bottom: 2rem;
+}
+
+.post-image {
+  overflow: hidden;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+}
+
+.post-grid-image {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  transition: transform var(--transition-speed) ease;
+}
+
+.post-item:hover .post-grid-image {
+  transform: scale(1.05);
+}
+
+.post-content {
+  padding: 1rem 0;
+}
+
+.post-meta {
+  color: var(--gray-color);
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.post-title {
+  font-size: 1.3rem;
+  margin: 1rem 0;
+}
+
+.post-title a {
+  color: var(--dark-color);
+  text-decoration: none;
+  transition: color var(--transition-speed) ease;
+}
+
+.post-title a:hover {
+  color: var(--primary-color);
+}
+
+/* ============================================
+   16. INSTAGRAM
+   ============================================ */
+.instagram {
+  position: relative;
+  margin: 3rem 0;
+}
+
+.insta-item {
+  position: relative;
+  overflow: hidden;
+}
+
+.insta-image {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  transition: transform var(--transition-speed) ease;
+}
+
+.insta-item:hover .insta-image {
+  transform: scale(1.1);
+}
+
+.instagram .btn-dark {
+  background: var(--dark-color);
+  color: var(--white-color);
+  padding: 1rem 3rem;
+  border-radius: 30px;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.05rem;
+  transition: all var(--transition-speed) ease;
+}
+
+.instagram .btn-dark:hover {
+  background: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+/* ============================================
+   17. NEWSLETTER
+   ============================================ */
+.newsletter {
+  background-size: cover;
+  background-position: center;
+  padding: 4rem 0;
+}
+
+.subscribe-header {
+  margin-bottom: 2rem;
+}
+
+.newsletter .form-control {
+  border: 1px solid #ddd;
+  border-radius: 30px;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+}
+
+.newsletter .form-control:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(140, 144, 126, 0.25);
+}
+
+.newsletter .btn {
+  border-radius: 30px;
+  padding: 1rem 2rem;
+  font-weight: 600;
+  letter-spacing: 0.05rem;
+}
+
+/* ============================================
+   18. RESPONSIVE DESIGN
+   ============================================ */
+@media (max-width: 991px) {
+  .icon-arrow-left,
+  .icon-arrow-right {
+    display: none;
+  }
+  
+  .swiper-pagination {
+    position: relative;
+    margin-top: 2rem;
+  }
+  
+  .testimonial-swiper .testimonial-item blockquote {
+    font-size: 1.5rem;
+  }
+  
+  .title-xlarge {
+    font-size: calc(1.5rem + 8vw);
+  }
+}
+
+@media (max-width: 768px) {
+  .product-image {
+    height: 250px;
+  }
+  
+  .collection-content {
+    min-height: auto;
+    padding: 2rem !important;
+  }
+  
+  .testimonial-swiper .testimonial-item blockquote {
+    font-size: 1.2rem;
+  }
+  
+  .post-grid-image {
+    height: 250px;
+  }
+  
+  .insta-image {
+    height: 200px;
+  }
+  
+  h1, .h1 {
+    font-size: 2.5rem;
+  }
+  
+  h2, .h2 {
+    font-size: 2rem;
+  }
+  
+  h3, .h3 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .btn-common {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+  
+  .product-image {
+    height: 200px;
+  }
+  
+  .category-content {
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+  }
+  
+  .icon-arrow {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .video .video-player a {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .video .video-player svg {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+/* ============================================
+   19. ESTADOS ESPECIALES
+   ============================================ */
+
+/* Estado Vacío */
+.text-muted {
+  color: var(--gray-color) !important;
+}
+
+.py-5.text-center {
+  padding: 3rem 0;
+}
+
+/* Loading State */
+.loading {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Disabled State */
+.disabled,
+[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   20. UTILIDADES
+   ============================================ */
+.overflow-hidden {
+  overflow: hidden;
+}
+
+.position-relative {
+  position: relative;
+}
+
+.position-absolute {
+  position: absolute;
+}
+
+.z-1 {
+  z-index: 1;
+}
+
+.z-2 {
+  z-index: 2;
+}
+
+.text-uppercase {
+  text-transform: uppercase;
+}
+
+.text-decoration-none {
+  text-decoration: none !important;
+}
+
+/* Spacing Utilities */
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.gap-3 {
+  gap: 1rem;
+}

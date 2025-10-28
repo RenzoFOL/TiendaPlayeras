@@ -113,39 +113,63 @@ class ProductForm {
             .replace(/-+/g, '-');
     }
 
-    // ================================================
-    // MANEJO DE ENTRADA DEL NOMBRE
-    // ================================================
-    handleNameInput() {
-        const length = this.productName.value.length;
-        this.nameCounter.textContent = length;
-
-        // Animar el contador
-        this.nameCounter.style.transform = 'scale(1.2)';
-        setTimeout(() => {
-            this.nameCounter.style.transform = 'scale(1)';
-        }, 200);
-
-        if (length > 0) {
-            const slug = this.generateSlug(this.productName.value);
-            this.slugText.textContent = slug;
-            this.slugPreview.classList.add('show');
-        } else {
-            this.slugPreview.classList.remove('show');
+    /// ================================================
+// CONFIGURAR MANEJO DE TALLAS - VERSIÓN ACTUALIZADA PARA BOOLEANOS
+// ================================================
+setupSizeHandling() {
+    const updateSizeCounter = () => {
+        const selectedCount = Array.from(document.querySelectorAll('input[name^="size"]:checked')).length;
+        const counterElement = document.getElementById('sizeCounter');
+        
+        if (counterElement) {
+            counterElement.textContent = `${selectedCount} talla${selectedCount !== 1 ? 's' : ''}`;
+            
+            // Animación de cambio
+            counterElement.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                counterElement.style.transform = 'scale(1)';
+            }, 300);
         }
+        
+        console.log('📏 Tallas seleccionadas - S:', document.querySelector('input[name="sizeS"]').checked,
+                   'M:', document.querySelector('input[name="sizeM"]').checked,
+                   'L:', document.querySelector('input[name="sizeL"]').checked,
+                   'XL:', document.querySelector('input[name="sizeXL"]').checked);
+    };
 
-        // Cambiar color según la longitud
-        if (length > 180) {
-            this.nameCounter.style.color = '#e53e3e';
-            this.nameCounter.classList.add('danger');
-        } else if (length > 150) {
-            this.nameCounter.style.color = '#f59e0b';
-            this.nameCounter.classList.add('warning');
-        } else {
-            this.nameCounter.style.color = '#94a3b8';
-            this.nameCounter.classList.remove('danger', 'warning');
+    // Inicializar eventos para checkboxes de tallas
+    document.querySelectorAll('input[name^="size"]').forEach(checkbox => {
+        checkbox.addEventListener('change', updateSizeCounter);
+        
+        // Agregar efecto hover mejorado
+        const label = checkbox.closest('.form-check-size');
+        if (label) {
+            label.addEventListener('mouseenter', function() {
+                if (!this.querySelector('input').checked) {
+                    this.style.borderColor = '#667eea';
+                    this.style.transform = 'translateY(-1px)';
+                }
+            });
+            
+            label.addEventListener('mouseleave', function() {
+                if (!this.querySelector('input').checked) {
+                    this.style.borderColor = '#e0e7ff';
+                    this.style.transform = 'translateY(0)';
+                }
+            });
+
+            // Efecto al hacer click
+            checkbox.addEventListener('click', (e) => {
+                this.animateSizeSelection(checkbox);
+            });
         }
-    }
+    });
+
+    // Inicializar al cargar
+    updateSizeCounter();
+    
+    console.log('✅ Sistema de tallas booleanas inicializado');
+}
 
     // ================================================
     // MANEJO DE ENTRADA DE DESCRIPCIÓN

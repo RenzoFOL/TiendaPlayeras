@@ -20,7 +20,13 @@ namespace TiendaPlayeras.Web.Models
         [Column(TypeName = "numeric(10,2)")]
         public decimal BasePrice { get; set; }
         
-        // Nueva columna para tallas disponibles (S,M,L,XL)
+        // ✅ NUEVOS CAMPOS BOOLEANOS PARA TALLAS
+        public bool SizeS { get; set; } = true;
+        public bool SizeM { get; set; } = true;
+        public bool SizeL { get; set; } = true;
+        public bool SizeXL { get; set; } = true;
+        
+        // 🔄 MANTENER para compatibilidad temporal
         [StringLength(50)]
         public string AvailableSizes { get; set; } = "S,M,L,XL";
         
@@ -50,21 +56,36 @@ namespace TiendaPlayeras.Web.Models
             } 
         }
 
-        // Propiedad de conveniencia para obtener tallas como lista
+        // ✅ ACTUALIZADO: AvailableSizesList ahora usa los booleanos
         [NotMapped]
         public List<string> AvailableSizesList 
         { 
             get 
             {
-                return AvailableSizes?
-                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                    .Select(s => s.Trim())
-                    .ToList() ?? new List<string> { "S", "M", "L", "XL" };
+                var sizes = new List<string>();
+                if (SizeS) sizes.Add("S");
+                if (SizeM) sizes.Add("M");
+                if (SizeL) sizes.Add("L");
+                if (SizeXL) sizes.Add("XL");
+                return sizes;
             }
             set 
             {
-                AvailableSizes = string.Join(",", value ?? new List<string> { "S", "M", "L", "XL" });
+                // Actualizar booleanos según la lista
+                SizeS = value?.Contains("S") ?? true;
+                SizeM = value?.Contains("M") ?? true;
+                SizeL = value?.Contains("L") ?? true;
+                SizeXL = value?.Contains("XL") ?? true;
+                
+                // Mantener AvailableSizes actualizado
+                UpdateAvailableSizes();
             }
+        }
+
+        // ✅ NUEVO: Método para mantener AvailableSizes sincronizado
+        public void UpdateAvailableSizes()
+        {
+            AvailableSizes = string.Join(",", AvailableSizesList);
         }
     }
 }

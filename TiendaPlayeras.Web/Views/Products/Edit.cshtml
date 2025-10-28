@@ -129,11 +129,18 @@
                     </div>
                 </div>
 
-                <!-- Sección: Tallas Disponibles -->
+                <!-- Sección: Tallas Disponibles - ACTUALIZADO PARA BOOLEANOS -->
                 <div class="form-section">
                     <div class="section-title">
                         <i class="fas fa-ruler"></i>
                         Tallas Disponibles
+                        <span class="badge bg-primary ms-2" id="sizeCounter">
+                            @{
+                                var selectedCount = (Model.SizeS ? 1 : 0) + (Model.SizeM ? 1 : 0) + 
+                                                  (Model.SizeL ? 1 : 0) + (Model.SizeXL ? 1 : 0);
+                            }
+                            @selectedCount talla@(selectedCount != 1 ? "s" : "")
+                        </span>
                     </div>
 
                     <div class="row g-4">
@@ -143,39 +150,52 @@
                                 Selecciona las tallas disponibles
                             </label>
                             <div class="size-options-grid">
-                                @{
-                                    var availableSizes = Model.AvailableSizesList;
-                                }
                                 <div class="form-check form-check-size">
-                                    <input class="form-check-input" type="checkbox" name="availableSizes" value="S" id="sizeS" 
-                                           @(availableSizes.Contains("S") ? "checked" : "")>
+                                    <input class="form-check-input" 
+                                           type="checkbox" 
+                                           name="sizeS" 
+                                           value="true" 
+                                           id="sizeS" 
+                                           @(Model.SizeS ? "checked" : "")>
                                     <label class="form-check-label" for="sizeS">
                                         S
                                     </label>
                                 </div>
                                 <div class="form-check form-check-size">
-                                    <input class="form-check-input" type="checkbox" name="availableSizes" value="M" id="sizeM"
-                                           @(availableSizes.Contains("M") ? "checked" : "")>
+                                    <input class="form-check-input" 
+                                           type="checkbox" 
+                                           name="sizeM" 
+                                           value="true" 
+                                           id="sizeM"
+                                           @(Model.SizeM ? "checked" : "")>
                                     <label class="form-check-label" for="sizeM">
                                         M
                                     </label>
                                 </div>
                                 <div class="form-check form-check-size">
-                                    <input class="form-check-input" type="checkbox" name="availableSizes" value="L" id="sizeL"
-                                           @(availableSizes.Contains("L") ? "checked" : "")>
+                                    <input class="form-check-input" 
+                                           type="checkbox" 
+                                           name="sizeL" 
+                                           value="true" 
+                                           id="sizeL"
+                                           @(Model.SizeL ? "checked" : "")>
                                     <label class="form-check-label" for="sizeL">
                                         L
                                     </label>
                                 </div>
                                 <div class="form-check form-check-size">
-                                    <input class="form-check-input" type="checkbox" name="availableSizes" value="XL" id="sizeXL"
-                                           @(availableSizes.Contains("XL") ? "checked" : "")>
+                                    <input class="form-check-input" 
+                                           type="checkbox" 
+                                           name="sizeXL" 
+                                           value="true" 
+                                           id="sizeXL"
+                                           @(Model.SizeXL ? "checked" : "")>
                                     <label class="form-check-label" for="sizeXL">
                                         XL
                                     </label>
                                 </div>
                             </div>
-                            <input type="hidden" id="availableSizesHidden" name="availableSizes">
+                            
                             <div class="helper-text">
                                 <i class="fas fa-info-circle"></i>
                                 Las tallas seleccionadas estarán disponibles para este producto
@@ -311,5 +331,16 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Inyectar las imágenes del producto en una variable global
+        window.__productImages = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            productImages.Select(p => new { 
+                id = p.Id, 
+                path = p.Path, 
+                isMain = p.IsMain, 
+                displayOrder = p.DisplayOrder 
+            })
+        ));
+    </script>
     <script src="~/js/edit_producto.js"></script>
 }

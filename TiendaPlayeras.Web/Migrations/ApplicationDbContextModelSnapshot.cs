@@ -523,6 +523,18 @@ namespace TiendaPlayeras.Web.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<bool>("SizeL")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("SizeM")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("SizeS")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("SizeXL")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasMaxLength(140)

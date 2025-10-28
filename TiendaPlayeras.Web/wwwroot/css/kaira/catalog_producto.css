@@ -1,11 +1,95 @@
-.single-product-section {
-    padding: 80px 0;
+/* ========================================
+   Estilos para vista de producto individual
+   Tema Kaira - Colores café/beige
+   ======================================== */
+
+/* Variables base del tema Kaira */
+:root {
+    --primary-color: #8C907E;
+    --primary-hover: #5e624e;
+    --heading-color: #111;
+    --body-color: #8f8f8f;
+    --light-color: #F1F1F0;
+    --dark-color: #111;
+    --border-color: #d9d9d9;
+    --gray-color: #9aa1a7;
 }
 
-/* Estilos personalizados manteniendo el diseño Kaira */
-.single-product-section {
-    padding: 80px 0;
+.product-page {
+    font-family: 'Jost', sans-serif;
+    background: #f8f9fa;
+    color: var(--body-color);
 }
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Marcellus', serif;
+    font-weight: 400;
+    color: var(--heading-color);
+}
+
+/* ========================================
+   Breadcrumb
+   ======================================== */
+
+.breadcrumb-custom {
+    padding: 20px 0;
+    margin-bottom: 30px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.breadcrumb-custom a {
+    color: var(--body-color);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.breadcrumb-custom a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background-color: var(--primary-color);
+    transition: width 0.3s ease;
+}
+
+.breadcrumb-custom a:hover {
+    color: var(--heading-color);
+}
+
+.breadcrumb-custom a:hover::after {
+    width: 100%;
+}
+
+.breadcrumb-custom span {
+    color: var(--body-color);
+    margin: 0 10px;
+}
+
+.breadcrumb-custom .current {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* ========================================
+   Card principal del producto
+   ======================================== */
+
+.product-detail-row {
+    background: white;
+    border-radius: 0;
+    padding: 40px;
+    margin-bottom: 40px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+/* ========================================
+   Galería de imágenes - efectos Kaira
+   ======================================== */
 
 .product-gallery {
     position: sticky;
@@ -14,324 +98,1104 @@
 
 .main-image-container {
     position: relative;
-    margin-bottom: 20px;
     border-radius: 0;
     overflow: hidden;
+    margin-bottom: 20px;
+    background: var(--light-color);
+    border: 1px solid var(--border-color);
+}
+
+/* Efecto zoom estilo Kaira */
+.image-zoom-effect {
+    display: flex;
+    flex-wrap: wrap;
+    overflow: hidden;
+}
+
+.image-zoom-effect .image-holder {
+    width: 100%;
+    height: auto;
+    overflow: hidden;
+    transform: scale(1);
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.image-zoom-effect:hover .image-holder {
+    transform: scale(0.95);
 }
 
 .main-product-image {
     width: 100%;
-    height: auto;
-    display: block;
+    height: 500px;
+    object-fit: cover;
+    transform: scale(1);
+    will-change: transform;
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    cursor: pointer;
 }
 
+.image-zoom-effect:hover .main-product-image {
+    transform: scale(1.1);
+}
+
+/* Badges */
+.product-badge {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    padding: 6px 12px;
+    border-radius: 0;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.customizable-badge {
+    background: var(--primary-color);
+    color: white;
+}
+
+.out-of-stock-badge {
+    background: #dc3545;
+    color: white;
+}
+
+.in-stock-badge {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* ========================================
+   Thumbnails
+   ======================================== */
+
 .thumbnail-gallery {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    display: flex;
     gap: 10px;
+    overflow-x: auto;
+    padding: 10px 0;
+}
+
+.thumbnail-gallery::-webkit-scrollbar {
+    height: 6px;
+}
+
+.thumbnail-gallery::-webkit-scrollbar-track {
+    background: var(--light-color);
+}
+
+.thumbnail-gallery::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 0;
 }
 
 .thumbnail-item {
+    flex: 0 0 80px;
+    height: 80px;
+    border-radius: 0;
+    overflow: hidden;
     cursor: pointer;
     border: 2px solid transparent;
     transition: all 0.3s ease;
-    overflow: hidden;
+    opacity: 0.7;
 }
 
-.thumbnail-item:hover,
+.thumbnail-item:hover {
+    opacity: 1;
+    transform: translateY(-2px);
+}
+
 .thumbnail-item.active {
-    border-color: #111;
+    border-color: var(--primary-color);
+    opacity: 1;
 }
 
 .thumbnail-item img {
     width: 100%;
-    height: auto;
-    display: block;
+    height: 100%;
+    object-fit: cover;
 }
+
+/* ========================================
+   Información del producto
+   ======================================== */
 
 .product-info-section {
     padding-left: 40px;
 }
 
-.breadcrumb-custom {
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 20px;
-}
-
-.breadcrumb-custom a {
-    color: #999;
-    text-decoration: none;
-}
-
-.breadcrumb-custom a:hover {
-    color: #111;
-}
-
-.breadcrumb-custom span {
-    color: #111;
-    margin: 0 10px;
-}
-
 .product-title-main {
     font-family: 'Marcellus', serif;
-    font-size: 42px;
+    font-size: 2.5rem;
     font-weight: 400;
-    margin-bottom: 20px;
-    text-transform: uppercase;
-    letter-spacing: 2px;
+    color: var(--heading-color);
+    margin-bottom: 15px;
+    line-height: 1.24;
 }
 
 .product-price-main {
-    font-size: 32px;
+    font-size: 1.75rem;
     font-weight: 700;
-    margin-bottom: 30px;
-    color: #111;
+    color: var(--primary-color);
+    margin-bottom: 20px;
 }
+
+/* ========================================
+   Rating
+   ======================================== */
+
+.product-rating {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.stars {
+    color: #ffc107;
+    display: flex;
+    gap: 2px;
+}
+
+.rating-text {
+    color: var(--body-color);
+    font-size: 14px;
+}
+
+/* ========================================
+   Descripción
+   ======================================== */
 
 .product-description-text {
-    font-size: 15px;
-    line-height: 1.8;
-    color: #666;
-    margin-bottom: 40px;
-    padding-bottom: 40px;
-    border-bottom: 1px solid #eee;
+    color: var(--body-color);
+    line-height: 1.6;
+    margin-bottom: 25px;
+    font-size: 16px;
 }
 
-/* Selector de tallas estilo Kaira */
+/* ========================================
+   Selector de tallas - estilo Kaira
+   ======================================== */
+
 .size-selector-section {
-    margin-bottom: 30px;
+    margin-bottom: 25px;
 }
 
 .section-label-kaira {
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    display: block;
     font-weight: 600;
-    margin-bottom: 15px;
-    color: #111;
+    color: var(--heading-color);
+    margin-bottom: 12px;
+    font-size: 15px;
 }
 
 .size-options {
     display: flex;
     gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
 }
 
 .size-option-kaira {
-    width: 60px;
-    height: 60px;
-    border: 1px solid #ddd;
-    background: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    position: relative;
     cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 600;
-    font-size: 14px;
-    text-transform: uppercase;
-}
-
-.size-option-kaira:hover {
-    border-color: #111;
-}
-
-.size-option-kaira.selected {
-    background: #111;
-    color: #fff;
-    border-color: #111;
 }
 
 .size-option-kaira input {
     display: none;
 }
 
-/* Cantidad estilo Kaira */
+.size-label {
+    display: inline-block;
+    padding: 10px 18px;
+    border: 2px solid var(--gray-color);
+    border-radius: 0;
+    font-weight: 600;
+    color: var(--heading-color);
+    transition: all 0.3s ease;
+    text-align: center;
+    min-width: 50px;
+    background: white;
+}
+
+.size-option-kaira input:checked + .size-label {
+    border-color: var(--primary-color);
+    background: var(--primary-color);
+    color: white;
+}
+
+.size-option-kaira:hover .size-label {
+    border-color: var(--primary-color);
+}
+
+.size-guide-link {
+    text-align: right;
+}
+
+.size-guide-link a {
+    color: var(--primary-color);
+    text-decoration: underline;
+    font-size: 13px;
+    transition: all 0.3s ease;
+}
+
+.size-guide-link a:hover {
+    color: var(--primary-hover);
+}
+
+/* ========================================
+   Selector de cantidad
+   ======================================== */
+
 .quantity-selector {
-    margin-bottom: 30px;
+    margin-bottom: 25px;
 }
 
 .quantity-wrapper {
     display: inline-flex;
-    border: 1px solid #ddd;
-    background: #fff;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 0;
+    overflow: hidden;
+    background: white;
 }
 
 .qty-btn {
-    width: 50px;
-    height: 50px;
+    background: var(--light-color);
     border: none;
-    background: #fff;
+    padding: 10px 15px;
     cursor: pointer;
-    font-size: 16px;
-    transition: all 0.3s;
+    transition: all 0.5s ease-in-out;
+    color: var(--heading-color);
+    font-weight: 600;
+    min-width: 40px;
+    height: 40px;
+    font-size: 1.2em;
+    text-align: center;
 }
 
 .qty-btn:hover {
-    background: #f5f5f5;
+    background: var(--primary-color);
+    color: white;
+}
+
+.qty-btn:active {
+    transform: scale(0.95);
 }
 
 .qty-input {
-    width: 70px;
-    height: 50px;
+    width: 50px;
+    height: 40px;
     border: none;
-    border-left: 1px solid #ddd;
-    border-right: 1px solid #ddd;
     text-align: center;
     font-weight: 600;
-    font-size: 16px;
+    background: white;
+    padding: 10px 0;
+    color: var(--heading-color);
+    font-size: 1em;
 }
 
-/* Botones estilo Kaira */
+/* ========================================
+   Botones de acción - estilo Kaira
+   ======================================== */
+
 .product-actions {
     display: flex;
-    gap: 15px;
-    margin-bottom: 40px;
+    gap: 10px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
 }
 
 .btn-kaira {
     flex: 1;
-    padding: 18px 40px;
+    padding: 12px 20px;
     border: none;
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
+    border-radius: 0;
     font-weight: 600;
-    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     transition: all 0.3s ease;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
+    cursor: pointer;
+    min-width: 150px;
+    font-size: 14px;
+}
+
+.btn-kaira:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
 }
 
 .btn-kaira-primary {
-    background: #111;
-    color: #fff;
+    background: var(--primary-color);
+    color: white;
 }
 
-.btn-kaira-primary:hover {
-    background: #000;
-    color: #fff;
+.btn-kaira-primary:hover:not(:disabled) {
+    background: var(--primary-hover);
 }
 
 .btn-kaira-success {
-    background: #4CAF50;
-    color: #fff;
+    background: var(--primary-color);
+    color: white;
 }
 
-.btn-kaira-success:hover {
-    background: #45a049;
-    color: #fff;
+.btn-kaira-success:hover:not(:disabled) {
+    background: var(--primary-hover);
 }
 
 .btn-wishlist-kaira {
-    width: 56px;
-    height: 56px;
-    border: 1px solid #ddd;
-    background: #fff;
+    width: 50px;
+    height: 50px;
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    background: white;
+    color: var(--heading-color);
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 18px;
 }
 
 .btn-wishlist-kaira:hover {
-    border-color: #111;
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
 }
 
 .btn-wishlist-kaira.active {
-    background: #111;
-    border-color: #111;
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
 }
 
-.btn-wishlist-kaira svg {
-    width: 20px;
-    height: 20px;
-}
+/* ========================================
+   Características del producto
+   ======================================== */
 
-.btn-wishlist-kaira.active svg {
-    fill: #fff;
-}
-
-/* Detalles adicionales estilo Kaira */
 .product-features {
-    background: #f9f9f9;
-    padding: 30px;
-    margin-bottom: 40px;
+    background: var(--light-color);
+    border-radius: 0;
+    padding: 20px;
+    margin-bottom: 25px;
+    border: 1px solid var(--border-color);
 }
 
 .feature-item {
     display: flex;
-    align-items: flex-start;
-    gap: 20px;
-    padding: 20px 0;
-    border-bottom: 1px solid #eee;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+}
+
+.feature-item:hover {
+    transform: translateX(5px);
 }
 
 .feature-item:last-child {
-    border-bottom: none;
+    margin-bottom: 0;
 }
 
 .feature-icon {
-    width: 40px;
-    height: 40px;
+    width: 35px;
+    height: 35px;
+    background: white;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    color: var(--primary-color);
+    flex-shrink: 0;
+    font-size: 16px;
 }
 
 .feature-content h6 {
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    margin: 0;
+    color: var(--heading-color);
     font-weight: 600;
-    margin-bottom: 5px;
+    font-size: 14px;
 }
 
 .feature-content p {
-    font-size: 13px;
-    color: #666;
     margin: 0;
+    color: var(--body-color);
+    font-size: 13px;
 }
 
-/* Tags estilo Kaira */
+/* ========================================
+   Tags - estilo Kaira
+   ======================================== */
+
 .product-tags {
-    padding-top: 30px;
-    border-top: 1px solid #eee;
+    margin-bottom: 25px;
+}
+
+.tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .tag-item {
     display: inline-block;
-    padding: 8px 20px;
-    border: 1px solid #ddd;
-    margin-right: 8px;
-    margin-bottom: 8px;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #666;
+    padding: 6px 12px;
+    background: var(--light-color);
+    color: var(--heading-color);
+    border-radius: 0;
     text-decoration: none;
-    transition: all 0.3s;
+    font-size: 12px;
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
 }
 
 .tag-item:hover {
-    background: #111;
-    color: #fff;
-    border-color: #111;
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
 }
+
+/* ========================================
+   Información adicional
+   ======================================== */
+
+.additional-info {
+    background: var(--light-color);
+    border-radius: 0;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    color: var(--body-color);
+    font-size: 14px;
+}
+
+.info-item:last-child {
+    margin-bottom: 0;
+}
+
+.info-item strong {
+    color: var(--heading-color);
+}
+
+.info-item i {
+    color: var(--primary-color);
+    width: 18px;
+}
+
+/* ========================================
+   Tabs de información - estilo Kaira
+   ======================================== */
+
+.product-tabs-section {
+    background: white;
+    border-radius: 0;
+    padding: 40px;
+    margin-bottom: 40px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    border: 1px solid var(--border-color);
+}
+
+.nav-tabs {
+    border-bottom: 2px solid var(--border-color);
+    margin-bottom: 25px;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    color: var(--body-color);
+    font-weight: 600;
+    padding: 12px 20px;
+    transition: all 0.5s ease;
+    text-transform: uppercase;
+    font-size: 13px;
+    border-radius: 0;
+    position: relative;
+}
+
+.nav-tabs .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--primary-color);
+    transition: width 0.5s ease;
+}
+
+.nav-tabs .nav-link:hover {
+    color: var(--heading-color);
+    border: none;
+    background: transparent;
+}
+
+.nav-tabs .nav-link:hover::after {
+    width: 100%;
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--heading-color);
+    border: none;
+    background: transparent;
+}
+
+.nav-tabs .nav-link.active::after {
+    width: 100%;
+}
+
+.tab-content-inner {
+    padding: 15px 0;
+}
+
+.tab-content-inner h4 {
+    font-family: 'Marcellus', serif;
+    color: var(--heading-color);
+    margin-bottom: 15px;
+    font-size: 1.25rem;
+}
+
+.features-list {
+    margin-top: 20px;
+}
+
+.feature-detail {
+    margin-bottom: 8px;
+    color: var(--body-color);
+    padding-left: 20px;
+    position: relative;
+    font-size: 14px;
+}
+
+.feature-detail::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+/* ========================================
+   Especificaciones
+   ======================================== */
+
+.specs-table {
+    background: var(--light-color);
+    border-radius: 0;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.spec-row {
+    display: flex;
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.spec-row:hover {
+    background: #e9ecef;
+}
+
+.spec-row:last-child {
+    border-bottom: none;
+}
+
+.spec-name {
+    flex: 1;
+    font-weight: 600;
+    color: var(--heading-color);
+    font-size: 14px;
+}
+
+.spec-value {
+    flex: 2;
+    color: var(--body-color);
+    font-size: 14px;
+}
+
+/* ========================================
+   Reseñas
+   ======================================== */
+
+.reviews-summary {
+    background: var(--light-color);
+    border-radius: 0;
+    padding: 25px;
+    border: 1px solid var(--border-color);
+}
+
+.rating-overview {
+    padding: 15px;
+}
+
+.average-rating {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--heading-color);
+    margin-bottom: 8px;
+}
+
+.total-reviews {
+    color: var(--body-color);
+    font-size: 13px;
+}
+
+.rating-bars {
+    padding: 15px 0;
+}
+
+.rating-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.rating-label {
+    width: 70px;
+    color: var(--body-color);
+    font-size: 13px;
+}
+
+.bar-container {
+    flex: 1;
+    height: 6px;
+    background: var(--border-color);
+    border-radius: 0;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    background: var(--primary-color);
+    border-radius: 0;
+    transition: width 1s ease;
+}
+
+.rating-count {
+    width: 35px;
+    text-align: right;
+    color: var(--body-color);
+    font-size: 13px;
+}
+
+/* ========================================
+   Productos relacionados - efectos Kaira
+   ======================================== */
+
+.related-products-section {
+    background: white;
+    border-radius: 0;
+    padding: 40px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    border: 1px solid var(--border-color);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.section-title {
+    font-family: 'Marcellus', serif;
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: var(--heading-color);
+    margin: 0;
+}
+
+.view-all-link {
+    color: var(--heading-color);
+    text-decoration: underline;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    letter-spacing: 0.0875rem;
+    position: relative;
+}
+
+.view-all-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--primary-color);
+    transition: width 0.5s ease;
+}
+
+.view-all-link:hover::after {
+    width: 100%;
+}
+
+.related-product-item {
+    background: white;
+    border-radius: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    position: relative;
+    border: 1px solid var(--border-color);
+}
+
+.related-product-item:hover {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* Efecto zoom Kaira en productos relacionados */
+.related-product-item .product-image {
+    position: relative;
+    overflow: hidden;
+    background: var(--light-color);
+}
+
+.related-product-item .image-zoom-effect {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.related-product-item .image-holder {
+    width: 100%;
+    height: auto;
+    overflow: hidden;
+    transform: scale(1);
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.related-product-item:hover .image-holder {
+    transform: scale(0.95);
+}
+
+.related-product-item .product-image img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    transform: scale(1);
+    will-change: transform;
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.related-product-item:hover .product-image img {
+    transform: scale(1.1);
+}
+
+.wishlist-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 40px;
+    height: 40px;
+    background: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--heading-color);
+    cursor: pointer;
+    transition: opacity 0.3s ease-in;
+    opacity: 0;
+    z-index: 111;
+}
+
+.related-product-item:hover .wishlist-btn {
+    opacity: 1;
+}
+
+.wishlist-btn:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.related-product-item .product-info {
+    padding: 15px;
+}
+
+.related-product-item .product-name {
+    margin: 0 0 8px 0;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.related-product-item .product-name a {
+    color: var(--heading-color);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.related-product-item .product-name a:hover {
+    color: var(--primary-color);
+}
+
+.related-product-item .product-price {
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 12px;
+}
+
+.btn-add-to-cart {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 0;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    font-size: 12px;
+}
+
+.btn-add-to-cart:hover {
+    background: var(--primary-hover);
+}
+
+/* ========================================
+   Modal Guía de Tallas
+   ======================================== */
+
+.size-guide-table {
+    padding: 15px 0;
+}
+
+.size-guide-table .table {
+    margin-bottom: 0;
+}
+
+.size-guide-table th {
+    background: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    border: none;
+    padding: 12px;
+    font-size: 13px;
+}
+
+.size-guide-table td {
+    padding: 10px 12px;
+    border-color: var(--border-color);
+    font-size: 13px;
+}
+
+/* ========================================
+   Flechas de navegación estilo Kaira
+   ======================================== */
+
+.icon-arrow {
+    position: absolute;
+    top: 50%;
+    font-size: 2em;
+    color: var(--dark-color);
+    z-index: 8;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0.4;
+    transition: opacity 0.3s ease-out;
+}
+
+.icon-arrow:hover {
+    opacity: 1;
+}
+
+.icon-arrow-left {
+    left: -45px;
+}
+
+.icon-arrow-right {
+    right: -45px;
+}
+
+/* ========================================
+   Animaciones estilo Kaira
+   ======================================== */
+
+.open-up {
+    clip-path: inset(48% 34% 36% 35%);
+}
+
+.aos-animate.open-up {
+    animation: 1s open-up forwards;
+}
+
+@keyframes open-up {
+    0% {
+        clip-path: inset(48% 34% 36% 35%);
+    }
+    100% {
+        clip-path: inset(0% 0% 0% 0%);
+    }
+}
+
+/* Link effect estilo Kaira */
+.link-effect a {
+    position: relative;
+    padding: 0;
+    overflow: hidden;
+    transition: transform 0.5s;
+    display: block;
+}
+
+.link-effect a::after {
+    content: attr(data-after);
+    display: inline-block;
+    transform: translateY(100%);
+    position: absolute;
+    left: 0;
+    font-size: 1rem;
+    text-align: inherit;
+    text-transform: uppercase;
+    transition: inherit;
+}
+
+.link-effect a>span {
+    display: inline-block;
+    transform: translateY(0%);
+    transition: inherit;
+}
+
+.link-effect:hover a>span {
+    transform: translateY(-100%);
+}
+
+.link-effect:hover a::after {
+    transform: translateY(0%);
+}
+
+/* ========================================
+   Responsive
+   ======================================== */
 
 @media (max-width: 991px) {
     .product-info-section {
         padding-left: 0;
-        margin-top: 40px;
+        margin-top: 25px;
+    }
+    
+    .product-detail-row {
+        padding: 20px;
     }
     
     .product-title-main {
-        font-size: 32px;
+        font-size: 2rem;
     }
+    
+    .product-actions {
+        flex-direction: column;
+    }
+    
+    .btn-kaira {
+        min-width: auto;
+    }
+    
+    .btn-wishlist-kaira {
+        width: 100%;
+        border-radius: 0;
+        height: 50px;
+    }
+    
+    .icon-arrow-left,
+    .icon-arrow-right {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-product-image {
+        height: 400px;
+    }
+    
+    .product-tabs-section {
+        padding: 20px;
+    }
+    
+    .related-products-section {
+        padding: 20px;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+    }
+    
+    .section-title {
+        font-size: 1.25rem;
+    }
+    
+    .product-title-main {
+        font-size: 1.75rem;
+    }
+    
+    .product-price-main {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .product-detail-row {
+        padding: 15px;
+    }
+    
+    .main-product-image {
+        height: 300px;
+    }
+    
+    .size-options {
+        justify-content: center;
+    }
+    
+    .product-features,
+    .additional-info {
+        padding: 15px;
+    }
+    
+    .related-product-item .product-image img {
+        height: 250px;
+    }
+}
+
+/* ========================================
+   Utilidades
+   ======================================== */
+
+.text-muted {
+    color: var(--body-color) !important;
+}
+
+.border-animation-left {
+    position: relative;
+}
+
+.border-animation-left::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--primary-color);
+    transition: width 0.5s ease;
+}
+
+.border-animation-left:hover::after {
+    width: 100%;
 }

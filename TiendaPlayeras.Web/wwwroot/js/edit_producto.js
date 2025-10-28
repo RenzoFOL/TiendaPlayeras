@@ -1,11 +1,21 @@
 // Clase para manejar el formulario de edición de productos
 class ProductEditForm {
     constructor() {
-        this.productId = document.querySelector('form').getAttribute('action').split('/').pop();
+        // ✅ CORREGIDO: Obtener ID de manera más robusta
+        this.productId = null;
         this.chosenTags = new Map();
         this.selectedNewFiles = [];
-        this.existingImages = [];
+        this.existingImages = window.__productImages || [];
         this.hiddenContainer = document.getElementById('hiddenTags');
+        
+        // Obtener ID del producto de la URL
+        const urlMatch = window.location.pathname.match(/\/Products\/Edit\/(\d+)/);
+        if (urlMatch) {
+            this.productId = urlMatch[1];
+            console.log('🎯 Producto ID obtenido de URL:', this.productId);
+        } else {
+            console.error('❌ No se pudo obtener el ID del producto de la URL');
+        }
         
         this.initializeElements();
         this.bindEvents();
@@ -58,9 +68,36 @@ class ProductEditForm {
     }
 
     async initializeForm() {
+        // ✅ CORREGIDO: Obtener el ID del producto de manera segura
+        const form = document.getElementById('editForm');
+        if (form && form.action) {
+            const match = form.action.match(/\/Products\/SaveProductWithTags\/(\d+)/);
+            if (match) {
+                this.productId = match[1];
+                console.log('✅ ID del producto obtenido:', this.productId);
+            }
+        }
+        
+        // Si no se pudo obtener del form, intentar de la URL
+        if (!this.productId || this.productId === 'Logout') {
+            const urlMatch = window.location.pathname.match(/\/Products\/Edit\/(\d+)/);
+            if (urlMatch) {
+                this.productId = urlMatch[1];
+                console.log('✅ ID del producto obtenido de la URL:', this.productId);
+            }
+        }
+        
+        // Si aún no tenemos ID, mostrar error
+        if (!this.productId || this.productId === 'Logout') {
+            console.error('❌ No se pudo obtener el ID del producto');
+            this.showUploadStatus('Error: No se pudo cargar el producto', 'error');
+            return;
+        }
+
         await this.loadCurrentTags();
         this.updateImagesCount();
-        console.log('✅ Sistema de edición inicializado correctamente');
+        this.renderCurrentImages(); // ✅ Asegurar que las imágenes se rendericen
+        console.log('✅ Sistema de edición inicializado correctamente para producto ID:', this.productId);
     }
 
     // Función para mostrar estado de upload
@@ -192,34 +229,53 @@ class ProductEditForm {
         this.newImagesInput.files = dataTransfer.files;
     }
 
-    // Eliminar imagen existente
+    // Eliminar imagen existente - VERSIÓN CORREGIDA
     async deleteImage(imageId) {
         try {
-            console.log('🗑️ Eliminando imagen:', imageId);
+            console.log('🗑️ Solicitando eliminar imagen:', imageId);
             
-            if (!confirm('¿Estás seguro de que quieres eliminar esta imagen?')) {
+            if (!confirm('¿Estás seguro de que quieres eliminar esta imagen? Esta acción no se puede deshacer.')) {
                 return;
             }
 
-            const formData = new FormData();
-            formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
-            
+            // Mostrar loading
+            this.showUploadStatus('🔄 Eliminando imagen...', 'info');
+
             const response = await fetch(`/Products/DeleteImage?id=${imageId}`, { 
                 method: 'POST',
-                body: formData
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                }
             });
             
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
+            }
             
             const result = await response.json();
+            
             if (result.success) {
-                console.log('✅ Imagen eliminada');
+                console.log('✅ Imagen eliminada correctamente');
+                
+                // Remover la imagen del array local
                 this.existingImages = this.existingImages.filter(img => img.id !== imageId);
+                
+                // Re-renderizar las imágenes actuales
                 this.renderCurrentImages();
+                
+                // Actualizar contador
                 this.updateImagesCount();
+                
                 this.showUploadStatus('✅ Imagen eliminada correctamente', 'success');
+                
+                // Recargar la página después de 1 segundo para asegurar sincronización
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+                
             } else {
-                throw new Error(result.error || 'Error desconocido');
+                throw new Error(result.error || 'Error desconocido al eliminar la imagen');
             }
         } catch(error) {
             console.error('❌ Error eliminando imagen:', error);
@@ -260,7 +316,7 @@ class ProductEditForm {
         }
     }
 
-    // Renderizar imágenes actuales
+    // Renderizar imágenes actuales - CON EVENTOS CORRECTOS
     renderCurrentImages() {
         this.currentImagesGrid.innerHTML = '';
         
@@ -297,24 +353,34 @@ class ProductEditForm {
             `;
             this.currentImagesGrid.appendChild(div);
 
-            // Botón para eliminar
-            div.querySelector('.delete-image').addEventListener('click', () => {
-                this.deleteImage(div.querySelector('.delete-image').getAttribute('data-id'));
+            // Botón para eliminar - CON LOGS DE DEBUG
+            const deleteBtn = div.querySelector('.delete-image');
+            deleteBtn.addEventListener('click', () => {
+                console.log('🖱️ Click en botón eliminar, ID:', deleteBtn.getAttribute('data-id'));
+                this.deleteImage(deleteBtn.getAttribute('data-id'));
             });
 
             // Botón para marcar como principal
             const setMainBtn = div.querySelector('.set-main-btn');
             if (setMainBtn) {
                 setMainBtn.addEventListener('click', () => {
+                    console.log('⭐ Click en botón principal, ID:', setMainBtn.getAttribute('data-id'));
                     this.setMainImage(setMainBtn.getAttribute('data-id'));
                 });
             }
         });
     }
 
-    // Cargar etiquetas actuales
+    // Cargar etiquetas actuales - VERSIÓN CORREGIDA
     async loadCurrentTags() {
         try {
+            // ✅ VERIFICACIÓN: Asegurar que tenemos un ID válido
+            if (!this.productId || isNaN(parseInt(this.productId))) {
+                console.error('❌ ID de producto inválido:', this.productId);
+                this.showUploadStatus('Error: ID de producto inválido', 'error');
+                return;
+            }
+
             console.log('🔄 Cargando etiquetas para producto ID:', this.productId);
             
             const response = await fetch(`/Products/GetTags?id=${this.productId}`);
@@ -323,23 +389,36 @@ class ProductEditForm {
             const data = await response.json();
             console.log('🏷️ Respuesta de etiquetas:', data);
             
-            if (data.error) throw new Error(data.error);
-            if (!Array.isArray(data)) return;
+            // ✅ MANEJO MEJORADO DE ERRORES
+            if (data && data.error) {
+                throw new Error(data.error);
+            }
+            
+            if (!Array.isArray(data)) {
+                console.warn('⚠️ Respuesta de etiquetas no es un array:', data);
+                this.renderSelectedTags(); // Renderizar vacío
+                return;
+            }
             
             this.chosenTags.clear();
             data.forEach(tag => {
-                const tagId = (tag.tagId || tag.id).toString();
-                const name = tag.name || tag.Name;
+                const tagId = (tag.tagId || tag.id || '').toString();
+                const name = tag.name || tag.Name || '';
                 const category = tag.category || tag.Category || '';
+                
                 if (tagId && name) {
                     this.chosenTags.set(tagId, { name, category });
                 }
             });
             
             this.renderSelectedTags();
+            
         } catch(error) {
             console.error('❌ Error cargando tags:', error);
             this.showUploadStatus('❌ Error al cargar las etiquetas: ' + error.message, 'error');
+            
+            // Renderizar vacío en caso de error
+            this.renderSelectedTags();
         }
     }
 
@@ -430,126 +509,77 @@ class ProductEditForm {
         }
     }
 
-    // Configurar manejo de tallas - VERSIÓN ÚNICA Y CORREGIDA
+    // Configurar manejo de tallas - VERSIÓN ACTUALIZADA PARA BOOLEANOS
     setupSizeHandling() {
-        console.log('🔄 Inicializando sistema de tallas');
+        console.log('📏 Configurando manejo de tallas booleanas...');
         
-        const updateAvailableSizes = () => {
-            // Obtener todas las tallas seleccionadas
-            const selectedSizes = Array.from(document.querySelectorAll('input[name="availableSizes"]:checked'))
-                .map(checkbox => checkbox.value)
-                .join(',');
+        const updateSizeCounter = () => {
+            // Contar checkboxes marcados
+            const selectedCount = document.querySelectorAll('input[name^="size"]:checked').length;
+            const counterElement = document.getElementById('sizeCounter');
             
-            // Actualizar el hidden input con las tallas seleccionadas
-            const hiddenInput = document.getElementById('availableSizesHidden');
-            if (hiddenInput) {
-                hiddenInput.value = selectedSizes;
-                console.log('📏 Tallas actualizadas:', selectedSizes);
+            if (counterElement) {
+                counterElement.textContent = `${selectedCount} talla${selectedCount !== 1 ? 's' : ''}`;
+                
+                // Animación de cambio
+                counterElement.style.transform = 'scale(1.2)';
+                setTimeout(() => {
+                    counterElement.style.transform = 'scale(1)';
+                }, 300);
             }
             
-            // Actualizar estilos visuales
-            this.updateSizeStyles();
+            // Log para debugging
+            console.log('📏 Tallas seleccionadas - S:', document.querySelector('input[name="sizeS"]')?.checked,
+                       'M:', document.querySelector('input[name="sizeM"]')?.checked,
+                       'L:', document.querySelector('input[name="sizeL"]')?.checked,
+                       'XL:', document.querySelector('input[name="sizeXL"]')?.checked);
             
-            // Actualizar contador
-            this.updateSizeCounter(selectedSizes);
+            // Actualizar feedback visual
+            this.updateSizeVisualFeedback();
         };
 
-        // Inicializar eventos en los checkboxes
-        document.querySelectorAll('input[name="availableSizes"]').forEach(checkbox => {
-            checkbox.addEventListener('change', updateAvailableSizes);
-            
-            // Efectos hover
-            const label = checkbox.closest('.form-check-size');
-            if (label) {
-                label.addEventListener('mouseenter', function() {
-                    const isChecked = this.querySelector('input').checked;
-                    if (isChecked) {
-                        this.style.transform = 'translateY(-3px)';
-                        this.style.boxShadow = '0 8px 20px rgba(102, 126, 234, 0.4)';
-                    } else {
-                        this.style.borderColor = '#667eea';
-                        this.style.transform = 'translateY(-1px)';
-                    }
-                });
-                
-                label.addEventListener('mouseleave', function() {
-                    const isChecked = this.querySelector('input').checked;
-                    if (isChecked) {
-                        this.style.transform = 'translateY(-2px)';
-                        this.style.boxShadow = '0 5px 15px rgba(102, 126, 234, 0.3)';
-                    } else {
-                        this.style.borderColor = '#e0e7ff';
-                        this.style.transform = 'translateY(0)';
-                    }
-                });
-            }
+        // Inicializar eventos para checkboxes de tallas
+        document.querySelectorAll('input[name^="size"]').forEach(checkbox => {
+            checkbox.addEventListener('change', updateSizeCounter);
+            console.log('🔗 Evento agregado a checkbox:', checkbox.name, '=', checkbox.checked);
         });
 
-        // Inicializar estado inicial
+        // Ejecutar una vez al cargar para establecer estado inicial
+        console.log('🎯 Estado inicial de las tallas:');
+        document.querySelectorAll('input[name^="size"]').forEach(checkbox => {
+            console.log('   ', checkbox.name, '=', checkbox.checked);
+        });
+        
+        // Inicializar contador y feedback visual
         setTimeout(() => {
-            updateAvailableSizes();
-            console.log('✅ Sistema de tallas inicializado');
+            updateSizeCounter();
+            console.log('✅ Manejo de tallas booleanas configurado correctamente');
         }, 100);
     }
 
-    // Actualizar estilos visuales de las tallas
-    updateSizeStyles() {
+    // Agrega este método para feedback visual
+    updateSizeVisualFeedback() {
         const sizeLabels = document.querySelectorAll('.form-check-size');
         sizeLabels.forEach(label => {
             const checkbox = label.querySelector('input');
-            if (checkbox.checked) {
-                label.style.background = 'linear-gradient(135deg, #667eea25, #764ba225)';
+            if (checkbox && checkbox.checked) {
+                label.style.background = 'linear-gradient(135deg, #667eea30, #764ba230)';
                 label.style.borderColor = '#667eea';
-                label.style.transform = 'translateY(-2px)';
-                label.style.boxShadow = '0 5px 15px rgba(102, 126, 234, 0.3)';
+                label.style.color = '#667eea';
+                label.style.fontWeight = '700';
+                label.style.transform = 'scale(1.05)';
             } else {
                 label.style.background = 'linear-gradient(135deg, #667eea10, #764ba210)';
                 label.style.borderColor = '#e0e7ff';
-                label.style.transform = 'translateY(0)';
-                label.style.boxShadow = 'none';
+                label.style.color = '#64748b';
+                label.style.fontWeight = '600';
+                label.style.transform = 'scale(1)';
             }
         });
-    }
-
-    // Actualizar contador de tallas
-    updateSizeCounter(selectedSizes) {
-        const count = selectedSizes ? selectedSizes.split(',').filter(size => size.length > 0).length : 0;
-        let counterElement = document.getElementById('sizeCounter');
-        
-        if (!counterElement) {
-            counterElement = document.createElement('div');
-            counterElement.id = 'sizeCounter';
-            counterElement.className = 'size-counter';
-            const sizeSection = document.querySelector('.size-options-grid');
-            if (sizeSection && sizeSection.parentNode) {
-                sizeSection.parentNode.appendChild(counterElement);
-            }
-        }
-        
-        counterElement.innerHTML = `
-            <i class="fas fa-tshirt me-2"></i>
-            <strong>${count}</strong> talla${count !== 1 ? 's' : ''} seleccionada${count !== 1 ? 's' : ''}
-            ${selectedSizes ? ` <span class="text-muted">(${selectedSizes})</span>` : ''}
-        `;
-        
-        // Animación de cambio
-        counterElement.style.opacity = '0';
-        setTimeout(() => {
-            counterElement.style.opacity = '1';
-            counterElement.style.transition = 'opacity 0.3s ease';
-        }, 50);
     }
 
     // Manejar envío del formulario
     handleSubmit(e) {
-        // Verificar que hay al menos una talla seleccionada
-        const selectedSizes = document.getElementById('availableSizesHidden').value;
-        if (!selectedSizes || selectedSizes.trim() === '') {
-            e.preventDefault();
-            alert('⚠️ Por favor selecciona al menos una talla disponible');
-            return false;
-        }
-
         this.submitBtn.innerHTML = '<div class="spinner me-2"></div> Guardando...';
         this.submitBtn.disabled = true;
         this.submitBtn.classList.add('loading');
@@ -560,35 +590,3 @@ class ProductEditForm {
 document.addEventListener('DOMContentLoaded', function() {
     new ProductEditForm();
 });
-
-// Estilos dinámicos para el contador de tallas
-const style = document.createElement('style');
-style.textContent = `
-    .size-counter {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        padding: 15px 20px;
-        border-radius: 12px;
-        margin-top: 15px;
-        text-align: center;
-        font-size: 14px;
-        font-weight: 600;
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-        animation: slideUp 0.3s ease;
-    }
-    
-    .size-counter i {
-        font-size: 16px;
-    }
-    
-    .size-counter strong {
-        font-size: 18px;
-        margin: 0 4px;
-    }
-    
-    .size-counter .text-muted {
-        opacity: 0.9;
-        font-size: 12px;
-    }
-`;
-document.head.appendChild(style);
