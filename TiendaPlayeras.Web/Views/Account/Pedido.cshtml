@@ -1,0 +1,66 @@
+@model List<TiendaPlayeras.Web.Models.Order>
+@{
+    ViewData["Title"] = "Mis Pedidos";
+}
+
+<div class="container mt-4">
+    <h2>Mis Pedidos</h2>
+    
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
+            <h4>No tienes pedidos aún</h4>
+            <a href="/Catalog" class="btn btn-primary">Realizar mi primera compra</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Número de Orden</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                        <th>Total</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in Model)
+                    {
+                        <tr>
+                            <td>@order.OrderNumber</td>
+                            <td>@order.CreatedAt.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <span class="badge bg-@GetStatusBadge(order.Status)">@order.Status</span>
+                            </td>
+                            <td>@order.Total.ToString("C")</td>
+                            <td>
+                                <a href="/Orders/Details/@order.Id" class="btn btn-sm btn-outline-primary">
+                                    Ver Detalles
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@functions {
+    public string GetStatusBadge(string status)
+    {
+        return status.ToLower() switch
+        {
+            "pending" => "warning",
+            "paid" => "info",
+            "shipped" => "primary",
+            "completed" => "success",
+            "canceled" => "danger",
+            _ => "secondary"
+        };
+    }
+}

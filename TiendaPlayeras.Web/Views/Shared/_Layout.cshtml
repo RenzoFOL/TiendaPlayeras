@@ -103,6 +103,55 @@
         /* Admin/Employee specific styles */
         .admin-nav { background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05))!important; }
         .employee-nav { background: linear-gradient(135deg, rgba(79, 172, 254, 0.05), rgba(0, 242, 254, 0.05))!important; }
+
+        /* Estilos para el carrito */
+.cart-item {
+    transition: all 0.3s ease;
+}
+
+.cart-item:hover {
+    background-color: #f8f9fa;
+}
+
+.quantity-selector {
+    max-width: 120px;
+}
+
+.quantity-selector .btn {
+    padding: 0.25rem 0.5rem;
+}
+
+.quantity-selector .form-control {
+    padding: 0.25rem;
+}
+
+/* Notificaciones */
+.alert-position {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    min-width: 300px;
+}
+
+/* Breadcrumb personalizado */
+.breadcrumb-custom {
+    font-size: 0.9rem;
+}
+
+.breadcrumb-custom a {
+    color: #666;
+    text-decoration: none;
+}
+
+.breadcrumb-custom a:hover {
+    color: #111;
+}
+
+.breadcrumb-custom .current {
+    color: #111;
+    font-weight: 500;
+}
     </style>
 
     @RenderSection("Styles", required: false)
@@ -443,6 +492,40 @@
 
             console.log('✅ Navbar ASP.NET Core layout cargado correctamente');
         });
+
+        // Función para actualizar contadores
+async function updateCartCount() {
+    try {
+        const response = await fetch('/Cart/GetCartSummary');
+        const result = await response.json();
+        if (result.success) {
+            document.querySelectorAll('.cart-count').forEach(el => {
+                el.textContent = `(${result.data.totalItems})`;
+            });
+        }
+    } catch (error) {
+        console.error('Error updating cart count:', error);
+    }
+}
+
+async function updateWishlistCount() {
+    try {
+        const response = await fetch('/Wishlist/GetWishlistCount');
+        const result = await response.json();
+        document.querySelectorAll('.wishlist-count').forEach(el => {
+            el.textContent = `(${result.count})`;
+        });
+    } catch (error) {
+        console.error('Error updating wishlist count:', error);
+    }
+}
+
+// Llamar al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    updateCartCount();
+    updateWishlistCount();
+});
+
     </script>
 
     @RenderSection("Scripts", required: false)
