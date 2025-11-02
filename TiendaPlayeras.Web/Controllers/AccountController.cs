@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -44,7 +45,7 @@ namespace TiendaPlayeras.Web.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult Index(string? returnUrl = null)
+        public IActionResult Index(string? returnUrl = null, string? tab = null)
         {
             if (User?.Identity?.IsAuthenticated == true)
             {
@@ -53,6 +54,7 @@ namespace TiendaPlayeras.Web.Controllers
                 return LocalRedirect("/");
             }
             ViewBag.ReturnUrl = returnUrl;
+            ViewBag.ActiveTab = tab; // para activar pestañas (login/forgot)
             return View("Account");
         }
 
@@ -231,6 +233,65 @@ namespace TiendaPlayeras.Web.Controllers
                 : Json(new { ok = false, error = string.Join("; ", result.Errors.Select(e => e.Description)) });
         }
 
+        /// <summary>
+        /// 🔐 Restablece la contraseña en la misma vista (email + nueva contraseña).
+        /// Valida que el email exista y usa el flujo oficial de Identity (token interno).
+        /// </summary>
+
+        [AllowAnonymous]
+        [HttpPost("account/reset-direct")] // <-- ruta única
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPasswordDirect([FromForm] ResetPasswordDirectVM vm)
+        {
+            ViewBag.ActiveTab = "forgot";
+
+            vm.Email = (vm.Email ?? "").Trim();
+            vm.Password = vm.Password?.Trim() ?? "";
+            vm.ConfirmPassword = vm.ConfirmPassword?.Trim() ?? "";
+
+            if (!ModelState.IsValid)
+                return View("Account");
+
+            var user = await _userManager.FindByEmailAsync(vm.Email)
+                    ?? await _userManager.FindByNameAsync(vm.Email);
+
+            if (user == null)
+            {
+                ModelState.AddModelError(nameof(vm.Email), "No existe una cuenta con ese correo.");
+                return View("Account");
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await _userManager.ResetPasswordAsync(user, token, vm.Password);
+
+            if (!result.Succeeded)
+            {
+                foreach (var e in result.Errors)
+                    ModelState.AddModelError(string.Empty, e.Description);
+                return View("Account");
+            }
+
+            // Opcional: invalida sesiones antiguas
+            await _userManager.UpdateSecurityStampAsync(user);
+
+            TempData["ResetOk"] = "Tu contraseña se actualizó correctamente. Ya puedes iniciar sesión.";
+            return RedirectToAction(nameof(Index), new { tab = "login" });
+        }
+
+        [AllowAnonymous]
+        [HttpGet("account/email-exists")]
+        public async Task<IActionResult> EmailExists([FromQuery] string email)
+        {
+            email = (email ?? "").Trim();
+            if (string.IsNullOrEmpty(email))
+                return Json(new { exists = false });
+
+            var user = await _userManager.FindByEmailAsync(email)
+                    ?? await _userManager.FindByNameAsync(email);
+
+            return Json(new { exists = user != null });
+        }
+
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -353,22 +414,22 @@ namespace TiendaPlayeras.Web.Controllers
 
             return Json(new { ok = true, message = "Contraseña actualizada." });
         }
-    [Authorize]
-    [HttpPost("account/profile/delete")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteAccount()
-{
-    var user = await _userManager.GetUserAsync(User);
-    if (user == null) return Json(new { ok = false, error = "Usuario no encontrado." });
 
-    var result = await _userManager.DeleteAsync(user);
-    if (!result.Succeeded)
-        return Json(new { ok = false, error = string.Join("; ", result.Errors.Select(e => e.Description)) });
+        [Authorize]
+        [HttpPost("account/profile/delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteAccount()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Json(new { ok = false, error = "Usuario no encontrado." });
 
-    await _signInManager.SignOutAsync();
-    return Json(new { ok = true, redirectUrl = Url.Content("~/") });
-}
+            var result = await _userManager.DeleteAsync(user);
+            if (!result.Succeeded)
+                return Json(new { ok = false, error = string.Join("; ", result.Errors.Select(e => e.Description)) });
 
+            await _signInManager.SignOutAsync();
+            return Json(new { ok = true, redirectUrl = Url.Content("~/") });
+        }
     }
 
     // ---------- ViewModels (pueden estar aquí fuera del controlador) ----------
@@ -387,6 +448,22 @@ namespace TiendaPlayeras.Web.Controllers
         public string Email           { get; set; } = string.Empty;
         public string Token           { get; set; } = string.Empty;
         public string Password        { get; set; } = string.Empty;
+        public string ConfirmPassword { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// VM para el restablecimiento directo (email + nueva contraseña en la misma vista).
+    /// </summary>
+    public class ResetPasswordDirectVM
+    {
+        [Required, EmailAddress]
+        public string Email { get; set; } = string.Empty;
+
+        [Required, MinLength(6), DataType(DataType.Password)]
+        public string Password { get; set; } = string.Empty;
+
+        [Required, DataType(DataType.Password), Compare(nameof(Password),
+            ErrorMessage = "La confirmación no coincide.")]
         public string ConfirmPassword { get; set; } = string.Empty;
     }
 }
