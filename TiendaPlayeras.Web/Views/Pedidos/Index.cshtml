@@ -16,6 +16,12 @@
     };
 }
 
+@{
+    // Si viene desde /Pedidos/Partial no usamos Layout para poder inyectar el HTML
+    if (ViewBag.Partial == true) { Layout = null; }
+}
+
+
 <div class="container-xxl py-4">
   <!-- Encabezado: título + botón volver -->
   <div class="d-flex align-items-center justify-content-between mb-2">

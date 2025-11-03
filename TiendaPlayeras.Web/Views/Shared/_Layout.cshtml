@@ -21,17 +21,23 @@
     <!-- Swiper CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
 
-    <!-- CSS personalizados -->
+    <!-- CSS del tema Kaira -->
     <link rel="stylesheet" href="~/css/kaira/normalize.css" asp-append-version="true">
     <link rel="stylesheet" href="~/css/kaira/vendor.css" asp-append-version="true">
     <link rel="stylesheet" href="~/css/kaira/swiper-bundle.min.css" asp-append-version="true">
     <link rel="stylesheet" href="~/css/kaira/style.css" asp-append-version="true">
-    <link rel="stylesheet" href="~/css/kaira/enhanced.css">
+    <link rel="stylesheet" href="~/css/kaira/enhanced.css" asp-append-version="true">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&family=Marcellus&display=swap" rel="stylesheet">
+
+    <!-- 🔽🔽🔽 TU CSS DE PROYECTO: AL FINAL para ganar especificidad -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <!-- (Opcional) estilos de cuenta; colócalos aquí si los separaste -->
+    <link rel="stylesheet" href="~/css/account.css" asp-append-version="true" />
+    <!-- 🔼🔼🔼 -->
 
     <style>
         :root {
@@ -52,7 +58,6 @@
         .nav-link-enhanced:hover::before, .nav-link-enhanced.active::before { width: 80%; }
         .nav-link-enhanced:hover, .nav-link-enhanced.active { color: var(--hover-color)!important; transform: translateY(-2px); }
 
-        /* Admin/Employee Panel Button */
         .panel-button { background: linear-gradient(135deg, var(--admin-color), #764ba2); color: white!important; padding: .6rem 1.5rem!important; border-radius: 25px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; transition: all .3s ease; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); border: none; display: inline-flex; align-items: center; gap: .5rem; }
         .panel-button.employee { background: linear-gradient(135deg, var(--employee-color), #00f2fe); box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3); }
         .panel-button:hover { transform: translateY(-2px) scale(1.05); box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4); color: white!important; }
@@ -75,21 +80,17 @@
         .navbar-toggler:hover { transform: scale(1.1); }
         .navbar-toggler:focus { box-shadow: none; }
 
-        /* Admin/Employee specific styles */
         .admin-nav { background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05))!important; }
         .employee-nav { background: linear-gradient(135deg, rgba(79, 172, 254, 0.05), rgba(0, 242, 254, 0.05))!important; }
 
-        /* Estilos para el carrito */
         .cart-item { transition: all 0.3s ease; }
         .cart-item:hover { background-color: #f8f9fa; }
         .quantity-selector { max-width: 120px; }
         .quantity-selector .btn { padding: 0.25rem 0.5rem; }
         .quantity-selector .form-control { padding: 0.25rem; }
 
-        /* Notificaciones */
         .alert-position { position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px; }
 
-        /* Breadcrumb personalizado */
         .breadcrumb-custom { font-size: 0.9rem; }
         .breadcrumb-custom a { color: #666; text-decoration: none; }
         .breadcrumb-custom a:hover { color: #111; }
@@ -233,7 +234,6 @@
                     <ul class="list-unstyled d-flex m-0 align-items-center gap-3">
                         @if (User.IsInRole("Admin") || User.IsInRole("Employee"))
                         {
-                            <!-- Admin/Employee Panel Button -->
                             <li class="d-none d-lg-block">
                                 <a href="@(User.IsInRole("Admin") ? "/Admin" : "/Employee")" 
                                    class="panel-button @(User.IsInRole("Employee") ? "employee" : "")" 
@@ -245,15 +245,13 @@
                         }
                         else
                         {
-                            <!-- Customer Wishlist & Cart -->
                             <li class="d-none d-lg-block">
                                <a id="btnOpenWishlist" href="#" class="text-uppercase mx-2 text-decoration-none nav-link-enhanced position-relative" title="Lista de deseos">
                                     <i class="fas fa-heart me-1"></i>Wishlist
                                     <span class="wishlist-count badge-enhanced">(0)</span>
                                 </a>
-
                             </li>
-                                <li class="d-none d-lg-block">
+                            <li class="d-none d-lg-block">
                                 <a href="#" class="text-uppercase mx-2 text-decoration-none nav-link-enhanced position-relative" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart" title="Carrito">
                                     <i class="fas fa-shopping-cart me-1"></i>Cart
                                     <span class="cart-count badge-enhanced">(0)</span>
@@ -282,7 +280,6 @@
                             </li>
                         }
 
-                        <!-- User Menu -->
                         <li class="nav-item dropdown user-box">
                             @if (!User.Identity.IsAuthenticated)
                             {
@@ -345,7 +342,6 @@
         </div>
     </nav>
 
-    <!-- Offcanvas Cart (Solo para clientes) -->
     @if (!User.IsInRole("Admin") && !User.IsInRole("Employee"))
     {
         <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="offcanvasCart" aria-labelledby="offcanvasCartLabel">
@@ -368,21 +364,16 @@
         </div>
     }
 
-    <!-- Main Content -->
     <div>
         @RenderBody()
     </div>
 
-    <!-- ===== Modal Wishlist (se llena vía /Wishlist/Drawer) ===== -->
     <div id="wishlist-modal" class="modal fade" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content" id="wishlist-modal-content">
-          <!-- aquí se inyecta _WishlistDrawer -->
-        </div>
+        <div class="modal-content" id="wishlist-modal-content"></div>
       </div>
     </div>
 
-    <!-- Footer -->
     <footer id="footer" class="mt-5">
         <div class="footer-intro mb-4 text-center">
             <a href="/">
@@ -391,7 +382,6 @@
         </div>
     </footer>
 
-    <!-- Scripts -->
     <script src="~/js/kaira/jquery.min.js" asp-append-version="true"></script>
     <script src="~/js/kaira/modernizr.js" asp-append-version="true"></script>
     <script src="~/js/kaira/plugins.js" asp-append-version="true"></script>
@@ -452,34 +442,24 @@
             console.log('✅ Navbar ASP.NET Core layout cargado correctamente');
         });
 
-        // Función para actualizar contadores
         async function updateCartCount() {
             try {
                 const response = await fetch('/Cart/GetCartSummary');
                 const result = await response.json();
                 if (result.success) {
-                    document.querySelectorAll('.cart-count').forEach(el => {
-                        el.textContent = `(${result.data.totalItems})`;
-                    });
+                    document.querySelectorAll('.cart-count').forEach(el => { el.textContent = `(${result.data.totalItems})`; });
                 }
-            } catch (error) {
-                console.error('Error updating cart count:', error);
-            }
+            } catch (error) { console.error('Error updating cart count:', error); }
         }
 
         async function updateWishlistCount() {
             try {
                 const response = await fetch('/Wishlist/Count');
                 const result = await response.json();
-                document.querySelectorAll('.wishlist-count').forEach(el => {
-                    el.textContent = `(${result.count})`;
-                });
-            } catch (error) {
-                console.error('Error updating wishlist count:', error);
-            }
+                document.querySelectorAll('.wishlist-count').forEach(el => { el.textContent = `(${result.count})`; });
+            } catch (error) { console.error('Error updating wishlist count:', error); }
         }
 
-        // Llamar al cargar la página
         document.addEventListener('DOMContentLoaded', function() {
             updateCartCount();
             updateWishlistCount();
@@ -487,123 +467,109 @@
     </script>
 
     <script>
-  // ===== Wishlist: abrir modal y cargar partial =====
-  (function () {
-    const metaToken = document.querySelector('meta[name="RequestVerificationToken"]');
-    const XSRF = metaToken?.content || '';
+      (function () {
+        const metaToken = document.querySelector('meta[name="RequestVerificationToken"]');
+        const XSRF = metaToken?.content || '';
 
-    async function loadWishlistDrawer() {
-      // Carga el parcial _WishlistDrawer.cshtml
-      const resp = await fetch('/Wishlist/Drawer', { credentials: 'same-origin' });
-      const html = await resp.text();
-      const container = document.getElementById('wishlist-modal-content');
-      container.innerHTML = html;
+        async function loadWishlistDrawer() {
+          const resp = await fetch('/Wishlist/Drawer', { credentials: 'same-origin' });
+          const html = await resp.text();
+          const container = document.getElementById('wishlist-modal-content');
+          container.innerHTML = html;
 
-      // Re-bind de botones "Quitar" dentro del drawer
-      container.querySelectorAll('.js-wishlist-remove').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-          e.preventDefault();
-          const pid = parseInt(btn.getAttribute('data-product-id'), 10);
-          if (!pid) return;
+          container.querySelectorAll('.js-wishlist-remove').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+              e.preventDefault();
+              const pid = parseInt(btn.getAttribute('data-product-id'), 10);
+              if (!pid) return;
 
-          const r = await fetch('/Wishlist/Remove', {
+              const r = await fetch('/Wishlist/Remove', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'RequestVerificationToken': XSRF
+                },
+                body: JSON.stringify({ productId: pid })
+              });
+
+              if (r.ok) {
+                await loadWishlistDrawer();
+                try { if (typeof updateWishlistCount === 'function') updateWishlistCount(); } catch {}
+              }
+            });
+          });
+        }
+
+        async function openWishlistModal() {
+          await loadWishlistDrawer();
+          const modalEl = document.getElementById('wishlist-modal');
+          const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+          modal.show();
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+          const btn = document.getElementById('btnOpenWishlist');
+          if (btn) {
+            btn.addEventListener('click', function (e) {
+              e.preventDefault();
+              openWishlistModal();
+            });
+          }
+        });
+      })();
+    </script>
+
+    <script>
+      (function () {
+        const metaToken = document.querySelector('meta[name="RequestVerificationToken"]');
+        const XSRF = metaToken?.content || '';
+
+        async function addToWishlist(productId) {
+          const resp = await fetch('/Wishlist/Add', {
             method: 'POST',
             credentials: 'same-origin',
             headers: {
               'Content-Type': 'application/json',
               'RequestVerificationToken': XSRF
             },
-            body: JSON.stringify({ productId: pid })
+            body: JSON.stringify({ productId })
           });
 
-          if (r.ok) {
-            // Recarga el drawer y el contador
-            await loadWishlistDrawer();
+          if (resp.status === 401) {
+            window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(location.pathname + location.search);
+            return;
+          }
+
+          let json = null;
+          try { json = await resp.json(); } catch {}
+          if (json && json.ok) return true;
+          return false;
+        }
+
+        function markWishActive(btn) {
+          btn.classList.add('active');
+          btn.setAttribute('aria-pressed', 'true');
+          const i = btn.querySelector('i.fas.fa-heart, i.fa-heart');
+          if (i) i.classList.add('text-danger');
+        }
+
+        document.addEventListener('click', async function (e) {
+          const btn = e.target.closest('.js-add-wishlist, [data-action="add-wishlist"]');
+          if (!btn) return;
+
+          e.preventDefault();
+          const pid = parseInt(btn.getAttribute('data-product-id'), 10);
+          if (!pid) return;
+
+          const ok = await addToWishlist(pid);
+          if (ok) {
+            markWishActive(btn);
             try { if (typeof updateWishlistCount === 'function') updateWishlistCount(); } catch {}
           }
         });
-      });
-    }
-
-    // Abre el modal y carga su contenido
-    async function openWishlistModal() {
-      await loadWishlistDrawer();
-      const modalEl = document.getElementById('wishlist-modal');
-      const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-      modal.show();
-    }
-
-    // Click en el link del header con id="btnOpenWishlist"
-    document.addEventListener('DOMContentLoaded', function () {
-      const btn = document.getElementById('btnOpenWishlist');
-      if (btn) {
-        btn.addEventListener('click', function (e) {
-          e.preventDefault();
-          openWishlistModal();
-        });
-      }
-    });
-  })();
-</script>
-
-<script>
-  // ===== Click global para "Agregar a Wishlist" en cualquier página =====
-  (function () {
-    const metaToken = document.querySelector('meta[name="RequestVerificationToken"]');
-    const XSRF = metaToken?.content || '';
-
-    async function addToWishlist(productId) {
-      const resp = await fetch('/Wishlist/Add', {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: {
-          'Content-Type': 'application/json',
-          'RequestVerificationToken': XSRF
-        },
-        body: JSON.stringify({ productId })
-      });
-
-      if (resp.status === 401) {
-        // no logueado → lleva a login
-        window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(location.pathname + location.search);
-        return;
-      }
-
-      let json = null;
-      try { json = await resp.json(); } catch {}
-      if (json && json.ok) {
-        // feedback visual: marca el botón
-        return true;
-      }
-      return false;
-    }
-
-    function markWishActive(btn) {
-      btn.classList.add('active');
-      btn.setAttribute('aria-pressed', 'true');
-      const i = btn.querySelector('i.fas.fa-heart, i.fa-heart');
-      if (i) i.classList.add('text-danger');
-    }
-
-    // Delegación: escucha clicks en todo el documento
-    document.addEventListener('click', async function (e) {
-      const btn = e.target.closest('.js-add-wishlist, [data-action="add-wishlist"]');
-      if (!btn) return;
-
-      e.preventDefault();
-      const pid = parseInt(btn.getAttribute('data-product-id'), 10);
-      if (!pid) return;
-
-      const ok = await addToWishlist(pid);
-      if (ok) {
-        markWishActive(btn);
-        try { if (typeof updateWishlistCount === 'function') updateWishlistCount(); } catch {}
-      }
-    });
-  })();
-</script>
-
-
+      })();
+    </script>
 
     @RenderSection("Scripts", required: false)
 </body>

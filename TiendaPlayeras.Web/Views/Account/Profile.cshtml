@@ -3,260 +3,176 @@
     ViewData["Title"] = "Mi perfil";
 }
 
-<div class="container py-5">
-    <div class="mx-auto" style="max-width: 680px;"> @* diseño compacto original *@
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-4">
-                <div class="d-flex align-items-start justify-content-between mb-3">
-                    <h2 class="mb-0">Editar perfil</h2>
-                    <button id="btnOpenDelete" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
-                        Eliminar cuenta
-                    </button>
-                </div>
+<div class="container py-5" 
+     id="accountRoot"
+     data-url-update="@Url.Action("UpdateProfileField","Account")"
+     data-url-changepwd="@Url.Action("ChangePassword","Account")"
+     data-url-delete="@Url.Action("DeleteAccount","Account")"
+     data-url-orders-partial="/Pedidos/Partial">
+    <div class="row">
+        <!-- ===== Sidebar ===== -->
+<aside class="col-12 col-md-4 col-lg-3 mb-3">
+    <div class="account-sidebar card shadow-sm border-0">
+        <div class="card-body p-0">
+            <nav class="list-group list-group-flush" id="accountMenu">
+                <button type="button" class="list-group-item list-group-item-action active" data-action="profile">
+                    <span class="item-label">Editar perfil</span>
+                </button>
+                <button type="button" class="list-group-item list-group-item-action" data-action="orders" id="btnOrders">
+                    <span class="item-label">Mis pedidos</span>
+                </button>
+                <button type="button" class="list-group-item list-group-item-action disabled" data-action="addresses" aria-disabled="true" title="Próximamente">
+                    <span class="item-label">Direcciones</span>
+                </button>
+                <button type="button" class="list-group-item list-group-item-action disabled" data-action="payments" aria-disabled="true" title="Próximamente">
+                    <span class="item-label">Métodos de pago</span>
+                </button>
+            </nav>
+        </div>
+    </div>
+</aside>
 
-                <!-- Alertas Bootstrap (banda con cerrar) -->
-                <div id="alertPlaceholder" class="mb-3"></div>
+        <!-- ===== Panel derecho ===== -->
+        <section class="col-12 col-md-8 col-lg-9">
+            <div id="accountContent"><!-- === CONTENIDO INICIAL: EDITAR PERFIL === -->
 
                 @Html.AntiForgeryToken()
 
-                <div class="row g-3 align-items-center mb-3">
-                    <div class="col-4"><label class="col-form-label">Nombre</label></div>
-                    <div class="col-6">
-                        <input id="txtFirstName" class="form-control" value="@Model.FirstName" readonly />
-                    </div>
-                    <div class="col-2 text-end">
-                        <button data-field="FirstName" class="btn btn-outline-secondary w-100 btn-toggle">Editar</button>
+                <!-- Alertas Bootstrap -->
+                <div id="alertPlaceholder" class="mb-3"></div>
+
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-start justify-content-between mb-3">
+                            <h2 class="mb-0">Editar perfil</h2>
+                            <button id="btnOpenDelete" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+                                Eliminar cuenta
+                            </button>
+                        </div>
+
+                        <div class="row g-3 align-items-center mb-3">
+                            <div class="col-4"><label class="col-form-label">Nombre</label></div>
+                            <div class="col-6">
+                                <input id="txtFirstName" class="form-control" value="@Model.FirstName" readonly />
+                            </div>
+                            <div class="col-2 text-end">
+                                <button data-field="FirstName" class="btn btn-outline-secondary w-100 btn-toggle">Editar</button>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 align-items-center mb-3">
+                            <div class="col-4"><label class="col-form-label">Apellidos</label></div>
+                            <div class="col-6">
+                                <input id="txtLastNames" class="form-control" value="@Model.LastNames" readonly />
+                            </div>
+                            <div class="col-2 text-end">
+                                <button data-field="LastNames" class="btn btn-outline-secondary w-100 btn-toggle">Editar</button>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 align-items-center mb-3">
+                            <div class="col-4"><label class="col-form-label">Correo</label></div>
+                            <div class="col-6">
+                                <input id="txtEmail" type="email" class="form-control" value="@Model.Email" readonly />
+                            </div>
+                            <div class="col-2 text-end">
+                                <button data-field="Email" class="btn btn-outline-secondary w-100 btn-toggle">Editar</button>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 align-items-center mb-3">
+                            <div class="col-4"><label class="col-form-label">Teléfono</label></div>
+                            <div class="col-6">
+                                <input id="txtPhone" class="form-control" value="@Model.PhoneNumber" readonly />
+                            </div>
+                            <div class="col-2 text-end">
+                                <button data-field="PhoneNumber" class="btn btn-outline-secondary w-100 btn-toggle">Editar</button>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 align-items-center">
+                            <div class="col-4"><label class="col-form-label">Contraseña</label></div>
+                            <div class="col-6">
+                                <input class="form-control" value="••••••••" readonly />
+                            </div>
+                            <div class="col-2 text-end">
+                                <button class="btn btn-outline-secondary w-100" data-bs-toggle="modal" data-bs-target="#pwdModal">Editar</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="row g-3 align-items-center mb-3">
-                    <div class="col-4"><label class="col-form-label">Apellidos</label></div>
-                    <div class="col-6">
-                        <input id="txtLastNames" class="form-control" value="@Model.LastNames" readonly />
+                <!-- ===== Modal Cambiar contraseña ===== -->
+                <div class="modal fade" id="pwdModal" tabindex="-1" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0">
+                      <div class="modal-header">
+                        <h5 class="modal-title">Cambiar contraseña</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                      </div>
+                      <div class="modal-body">
+                        <div class="mb-3">
+                          <label class="form-label">Contraseña actual</label>
+                          <input type="password" id="pwdCurrent" class="form-control" placeholder="Tu contraseña actual">
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label">Nueva contraseña</label>
+                          <input type="password" id="pwdNew" class="form-control" placeholder="Nueva contraseña">
+                        </div>
+                        <div class="mb-1">
+                          <label class="form-label">Confirmar nueva contraseña</label>
+                          <input type="password" id="pwdConfirm" class="form-control" placeholder="Repite la nueva contraseña">
+                        </div>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" id="btnSavePwd" class="btn btn-primary">Guardar</button>
+                      </div>
                     </div>
-                    <div class="col-2 text-end">
-                        <button data-field="LastNames" class="btn btn-outline-secondary w-100 btn-toggle">Editar</button>
-                    </div>
+                  </div>
                 </div>
 
-                <div class="row g-3 align-items-center mb-3">
-                    <div class="col-4"><label class="col-form-label">Correo</label></div>
-                    <div class="col-6">
-                        <input id="txtEmail" type="email" class="form-control" value="@Model.Email" readonly />
+                <!-- ===== Modal Confirmar eliminación ===== -->
+                <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0">
+                      <div class="modal-header border-0">
+                        <h5 class="modal-title d-flex align-items-center text-danger">
+                          <span class="me-2">Eliminar cuenta</span>
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                      </div>
+                      <div class="modal-body pt-0">
+                        <div class="alert alert-danger shadow-sm" role="alert">
+                          Esta acción es <strong>permanente</strong>. Se cerrará tu sesión y se eliminarán tus datos de acceso.
+                        </div>
+                        <div class="form-check mb-3">
+                          <input class="form-check-input" type="checkbox" id="chkConfirmDelete">
+                          <label class="form-check-label" for="chkConfirmDelete">
+                            Entiendo las consecuencias y deseo eliminar mi cuenta.
+                          </label>
+                        </div>
+                        <div class="mb-1">
+                          <label class="form-label">Escribe <strong>ELIMINAR</strong> para confirmar</label>
+                          <input type="text" id="txtConfirmWord" class="form-control" placeholder="ELIMINAR">
+                        </div>
+                        <small class="text-muted">No podrás recuperar tu cuenta después de continuar.</small>
+                      </div>
+                      <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" id="btnConfirmDelete" class="btn btn-danger" disabled>
+                          Eliminar definitivamente
+                        </button>
+                      </div>
                     </div>
-                    <div class="col-2 text-end">
-                        <button data-field="Email" class="btn btn-outline-secondary w-100 btn-toggle">Editar</button>
-                    </div>
+                  </div>
                 </div>
 
-                <div class="row g-3 align-items-center mb-3">
-                    <div class="col-4"><label class="col-form-label">Teléfono</label></div>
-                    <div class="col-6">
-                        <input id="txtPhone" class="form-control" value="@Model.PhoneNumber" readonly />
-                    </div>
-                    <div class="col-2 text-end">
-                        <button data-field="PhoneNumber" class="btn btn-outline-secondary w-100 btn-toggle">Editar</button>
-                    </div>
-                </div>
-
-                <div class="row g-3 align-items-center">
-                    <div class="col-4"><label class="col-form-label">Contraseña</label></div>
-                    <div class="col-6">
-                        <input class="form-control" value="••••••••" readonly />
-                    </div>
-                    <div class="col-2 text-end">
-                        <button class="btn btn-outline-secondary w-100" data-bs-toggle="modal" data-bs-target="#pwdModal">Editar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+            </div><!-- /#accountContent -->
+        </section>
     </div>
-</div>
-
-@* Modal para cambiar contraseña *@
-<div class="modal fade" id="pwdModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0">
-      <div class="modal-header">
-        <h5 class="modal-title">Cambiar contraseña</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-      </div>
-      <div class="modal-body">
-        <div class="mb-3">
-          <label class="form-label">Contraseña actual</label>
-          <input type="password" id="pwdCurrent" class="form-control" placeholder="Tu contraseña actual">
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Nueva contraseña</label>
-          <input type="password" id="pwdNew" class="form-control" placeholder="Nueva contraseña">
-        </div>
-        <div class="mb-1">
-          <label class="form-label">Confirmar nueva contraseña</label>
-          <input type="password" id="pwdConfirm" class="form-control" placeholder="Repite la nueva contraseña">
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" id="btnSavePwd" class="btn btn-primary">Guardar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-@* Modal de confirmación de ELIMINAR cuenta, con diseño de la página *@
-<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0">
-      <div class="modal-header border-0">
-        <h5 class="modal-title d-flex align-items-center text-danger">
-          <span class="me-2">Eliminar cuenta</span>
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-      </div>
-      <div class="modal-body pt-0">
-        <div class="alert alert-danger shadow-sm" role="alert">
-          Esta acción es <strong>permanente</strong>. Se cerrará tu sesión y se eliminarán tus datos de acceso.
-        </div>
-        <div class="form-check mb-3">
-          <input class="form-check-input" type="checkbox" id="chkConfirmDelete">
-          <label class="form-check-label" for="chkConfirmDelete">
-            Entiendo las consecuencias y deseo eliminar mi cuenta.
-          </label>
-        </div>
-        <div class="mb-1">
-          <label class="form-label">Escribe <strong>ELIMINAR</strong> para confirmar</label>
-          <input type="text" id="txtConfirmWord" class="form-control" placeholder="ELIMINAR">
-        </div>
-        <small class="text-muted">No podrás recuperar tu cuenta después de continuar.</small>
-      </div>
-      <div class="modal-footer border-0">
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" id="btnConfirmDelete" class="btn btn-danger" disabled>
-          Eliminar definitivamente
-        </button>
-      </div>
-    </div>
-  </div>
 </div>
 
 @section Scripts{
-<script>
-(function(){
-  const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-
-  const urlUpdate    = '@Url.Action("UpdateProfileField","Account")';
-  const urlChangePwd = '@Url.Action("ChangePassword","Account")';
-  const urlDelete    = '@Url.Action("DeleteAccount","Account")';
-
-  // ===== Alertas Bootstrap (banda + cerrar) =====
-  function renderAlert(type, message, timeout=4000){
-    const host = document.getElementById('alertPlaceholder');
-    const wrap = document.createElement('div');
-    wrap.innerHTML = `
-      <div class="alert alert-${type} alert-dismissible fade show shadow-sm" role="alert">
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-      </div>`;
-    const el = wrap.firstElementChild;
-    host.appendChild(el);
-    if (timeout>0){ setTimeout(()=>{ try{ bootstrap.Alert.getOrCreateInstance(el).close(); }catch{} }, timeout); }
-  }
-  const showOk  = (m)=>renderAlert('success', m||'Guardado correctamente.');
-  const showErr = (m)=>renderAlert('danger',  m||'Ocurrió un error.');
-
-  function setReadonly(input, ro){
-    input.readOnly = ro;
-    input.classList.toggle('is-valid', !ro);
-  }
-
-  async function postJson(url, body){
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json', 'RequestVerificationToken': token },
-      body: JSON.stringify(body||{})
-    });
-    return res.json();
-  }
-
-  // ===== Editar/Guardar por campo =====
-  document.querySelectorAll('.btn-toggle').forEach(btn=>{
-    btn.addEventListener('click', async (e)=>{
-      e.preventDefault();
-      const field = btn.getAttribute('data-field');
-      const inputId = field==='FirstName' ? 'txtFirstName'
-                    : field==='LastNames' ? 'txtLastNames'
-                    : field==='Email'     ? 'txtEmail'
-                    : 'txtPhone';
-      const input = document.getElementById(inputId);
-
-      if (btn.textContent.trim().toLowerCase()==='editar'){
-        setReadonly(input, false);
-        input.focus();
-        btn.textContent = 'Guardar';
-        btn.classList.remove('btn-outline-secondary');
-        btn.classList.add('btn-success');
-        return;
-      }
-
-      const value = input.value;
-      const data = await postJson(urlUpdate, { field, value });
-      if (data.ok){
-        setReadonly(input, true);
-        btn.textContent = 'Editar';
-        btn.classList.remove('btn-success');
-        btn.classList.add('btn-outline-secondary');
-        showOk('Guardado correctamente.');
-      } else {
-        showErr(data.error);
-      }
-    });
-  });
-
-  // ===== Cambiar contraseña (modal) =====
-  document.getElementById('btnSavePwd').addEventListener('click', async ()=>{
-    const current = document.getElementById('pwdCurrent').value;
-    const n = document.getElementById('pwdNew').value;
-    const c = document.getElementById('pwdConfirm').value;
-
-    const data = await postJson(urlChangePwd, {
-      currentPassword: current, newPassword: n, confirmNewPassword: c
-    });
-
-    if (data.ok){
-      ['pwdCurrent','pwdNew','pwdConfirm'].forEach(id=>document.getElementById(id).value='');
-      bootstrap.Modal.getInstance(document.getElementById('pwdModal')).hide();
-      showOk('Contraseña actualizada.');
-    } else {
-      showErr(data.error);
-    }
-  });
-
-  // ===== Confirmación de eliminación (habilitar botón) =====
-  const chk = document.getElementById('chkConfirmDelete');
-  const txt = document.getElementById('txtConfirmWord');
-  const btnConfirm = document.getElementById('btnConfirmDelete');
-
-  function validateDeleteReady(){
-    const okWord = (txt.value || '').trim().toUpperCase() === 'ELIMINAR';
-    btnConfirm.disabled = !(chk.checked && okWord);
-  }
-  chk.addEventListener('change', validateDeleteReady);
-  txt.addEventListener('input',  validateDeleteReady);
-
-  // ===== Eliminar cuenta (modal) =====
-  btnConfirm.addEventListener('click', async ()=>{
-    btnConfirm.disabled = true;
-    btnConfirm.innerHTML = 'Eliminando...';
-    const data = await postJson(urlDelete, {});
-    if (data.ok){
-      window.location.href = data.redirectUrl || '/';
-      return;
-    }
-    btnConfirm.innerHTML = 'Eliminar definitivamente';
-    validateDeleteReady();
-    showErr(data.error);
-  });
-
-})();
-</script>
+    <script src="~/js/account-profile.js"></script>
 }
