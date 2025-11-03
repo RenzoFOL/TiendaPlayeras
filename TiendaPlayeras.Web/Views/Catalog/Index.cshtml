@@ -249,9 +249,10 @@
                                                     title="Agregar al carrito">
                                                 <i class="fas fa-shopping-cart"></i>
                                             </button>
-                                            <button type="button" 
-                                                    class="btn-overlay btn-favorite" 
-                                                    onclick="addToWishlist(@p.Id)"
+                                            <!-- ❤️ Corazón: usa el handler global -->
+                                            <button type="button"
+                                                    class="btn-overlay btn-favorite js-add-wishlist"
+                                                    data-product-id="@p.Id"
                                                     title="Agregar a favoritos">
                                                 <i class="fas fa-heart"></i>
                                             </button>
@@ -336,10 +337,9 @@ function goToProduct(slug) {
     }, 150);
 }
 
-// Funciones para los botones de acción (demo)
+// Demo carrito (puedes sustituirlo por tu lógica real)
 function addToCart(productId) {
     console.log('Agregando al carrito producto ID:', productId);
-    alert('Producto agregado al carrito');
     const button = event.target.closest('.btn-cart');
     const originalHtml = button.innerHTML;
     button.innerHTML = '<i class="fas fa-check"></i>';
@@ -350,20 +350,7 @@ function addToCart(productId) {
     }, 1000);
 }
 
-function addToWishlist(productId) {
-    console.log('Agregando a favoritos producto ID:', productId);
-    alert('Producto agregado a favoritos');
-    const button = event.target.closest('.btn-favorite');
-    const originalHtml = button.innerHTML;
-    button.innerHTML = '<i class="fas fa-check"></i>';
-    button.style.background = '#28a745';
-    setTimeout(() => {
-        button.innerHTML = originalHtml;
-        button.style.background = '';
-    }, 1000);
-}
-
-// Inicialización
+// Inicialización visual
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Catálogo inicializado correctamente');
 

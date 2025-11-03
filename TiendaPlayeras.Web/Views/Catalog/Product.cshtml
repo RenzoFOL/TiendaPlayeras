@@ -180,7 +180,9 @@
                                 <i class="fas fa-bolt me-2"></i>
                                 Comprar ahora
                             </button>
-                            <button type="button" class="btn-wishlist-kaira" id="btnWishlist">
+                            <!-- ❤️ Favoritos principal -->
+                            <button type="button" class="btn-wishlist-kaira js-add-wishlist" id="btnWishlist"
+                                    data-product-id="@Model.Id" title="Agregar a mi wishlist">
                                 <i class="fas fa-heart"></i>
                             </button>
                         </div>
@@ -429,7 +431,10 @@
                                             <img src="@relatedImage" alt="@relatedProduct.Name" 
                                                  onerror="this.src='/images/placeholder.png'">
                                         </a>
-                                        <button class="wishlist-btn">
+                                        <!-- ❤️ Favoritos en relacionados -->
+                                        <button class="wishlist-btn js-add-wishlist"
+                                                data-product-id="@relatedProduct.Id"
+                                                title="Agregar a mi wishlist">
                                             <i class="fas fa-heart"></i>
                                         </button>
                                     </div>
@@ -509,6 +514,7 @@
             </div>
         </div>
     </div>
+
 <!-- JUSTO ANTES DEL </body> -->
 @Html.AntiForgeryToken()
 
@@ -516,9 +522,60 @@
 <script src="~/js/kaira/catalog_producto.js"></script>
 
 <script>
+    // === Wishlist AJAX (usa el token del input o del <meta>) ===
+    (function () {
+        const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+        const metaToken = document.querySelector('meta[name="RequestVerificationToken"]');
+        const XSRF = tokenInput?.value || metaToken?.content || '';
+
+        async function postJson(url, data) {
+            const resp = await fetch(url, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': XSRF
+                },
+                body: JSON.stringify(data || {})
+            });
+            // Si el usuario no está logueado y el controlador devuelve 401, redirige a login
+            if (resp.status === 401) {
+                window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(location.pathname + location.search);
+                return null;
+            }
+            try { return await resp.json(); } catch { return null; }
+        }
+
+        function markActive(btn) {
+            btn.classList.add('active');
+            btn.setAttribute('aria-pressed', 'true');
+            // opcional: cambia el icono/estilo
+            const i = btn.querySelector('i.fas.fa-heart');
+            if (i) i.classList.add('text-danger');
+        }
+
+        function bindWishlistButtons() {
+            document.querySelectorAll('.js-add-wishlist').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    const pid = parseInt(btn.getAttribute('data-product-id'), 10);
+                    if (!pid) return;
+                    const res = await postJson('/Wishlist/Add', { productId: pid });
+                    if (res && res.ok) {
+                        markActive(btn);
+                        // Actualiza contador global (definido en _Layout)
+                        try { if (typeof updateWishlistCount === 'function') updateWishlistCount(); } catch {}
+                    }
+                });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', bindWishlistButtons);
+    })();
+
     console.log('🛍️ Página de producto cargada');
     console.log('Producto ID:', document.querySelector('.product-info-section')?.dataset.productId);
-    console.log('Token:', document.querySelector('input[name="__RequestVerificationToken"]') ? '✅ Presente' : '❌ Faltante');
+    console.log('Token:', document.querySelector('input[name="__RequestVerificationToken"]') ? '✅ Presente' : (document.querySelector('meta[name="RequestVerificationToken"]') ? '✅ Meta' : '❌ Faltante'));
 </script>
 
 </body>

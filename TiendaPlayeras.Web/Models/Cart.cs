@@ -58,17 +58,4 @@ namespace TiendaPlayeras.Web.Models
             get { return UnitPrice * Quantity; }
         }
     }
-    
-    public class WishlistItem
-    {
-        public int Id { get; set; }
-        public string UserId { get; set; } = string.Empty;
-        public ApplicationUser? User { get; set; }
-        
-        // ✅ CAMBIO: Ahora referencia directa a Product (no a ProductVariant)
-        public int ProductId { get; set; }
-        public Product? Product { get; set; }
-        
-        public bool IsActive { get; set; } = true;
-    }
 }

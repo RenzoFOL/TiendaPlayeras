@@ -1,0 +1,57 @@
+@model IEnumerable<TiendaPlayeras.Web.Models.WishlistItem>
+
+<div class="modal-header">
+  <h5 class="modal-title">Mi Wishlist</h5>
+  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<div class="modal-body">
+  @if (!Model.Any())
+  {
+      <div class="text-center text-muted py-4">
+          <i class="bi bi-heart" style="font-size:2rem;"></i>
+          <div class="mt-2">Tu wishlist está vacía</div>
+      </div>
+  }
+  else
+  {
+      <ul class="list-group list-group-flush">
+      @foreach (var w in Model)
+      {
+          var p = w.Product!;
+          var img = p?.ProductImages?.FirstOrDefault()?.Path ?? "/images/placeholder.png";
+          <li class="list-group-item d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-3">
+              <img src="@img"
+                   alt="@p?.Name"
+                   style="width:64px;height:64px;object-fit:cover;border-radius:.5rem;"
+                   onerror="this.src='/images/placeholder.png'"/>
+              <div>
+                <div class="fw-semibold">@p?.Name</div>
+                @if (!string.IsNullOrWhiteSpace(p?.Description))
+                {
+                    <div class="text-muted small">
+                        @((p!.Description!.Length > 80 ? p.Description.Substring(0, 80) + "…" : p.Description))
+                    </div>
+                }
+                <div class="mt-1 fw-bold">@p?.BasePrice.ToString("C")</div>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <a class="btn btn-sm btn-primary"
+                 href="@Url.Action("Product","Catalog", new { slug = p!.Slug })">
+                 Ver / Comprar
+              </a>
+              <button class="btn btn-sm btn-outline-danger js-wishlist-remove" data-product-id="@p!.Id">
+                Quitar
+              </button>
+            </div>
+          </li>
+      }
+      </ul>
+  }
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+</div>

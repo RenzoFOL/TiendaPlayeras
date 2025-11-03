@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TiendaPlayeras.Web.Data;
@@ -6,112 +7,101 @@ using TiendaPlayeras.Web.Models;
 
 namespace TiendaPlayeras.Web.Controllers
 {
-    /// <summary>Lista de deseos: solo clientes autenticados.</summary>
-    [Authorize(Roles = "Customer")]
     public class WishlistController : Controller
     {
         private readonly ApplicationDbContext _db;
-        public WishlistController(ApplicationDbContext db) => _db = db;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public async Task<IActionResult> Index()
+        public WishlistController(ApplicationDbContext db, UserManager<ApplicationUser> userManager)
         {
-            var uid = User.GetUserId();
-            // ✅ ACTUALIZADO: Incluir Product y sus imágenes
-            var items = await _db.WishlistItems
-                .Include(w => w.Product)
-                    .ThenInclude(p => p!.ProductImages)
-                .Where(w => w.UserId == uid && w.IsActive)
-                .ToListAsync();
-            return View(items);
+            _db = db;
+            _userManager = userManager;
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Add(int productId)
-        {
-            var uid = User.GetUserId();
-            
-            // ✅ ACTUALIZADO: Verificar por ProductId (no variantId)
-            var exists = await _db.WishlistItems
-                .AnyAsync(w => w.UserId == uid && w.ProductId == productId && w.IsActive);
-                
-            if (!exists)
-            {
-                _db.WishlistItems.Add(new WishlistItem 
-                { 
-                    UserId = uid, 
-                    ProductId = productId, 
-                    IsActive = true 
-                });
-                await _db.SaveChangesAsync();
-                TempData["Success"] = "Producto agregado a tu lista de deseos";
-            }
-            else
-            {
-                TempData["Info"] = "El producto ya está en tu lista de deseos";
-            }
-            
-            return RedirectToAction("Index");
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Remove(int id)
-        {
-            var item = await _db.WishlistItems.FindAsync(id);
-            if (item != null) 
-            { 
-                item.IsActive = false; 
-                await _db.SaveChangesAsync();
-                TempData["Success"] = "Producto removido de tu lista de deseos";
-            }
-            return RedirectToAction("Index");
-        }
-
-        // ✅ NUEVO: Método para agregar desde AJAX
-        [HttpPost]
-        public async Task<IActionResult> ToggleWishlist(int productId)
-        {
-            try
-            {
-                var uid = User.GetUserId();
-                var existingItem = await _db.WishlistItems
-                    .FirstOrDefaultAsync(w => w.UserId == uid && w.ProductId == productId && w.IsActive);
-
-                if (existingItem != null)
-                {
-                    // Remover de wishlist
-                    existingItem.IsActive = false;
-                    await _db.SaveChangesAsync();
-                    return Json(new { success = true, added = false, message = "Removido de tu lista de deseos" });
-                }
-                else
-                {
-                    // Agregar a wishlist
-                    _db.WishlistItems.Add(new WishlistItem 
-                    { 
-                        UserId = uid, 
-                        ProductId = productId, 
-                        IsActive = true 
-                    });
-                    await _db.SaveChangesAsync();
-                    return Json(new { success = true, added = true, message = "Agregado a tu lista de deseos" });
-                }
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Error: " + ex.Message });
-            }
-        }
-
-        // ✅ NUEVO: Obtener conteo de wishlist para mostrar en layout
+        // GET /Wishlist/Count  (lo usa el badge del header)
         [HttpGet]
-        public async Task<IActionResult> GetWishlistCount()
+        public async Task<IActionResult> Count()
         {
-            var uid = User.GetUserId();
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Json(new { count = 0 });
+
             var count = await _db.WishlistItems
-                .CountAsync(w => w.UserId == uid && w.IsActive);
+                .CountAsync(w => w.UserId == user.Id && w.IsActive);
+
             return Json(new { count });
         }
+
+        // GET /Wishlist/Drawer  (inyecta el partial en el modal)
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> Drawer()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var items = await _db.WishlistItems
+                .Include(x => x.Product)!.ThenInclude(p => p!.ProductImages)
+                .Where(x => x.UserId == user!.Id && x.IsActive)
+                .OrderByDescending(x => x.CreatedAt)
+                .ToListAsync();
+
+            return PartialView("~/Views/Wishlist/_WishlistDrawer.cshtml", items);
+        }
+
+        // POST /Wishlist/Add  (agrega por productId)
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> Add([FromBody] AddRemoveDto dto)
+        {
+            if (dto == null || dto.ProductId <= 0) return BadRequest();
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var exists = await _db.WishlistItems
+                .AnyAsync(w => w.UserId == user.Id && w.ProductId == dto.ProductId && w.IsActive);
+
+            if (!exists)
+            {
+                // valida que el producto exista
+                var productExists = await _db.Products.AnyAsync(p => p.Id == dto.ProductId && p.IsActive);
+                if (!productExists) return NotFound();
+
+                _db.WishlistItems.Add(new WishlistItem
+                {
+                    UserId = user.Id,
+                    ProductId = dto.ProductId,
+                    CreatedAt = DateTime.UtcNow,
+                    IsActive = true
+                });
+                await _db.SaveChangesAsync();
+            }
+
+            var count = await _db.WishlistItems.CountAsync(w => w.UserId == user.Id && w.IsActive);
+            return Json(new { ok = true, added = !exists, count });
+        }
+
+        // POST /Wishlist/Remove  (quita por productId)
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> Remove([FromBody] AddRemoveDto dto)
+        {
+            if (dto == null || dto.ProductId <= 0) return BadRequest();
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var item = await _db.WishlistItems
+                .FirstOrDefaultAsync(w => w.UserId == user.Id && w.ProductId == dto.ProductId && w.IsActive);
+
+            if (item != null)
+            {
+                _db.WishlistItems.Remove(item);
+                await _db.SaveChangesAsync();
+            }
+
+            var count = await _db.WishlistItems.CountAsync(w => w.UserId == user.Id && w.IsActive);
+            return Json(new { ok = true, removed = item != null, count });
+        }
+
+        public class AddRemoveDto { public int ProductId { get; set; } }
     }
 }

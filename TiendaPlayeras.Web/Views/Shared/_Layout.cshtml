@@ -51,39 +51,14 @@
         .nav-link-enhanced::before { content: ''; position: absolute; bottom: 0; left: 50%; width: 0; height: 2px; background: var(--hover-color); transition: all var(--transition-speed) ease; transform: translateX(-50%); }
         .nav-link-enhanced:hover::before, .nav-link-enhanced.active::before { width: 80%; }
         .nav-link-enhanced:hover, .nav-link-enhanced.active { color: var(--hover-color)!important; transform: translateY(-2px); }
-        
+
         /* Admin/Employee Panel Button */
-        .panel-button {
-            background: linear-gradient(135deg, var(--admin-color), #764ba2);
-            color: white!important;
-            padding: .6rem 1.5rem!important;
-            border-radius: 25px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all .3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-            border: none;
-            display: inline-flex;
-            align-items: center;
-            gap: .5rem;
-        }
-        .panel-button.employee {
-            background: linear-gradient(135deg, var(--employee-color), #00f2fe);
-            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
-        }
-        .panel-button:hover {
-            transform: translateY(-2px) scale(1.05);
-            box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4);
-            color: white!important;
-        }
-        .panel-button.employee:hover {
-            box-shadow: 0 6px 25px rgba(79, 172, 254, 0.4);
-        }
-        .panel-button i {
-            font-size: 1.1em;
-        }
-        
+        .panel-button { background: linear-gradient(135deg, var(--admin-color), #764ba2); color: white!important; padding: .6rem 1.5rem!important; border-radius: 25px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; transition: all .3s ease; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); border: none; display: inline-flex; align-items: center; gap: .5rem; }
+        .panel-button.employee { background: linear-gradient(135deg, var(--employee-color), #00f2fe); box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3); }
+        .panel-button:hover { transform: translateY(-2px) scale(1.05); box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4); color: white!important; }
+        .panel-button.employee:hover { box-shadow: 0 6px 25px rgba(79, 172, 254, 0.4); }
+        .panel-button i { font-size: 1.1em; }
+
         .dropdown-menu-enhanced { border: none; border-radius: 12px; box-shadow: var(--shadow); padding: 1rem 0; margin-top: .5rem; opacity: 0; transform: translateY(-10px); transition: all var(--transition-speed) ease; pointer-events: none; }
         .dropdown:hover .dropdown-menu-enhanced, .dropdown-menu-enhanced.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
         .dropdown-item-enhanced { padding: .75rem 1.5rem; transition: all .2s ease; border-radius: 8px; margin: 0 .5rem; font-weight: 500; }
@@ -99,60 +74,34 @@
         .navbar-toggler { border: none; transition: all .2s ease; }
         .navbar-toggler:hover { transform: scale(1.1); }
         .navbar-toggler:focus { box-shadow: none; }
-        
+
         /* Admin/Employee specific styles */
         .admin-nav { background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05))!important; }
         .employee-nav { background: linear-gradient(135deg, rgba(79, 172, 254, 0.05), rgba(0, 242, 254, 0.05))!important; }
 
         /* Estilos para el carrito */
-.cart-item {
-    transition: all 0.3s ease;
-}
+        .cart-item { transition: all 0.3s ease; }
+        .cart-item:hover { background-color: #f8f9fa; }
+        .quantity-selector { max-width: 120px; }
+        .quantity-selector .btn { padding: 0.25rem 0.5rem; }
+        .quantity-selector .form-control { padding: 0.25rem; }
 
-.cart-item:hover {
-    background-color: #f8f9fa;
-}
+        /* Notificaciones */
+        .alert-position { position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px; }
 
-.quantity-selector {
-    max-width: 120px;
-}
-
-.quantity-selector .btn {
-    padding: 0.25rem 0.5rem;
-}
-
-.quantity-selector .form-control {
-    padding: 0.25rem;
-}
-
-/* Notificaciones */
-.alert-position {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 9999;
-    min-width: 300px;
-}
-
-/* Breadcrumb personalizado */
-.breadcrumb-custom {
-    font-size: 0.9rem;
-}
-
-.breadcrumb-custom a {
-    color: #666;
-    text-decoration: none;
-}
-
-.breadcrumb-custom a:hover {
-    color: #111;
-}
-
-.breadcrumb-custom .current {
-    color: #111;
-    font-weight: 500;
-}
+        /* Breadcrumb personalizado */
+        .breadcrumb-custom { font-size: 0.9rem; }
+        .breadcrumb-custom a { color: #666; text-decoration: none; }
+        .breadcrumb-custom a:hover { color: #111; }
+        .breadcrumb-custom .current { color: #111; font-weight: 500; }
     </style>
+
+    @* === Anti-forgery token accesible vía <meta> (para AJAX) === *@
+    @inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
+    @{
+        var token = Xsrf.GetAndStoreTokens(Context).RequestToken;
+    }
+    <meta name="RequestVerificationToken" content="@token" />
 
     @RenderSection("Styles", required: false)
 </head>
@@ -298,12 +247,13 @@
                         {
                             <!-- Customer Wishlist & Cart -->
                             <li class="d-none d-lg-block">
-                                <a href="#" class="text-uppercase mx-2 text-decoration-none nav-link-enhanced position-relative" title="Lista de deseos">
+                               <a id="btnOpenWishlist" href="#" class="text-uppercase mx-2 text-decoration-none nav-link-enhanced position-relative" title="Lista de deseos">
                                     <i class="fas fa-heart me-1"></i>Wishlist
                                     <span class="wishlist-count badge-enhanced">(0)</span>
                                 </a>
+
                             </li>
-                            <li class="d-none d-lg-block">
+                                <li class="d-none d-lg-block">
                                 <a href="#" class="text-uppercase mx-2 text-decoration-none nav-link-enhanced position-relative" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart" title="Carrito">
                                     <i class="fas fa-shopping-cart me-1"></i>Cart
                                     <span class="cart-count badge-enhanced">(0)</span>
@@ -423,6 +373,15 @@
         @RenderBody()
     </div>
 
+    <!-- ===== Modal Wishlist (se llena vía /Wishlist/Drawer) ===== -->
+    <div id="wishlist-modal" class="modal fade" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content" id="wishlist-modal-content">
+          <!-- aquí se inyecta _WishlistDrawer -->
+        </div>
+      </div>
+    </div>
+
     <!-- Footer -->
     <footer id="footer" class="mt-5">
         <div class="footer-intro mb-4 text-center">
@@ -494,39 +453,157 @@
         });
 
         // Función para actualizar contadores
-async function updateCartCount() {
-    try {
-        const response = await fetch('/Cart/GetCartSummary');
-        const result = await response.json();
-        if (result.success) {
-            document.querySelectorAll('.cart-count').forEach(el => {
-                el.textContent = `(${result.data.totalItems})`;
-            });
+        async function updateCartCount() {
+            try {
+                const response = await fetch('/Cart/GetCartSummary');
+                const result = await response.json();
+                if (result.success) {
+                    document.querySelectorAll('.cart-count').forEach(el => {
+                        el.textContent = `(${result.data.totalItems})`;
+                    });
+                }
+            } catch (error) {
+                console.error('Error updating cart count:', error);
+            }
         }
-    } catch (error) {
-        console.error('Error updating cart count:', error);
-    }
-}
 
-async function updateWishlistCount() {
-    try {
-        const response = await fetch('/Wishlist/GetWishlistCount');
-        const result = await response.json();
-        document.querySelectorAll('.wishlist-count').forEach(el => {
-            el.textContent = `(${result.count})`;
+        async function updateWishlistCount() {
+            try {
+                const response = await fetch('/Wishlist/Count');
+                const result = await response.json();
+                document.querySelectorAll('.wishlist-count').forEach(el => {
+                    el.textContent = `(${result.count})`;
+                });
+            } catch (error) {
+                console.error('Error updating wishlist count:', error);
+            }
+        }
+
+        // Llamar al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCartCount();
+            updateWishlistCount();
         });
-    } catch (error) {
-        console.error('Error updating wishlist count:', error);
-    }
-}
-
-// Llamar al cargar la página
-document.addEventListener('DOMContentLoaded', function() {
-    updateCartCount();
-    updateWishlistCount();
-});
-
     </script>
+
+    <script>
+  // ===== Wishlist: abrir modal y cargar partial =====
+  (function () {
+    const metaToken = document.querySelector('meta[name="RequestVerificationToken"]');
+    const XSRF = metaToken?.content || '';
+
+    async function loadWishlistDrawer() {
+      // Carga el parcial _WishlistDrawer.cshtml
+      const resp = await fetch('/Wishlist/Drawer', { credentials: 'same-origin' });
+      const html = await resp.text();
+      const container = document.getElementById('wishlist-modal-content');
+      container.innerHTML = html;
+
+      // Re-bind de botones "Quitar" dentro del drawer
+      container.querySelectorAll('.js-wishlist-remove').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          const pid = parseInt(btn.getAttribute('data-product-id'), 10);
+          if (!pid) return;
+
+          const r = await fetch('/Wishlist/Remove', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+              'Content-Type': 'application/json',
+              'RequestVerificationToken': XSRF
+            },
+            body: JSON.stringify({ productId: pid })
+          });
+
+          if (r.ok) {
+            // Recarga el drawer y el contador
+            await loadWishlistDrawer();
+            try { if (typeof updateWishlistCount === 'function') updateWishlistCount(); } catch {}
+          }
+        });
+      });
+    }
+
+    // Abre el modal y carga su contenido
+    async function openWishlistModal() {
+      await loadWishlistDrawer();
+      const modalEl = document.getElementById('wishlist-modal');
+      const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+      modal.show();
+    }
+
+    // Click en el link del header con id="btnOpenWishlist"
+    document.addEventListener('DOMContentLoaded', function () {
+      const btn = document.getElementById('btnOpenWishlist');
+      if (btn) {
+        btn.addEventListener('click', function (e) {
+          e.preventDefault();
+          openWishlistModal();
+        });
+      }
+    });
+  })();
+</script>
+
+<script>
+  // ===== Click global para "Agregar a Wishlist" en cualquier página =====
+  (function () {
+    const metaToken = document.querySelector('meta[name="RequestVerificationToken"]');
+    const XSRF = metaToken?.content || '';
+
+    async function addToWishlist(productId) {
+      const resp = await fetch('/Wishlist/Add', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json',
+          'RequestVerificationToken': XSRF
+        },
+        body: JSON.stringify({ productId })
+      });
+
+      if (resp.status === 401) {
+        // no logueado → lleva a login
+        window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(location.pathname + location.search);
+        return;
+      }
+
+      let json = null;
+      try { json = await resp.json(); } catch {}
+      if (json && json.ok) {
+        // feedback visual: marca el botón
+        return true;
+      }
+      return false;
+    }
+
+    function markWishActive(btn) {
+      btn.classList.add('active');
+      btn.setAttribute('aria-pressed', 'true');
+      const i = btn.querySelector('i.fas.fa-heart, i.fa-heart');
+      if (i) i.classList.add('text-danger');
+    }
+
+    // Delegación: escucha clicks en todo el documento
+    document.addEventListener('click', async function (e) {
+      const btn = e.target.closest('.js-add-wishlist, [data-action="add-wishlist"]');
+      if (!btn) return;
+
+      e.preventDefault();
+      const pid = parseInt(btn.getAttribute('data-product-id'), 10);
+      if (!pid) return;
+
+      const ok = await addToWishlist(pid);
+      if (ok) {
+        markWishActive(btn);
+        try { if (typeof updateWishlistCount === 'function') updateWishlistCount(); } catch {}
+      }
+    });
+  })();
+</script>
+
+
 
     @RenderSection("Scripts", required: false)
 </body>
