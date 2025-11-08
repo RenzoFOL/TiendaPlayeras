@@ -22,7 +22,6 @@ namespace TiendaPlayeras.Web.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly EmailSender _email;
-        private readonly ICartService _cart;
         private readonly IWebHostEnvironment _env;
 
         public AccountController(
@@ -30,14 +29,12 @@ namespace TiendaPlayeras.Web.Controllers
             SignInManager<ApplicationUser> signInManager,
             RoleManager<IdentityRole> roleManager,
             EmailSender email,
-            ICartService cart,
             IWebHostEnvironment env)
         {
             _userManager   = userManager;
             _signInManager = signInManager;
             _roleManager   = roleManager;
             _email         = email;
-            _cart          = cart;
             _env           = env;
         }
 
@@ -75,8 +72,6 @@ namespace TiendaPlayeras.Web.Controllers
                 var result = await _signInManager.PasswordSignInAsync(user, password, rememberMe, lockoutOnFailure: true);
                 if (!result.Succeeded)
                     return Json(new { ok = false, error = result.IsLockedOut ? "Cuenta bloqueada temporalmente." : "Credenciales inválidas." });
-
-                try { await _cart.MergeGuestCartToUserAsync(HttpContext.Session.Id, user.Id); } catch { }
 
                 var roles = await _userManager.GetRolesAsync(user);
                 var redirect = RoleRedirect(roles);

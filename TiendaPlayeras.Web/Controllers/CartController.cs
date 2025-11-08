@@ -1,152 +1,198 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using TiendaPlayeras.Web.Data;
+using Microsoft.AspNetCore.Identity;
+using TiendaPlayeras.Web.Models;
 using TiendaPlayeras.Web.Services;
 
 namespace TiendaPlayeras.Web.Controllers
 {
-    /// <summary>Carrito para invitado y cliente.</summary>
     [Authorize]
     public class CartController : Controller
     {
-        private readonly ICartService _cartService;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ICartService _cart;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public CartController(ICartService cartService, IHttpContextAccessor httpContextAccessor)
+        public CartController(ICartService cart, UserManager<ApplicationUser> userManager)
         {
-            _cartService = cartService;
-            _httpContextAccessor = httpContextAccessor;
+            _cart = cart;
+            _userManager = userManager;
         }
 
-        private string GetSessionId()
-        {
-            var sessionId = _httpContextAccessor.HttpContext?.Session.GetString("CartSessionId");
-            if (string.IsNullOrEmpty(sessionId))
-            {
-                sessionId = Guid.NewGuid().ToString();
-                _httpContextAccessor.HttpContext?.Session.SetString("CartSessionId", sessionId);
-            }
-            return sessionId;
-        }
+        private string? CurrentUserId => _userManager.GetUserId(User);
 
-        // ✅ SOLO UN MÉTODO AddToCart - ELIMINA EL DUPLICADO
-        // ✅ MANTÉN SOLO ESTE MÉTODO
+        // -------- /Cart/Add - UNIFICADO (maneja tanto JSON como Form) ----------
         [HttpPost]
-        public async Task<IActionResult> AddToCart([FromBody] AddToCartRequest request)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Add([FromBody] AddRequest? jsonRequest)
         {
+            if (string.IsNullOrEmpty(CurrentUserId))
+            {
+                return Json(new { ok = false, message = "No autorizado" });
+            }
+
             try
             {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var sessionId = GetSessionId();
+                int productId;
+                string size;
+                int qty;
 
-                Console.WriteLine($"🛒 Agregando producto {request.ProductId}, talla: {request.Size}, cantidad: {request.Quantity}");
+                // Detectar si viene JSON o Form
+                if (jsonRequest != null && jsonRequest.ProductId > 0)
+                {
+                    // Petición JSON
+                    productId = jsonRequest.ProductId;
+                    size = jsonRequest.Size ?? "M";
+                    qty = jsonRequest.Qty;
+                }
+                else
+                {
+                    // Petición Form (fallback)
+                    productId = Request.Form.ContainsKey("productId") 
+                        ? int.Parse(Request.Form["productId"].ToString()) 
+                        : 0;
+                    size = Request.Form["size"].ToString() ?? "M";
+                    qty = Request.Form.ContainsKey("qty") 
+                        ? int.Parse(Request.Form["qty"].ToString()) 
+                        : 1;
+                }
 
-                await _cartService.AddToCartAsync(request.ProductId, request.Size, request.Quantity, userId, sessionId);
-                
-                return Json(new { success = true, message = "Producto agregado al carrito" });
+                if (productId <= 0)
+                {
+                    return Json(new { ok = false, message = "ID de producto inválido" });
+                }
+
+                await _cart.AddAsync(CurrentUserId, productId, size, qty);
+                var summary = await _cart.GetSummaryAsync(CurrentUserId);
+
+                return Json(new { ok = true, count = summary.TotalItems, total = summary.TotalAmount });
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Error en AddToCart: {ex.Message}");
-                return Json(new { success = false, error = ex.Message });
+                return Json(new { ok = false, message = ex.Message });
             }
         }
 
+        // Clase para peticiones JSON
+        public class AddRequest
+        {
+            public int ProductId { get; set; }
+            public string? Size { get; set; }
+            public int Qty { get; set; } = 1;
+        }
+
+        // -------- /Cart/Count (para los badges) ----------
+        [HttpGet]
+        public async Task<IActionResult> Count()
+        {
+            if (string.IsNullOrEmpty(CurrentUserId))
+                return Json(new { count = 0, total = 0m });
+
+            var summary = await _cart.GetSummaryAsync(CurrentUserId);
+            return Json(new { count = summary.TotalItems, total = summary.TotalAmount });
+        }
+
+        // -------- /Cart/Drawer (contenido del offcanvas) ----------
+        [HttpGet]
+        public async Task<IActionResult> Drawer()
+        {
+            CartSummary vm;
+            if (string.IsNullOrEmpty(CurrentUserId))
+                vm = new CartSummary();
+            else
+                vm = await _cart.GetSummaryAsync(CurrentUserId);
+
+            return PartialView("_CartDrawer", vm);
+        }
+
+        // -------- /Cart/Remove (JSON) ----------
+        public class RemoveRequest { public int CartItemId { get; set; } }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Remove([FromBody] RemoveRequest req)
+        {
+            if (string.IsNullOrEmpty(CurrentUserId))
+                return Json(new { ok = false, message = "No autorizado" });
+
+            try
+            {
+                await _cart.RemoveAsync(CurrentUserId, req.CartItemId);
+                var summary = await _cart.GetSummaryAsync(CurrentUserId);
+
+                return Json(new { ok = true, count = summary.TotalItems, total = summary.TotalAmount });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { ok = false, message = ex.Message });
+            }
+        }
+
+        // -------- /Cart/UpdateQty ----------
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateQty([FromForm] int cartItemId, [FromForm] int qty)
+        {
+            if (string.IsNullOrEmpty(CurrentUserId)) return Unauthorized();
+
+            try
+            {
+                await _cart.UpdateQtyAsync(CurrentUserId, cartItemId, qty);
+                return RedirectToAction("Index");
+            }
+            catch
+            {
+                return RedirectToAction("Index");
+            }
+        }
+
+        // -------- /Cart/Clear ----------
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Clear()
+        {
+            if (string.IsNullOrEmpty(CurrentUserId)) return Unauthorized();
+
+            try
+            {
+                await _cart.ClearAsync(CurrentUserId);
+                return RedirectToAction("Index");
+            }
+            catch
+            {
+                return RedirectToAction("Index");
+            }
+        }
+
+        // -------- /Cart/Summary (para badges y totales) ----------
+        [HttpGet]
+        public async Task<IActionResult> Summary()
+        {
+            if (string.IsNullOrEmpty(CurrentUserId))
+                return Json(new { count = 0, total = 0m, totalFormatted = "$0.00", hasItems = false });
+
+            var summary = await _cart.GetSummaryAsync(CurrentUserId);
+            var formatted = summary.TotalAmount.ToString("C", new System.Globalization.CultureInfo("es-MX"));
+
+            return Json(new
+            {
+                count = summary.TotalItems,
+                total = summary.TotalAmount,
+                totalFormatted = formatted,
+                hasItems = summary.TotalItems > 0
+            });
+        }
+
+        // -------- /Cart/Index (vista completa del carrito) ----------
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var sessionId = GetSessionId();
+            CartSummary vm;
+            if (string.IsNullOrEmpty(CurrentUserId))
+                vm = new CartSummary();
+            else
+                vm = await _cart.GetSummaryAsync(CurrentUserId);
 
-            var cart = await _cartService.GetCartWithDetailsAsync(userId, sessionId);
-            return View(cart);
+            return View(vm);
         }
-
-        [HttpPost]
-        public async Task<IActionResult> UpdateQuantity([FromBody] UpdateQuantityRequest request)
-        {
-            try
-            {
-                await _cartService.UpdateQuantityAsync(request.CartItemId, request.Quantity);
-                return Json(new { success = true });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, error = ex.Message });
-            }
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> RemoveItem([FromBody] RemoveItemRequest request)
-        {
-            try
-            {
-                await _cartService.RemoveAsync(request.CartItemId);
-                return Json(new { success = true });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, error = ex.Message });
-            }
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> ClearCart()
-        {
-            try
-            {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var sessionId = GetSessionId();
-                
-                var cartId = await _cartService.GetOrCreateCartIdAsync(userId, sessionId);
-                await _cartService.ClearAsync(cartId);
-                
-                return Json(new { success = true });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, error = ex.Message });
-            }
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetCartSummary()
-        {
-            try
-            {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var sessionId = GetSessionId();
-                
-                var cartId = await _cartService.GetOrCreateCartIdAsync(userId, sessionId);
-                var summary = await _cartService.GetSummaryAsync(cartId);
-                
-                return Json(new { success = true, data = summary });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, error = ex.Message });
-            }
-        }
-    }
-
-    // DTOs para las requests
-    public class AddToCartRequest
-    {
-        public int ProductId { get; set; }
-        public string Size { get; set; } = string.Empty;
-        public int Quantity { get; set; } = 1;
-    }
-
-    public class UpdateQuantityRequest
-    {
-        public int CartItemId { get; set; }
-        public int Quantity { get; set; }
-    }
-
-    public class RemoveItemRequest
-    {
-        public int CartItemId { get; set; }
     }
 }

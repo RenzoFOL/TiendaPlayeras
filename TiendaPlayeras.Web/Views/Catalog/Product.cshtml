@@ -9,7 +9,7 @@
     
     if (!productImages.Any())
     {
-        productImages.Add("/images/placeholder.png");
+        productImages.Add("/images/Product.jpg");
     }
     
     bool showThumbnails = productImages.Count > 1;
@@ -47,7 +47,7 @@
                     <div class="product-gallery">
                         <div class="main-image-container">
                             <img src="@mainImage" alt="@Model.Name" class="main-product-image" id="mainProductImage"
-                                 onerror="this.src='/images/placeholder.png'">
+                                 onerror="this.src='/images/Product.jpg'">
                             @if (Model.IsCustomizable)
                             {
                                 <div class="product-badge customizable-badge">
@@ -69,7 +69,7 @@
                                 {
                                     <div class="thumbnail-item @(i == 0 ? "active" : "")" data-image="@productImages[i]">
                                         <img src="@productImages[i]" alt="Imagen @(i + 1) de @Model.Name"
-                                             onerror="this.src='/images/placeholder.png'">
+                                             onerror="this.src='/images/Product.jpg'">
                                     </div>
                                 }
                             </div>
@@ -80,11 +80,11 @@
                 <!-- Información del producto -->
                 <div class="col-lg-6">
                     <div class="product-info-section" data-product-id="@Model.Id"
-     data-product-name="@Model.Name"
-     data-price="@Model.BasePrice.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)"
-     data-slug="@Model.Slug"
-     data-isactive="@Model.IsActive"
-     data-iscustomizable="@Model.IsCustomizable">
+                         data-product-name="@Model.Name"
+                         data-price="@Model.BasePrice.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)"
+                         data-slug="@Model.Slug"
+                         data-isactive="@Model.IsActive"
+                         data-iscustomizable="@Model.IsCustomizable">
                         <h1 class="product-title-main">@Model.Name</h1>
                         
                         <div class="product-price-main">
@@ -110,81 +110,84 @@
                             </div>
                         }
 
-                        <!-- Selector de tallas -->
-                        <div class="size-selector-section">
-                            <label class="section-label-kaira">
-                                <i class="fas fa-ruler me-2"></i>Selecciona tu talla
-                            </label>
-                            <div class="size-options">
-                                @if (Model.SizeS)
-                                {
-                                    <label class="size-option-kaira">
-                                        <input type="radio" name="size" value="S">
-                                        <span class="size-label">S</span>
-                                    </label>
-                                }
-                                @if (Model.SizeM)
-                                {
-                                    <label class="size-option-kaira">
-                                        <input type="radio" name="size" value="M" checked>
-                                        <span class="size-label">M</span>
-                                    </label>
-                                }
-                                @if (Model.SizeL)
-                                {
-                                    <label class="size-option-kaira">
-                                        <input type="radio" name="size" value="L">
-                                        <span class="size-label">L</span>
-                                    </label>
-                                }
-                                @if (Model.SizeXL)
-                                {
-                                    <label class="size-option-kaira">
-                                        <input type="radio" name="size" value="XL">
-                                        <span class="size-label">XL</span>
-                                    </label>
-                                }
+                        <!-- === FORMULARIO CORREGIDO === -->
+                        <div class="mt-3" id="productFormContainer">
+                            <!-- Selector de tallas -->
+                            <div class="size-selector-section">
+                                <label class="section-label-kaira">
+                                    <i class="fas fa-ruler me-2"></i>Selecciona tu talla
+                                </label>
+                                <div class="size-options">
+                                    @if (Model.SizeS)
+                                    {
+                                        <label class="size-option-kaira">
+                                            <input type="radio" name="selectedSize" value="S" @(Model.SizeM ? "" : "checked")>
+                                            <span class="size-label">S</span>
+                                        </label>
+                                    }
+                                    @if (Model.SizeM)
+                                    {
+                                        <label class="size-option-kaira">
+                                            <input type="radio" name="selectedSize" value="M" checked>
+                                            <span class="size-label">M</span>
+                                        </label>
+                                    }
+                                    @if (Model.SizeL)
+                                    {
+                                        <label class="size-option-kaira">
+                                            <input type="radio" name="selectedSize" value="L">
+                                            <span class="size-label">L</span>
+                                        </label>
+                                    }
+                                    @if (Model.SizeXL)
+                                    {
+                                        <label class="size-option-kaira">
+                                            <input type="radio" name="selectedSize" value="XL">
+                                            <span class="size-label">XL</span>
+                                        </label>
+                                    }
+                                </div>
+                                <div class="size-guide-link">
+                                    <a href="#size-guide-modal" data-bs-toggle="modal">
+                                        <i class="fas fa-info-circle me-1"></i>Guía de tallas
+                                    </a>
+                                </div>
                             </div>
-                            <div class="size-guide-link">
-                                <a href="#size-guide-modal" data-bs-toggle="modal">
-                                    <i class="fas fa-info-circle me-1"></i>Guía de tallas
-                                </a>
-                            </div>
-                        </div>
 
-                        <!-- Cantidad -->
-                        <div class="quantity-selector">
-                            <label class="section-label-kaira">
-                                <i class="fas fa-list-ol me-2"></i>Cantidad
-                            </label>
-                            <div class="quantity-wrapper">
-                                <button type="button" class="qty-btn" id="decreaseQty">
-                                    <i class="fas fa-minus"></i>
+                            <!-- Cantidad -->
+                            <div class="quantity-selector">
+                                <label class="section-label-kaira">
+                                    <i class="fas fa-list-ol me-2"></i>Cantidad
+                                </label>
+                                <div class="quantity-wrapper">
+                                    <button type="button" class="qty-btn" id="decreaseQty">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <input type="number" class="qty-input" id="quantity" value="1" min="1" max="99" readonly>
+                                    <button type="button" class="qty-btn" id="increaseQty">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Botones de acción -->
+                            <div class="product-actions">
+                                <button type="button" class="btn-kaira btn-kaira-primary" id="btnAddToCart" 
+                                        @(!Model.IsActive ? "disabled" : "")
+                                        data-product-id="@Model.Id">
+                                    <i class="fas fa-shopping-cart me-2"></i>
+                                    @(Model.IsActive ? "AGREGAR AL CARRITO" : "Agotado")
                                 </button>
-                                <input type="number" class="qty-input" id="quantity" value="1" min="1" max="99" readonly>
-                                <button type="button" class="qty-btn" id="increaseQty">
-                                    <i class="fas fa-plus"></i>
+                                <button type="button" class="btn-kaira btn-kaira-success" id="btnBuyNow"
+                                        @(!Model.IsActive ? "disabled" : "")>
+                                    <i class="fas fa-bolt me-2"></i>
+                                    Comprar ahora
+                                </button>
+                                <button type="button" class="btn-wishlist-kaira js-add-wishlist" id="btnWishlist"
+                                        data-product-id="@Model.Id" title="Agregar a mi wishlist">
+                                    <i class="fas fa-heart"></i>
                                 </button>
                             </div>
-                        </div>
-
-                        <!-- Botones de acción -->
-                        <div class="product-actions">
-                            <button type="button" class="btn-kaira btn-kaira-primary" id="btnAddToCart" 
-                                    @(!Model.IsActive ? "disabled" : "")>
-                                <i class="fas fa-shopping-cart me-2"></i>
-                                @(Model.IsActive ? "Agregar al carrito" : "Agotado")
-                            </button>
-                            <button type="button" class="btn-kaira btn-kaira-success" id="btnBuyNow"
-                                    @(!Model.IsActive ? "disabled" : "")>
-                                <i class="fas fa-bolt me-2"></i>
-                                Comprar ahora
-                            </button>
-                            <!-- ❤️ Favoritos principal -->
-                            <button type="button" class="btn-wishlist-kaira js-add-wishlist" id="btnWishlist"
-                                    data-product-id="@Model.Id" title="Agregar a mi wishlist">
-                                <i class="fas fa-heart"></i>
-                            </button>
                         </div>
 
                         <!-- Características del producto -->
@@ -289,7 +292,7 @@
                             }
                             else
                             {
-                                <p>Esta playera premium está diseñada para ofrecerte el máximo confort y estilo. Fabricada con algodón 100% premium, garantiza suavidad y durabilidad en cada uso.</p>
+                                <p>Esta playera premium está diseñada para ofrecerte el máximo confort y estilo.</p>
                             }
                             
                             <div class="features-list">
@@ -423,15 +426,14 @@
                     <div class="row">
                         @foreach (var relatedProduct in relatedProducts.Take(4))
                         {
-                            var relatedImage = relatedProduct.ProductImages?.FirstOrDefault()?.Path ?? "/images/placeholder.png";
+                            var relatedImage = relatedProduct.ProductImages?.FirstOrDefault()?.Path ?? "/images/Product.jpg";
                             <div class="col-lg-3 col-md-6">
                                 <div class="related-product-item">
                                     <div class="product-image">
                                         <a href="/Catalog/Product?slug=@relatedProduct.Slug">
                                             <img src="@relatedImage" alt="@relatedProduct.Name" 
-                                                 onerror="this.src='/images/placeholder.png'">
+                                                 onerror="this.src='/images/Product.jpg'">
                                         </a>
-                                        <!-- ❤️ Favoritos en relacionados -->
                                         <button class="wishlist-btn js-add-wishlist"
                                                 data-product-id="@relatedProduct.Id"
                                                 title="Agregar a mi wishlist">
@@ -443,7 +445,10 @@
                                             <a href="/Catalog/Product?slug=@relatedProduct.Slug">@relatedProduct.Name</a>
                                         </h5>
                                         <div class="product-price">@relatedProduct.BasePrice.ToString("C")</div>
-                                        <button class="btn-add-to-cart">
+
+                                        <button type="button" class="btn-add-to-cart js-related-quick-add"
+                                                data-product-id="@relatedProduct.Id"
+                                                data-product-name="@relatedProduct.Name">
                                             <i class="fas fa-shopping-cart me-2"></i>Agregar
                                         </button>
                                     </div>
@@ -458,9 +463,7 @@
 
     <!-- Footer -->
     <footer id="footer" class="mt-5">
-        <div class="container">
-            <!-- Tu footer aquí -->
-        </div>
+        <div class="container"></div>
     </footer>
 
     <!-- Modal Guía de Tallas -->
@@ -483,30 +486,10 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>S</td>
-                                    <td>91-96</td>
-                                    <td>66</td>
-                                    <td>20</td>
-                                </tr>
-                                <tr>
-                                    <td>M</td>
-                                    <td>96-101</td>
-                                    <td>69</td>
-                                    <td>21</td>
-                                </tr>
-                                <tr>
-                                    <td>L</td>
-                                    <td>101-106</td>
-                                    <td>72</td>
-                                    <td>22</td>
-                                </tr>
-                                <tr>
-                                    <td>XL</td>
-                                    <td>106-111</td>
-                                    <td>74</td>
-                                    <td>23</td>
-                                </tr>
+                                <tr><td>S</td><td>91-96</td><td>66</td><td>20</td></tr>
+                                <tr><td>M</td><td>96-101</td><td>69</td><td>21</td></tr>
+                                <tr><td>L</td><td>101-106</td><td>72</td><td>22</td></tr>
+                                <tr><td>XL</td><td>106-111</td><td>74</td><td>23</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -515,67 +498,215 @@
         </div>
     </div>
 
-<!-- JUSTO ANTES DEL </body> -->
-@Html.AntiForgeryToken()
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="~/js/kaira/catalog_producto.js"></script>
+<!-- <script src="~/js/kaira/catalog_producto.js"></script> -->
 
 <script>
-    // === Wishlist AJAX (usa el token del input o del <meta>) ===
-    (function () {
-        const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
-        const metaToken = document.querySelector('meta[name="RequestVerificationToken"]');
-        const XSRF = tokenInput?.value || metaToken?.content || '';
+const metaToken = document.querySelector('meta[name="RequestVerificationToken"]');
+const XSRF = metaToken?.content || '';
 
-        async function postJson(url, data) {
-            const resp = await fetch(url, {
-                method: 'POST',
-                credentials: 'same-origin',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': XSRF
-                },
-                body: JSON.stringify(data || {})
-            });
-            // Si el usuario no está logueado y el controlador devuelve 401, redirige a login
-            if (resp.status === 401) {
-                window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(location.pathname + location.search);
-                return null;
-            }
-            try { return await resp.json(); } catch { return null; }
+// Wishlist
+(function () {
+  async function postJson(url, data) {
+    const resp = await fetch(url, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': XSRF },
+      body: JSON.stringify(data || {})
+    });
+    if (resp.status === 401) {
+      window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(location.pathname + location.search);
+      return null;
+    }
+    try { return await resp.json(); } catch { return null; }
+  }
+
+  function markActive(btn) {
+    btn.classList.add('active');
+    const i = btn.querySelector('i.fas.fa-heart');
+    if (i) i.classList.add('text-danger');
+  }
+
+  document.querySelectorAll('.js-add-wishlist').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const pid = parseInt(btn.getAttribute('data-product-id'), 10);
+      if (!pid) return;
+      const res = await postJson('/Wishlist/Add', { productId: pid });
+      if (res && res.ok) markActive(btn);
+    });
+  });
+})();
+
+// Control cantidad
+(function () {
+  const qty = document.getElementById('quantity');
+  document.getElementById('decreaseQty')?.addEventListener('click', () => {
+    qty.value = Math.max(1, (parseInt(qty.value) || 1) - 1);
+  });
+  document.getElementById('increaseQty')?.addEventListener('click', () => {
+    qty.value = Math.min(99, (parseInt(qty.value) || 1) + 1);
+  });
+})();
+
+// AGREGAR AL CARRITO PRINCIPAL (CORREGIDO - sin alerta de error 404)
+(function () {
+  const btnAdd = document.getElementById('btnAddToCart');
+  if (!btnAdd) return;
+
+  btnAdd.addEventListener('click', async function() {
+    const productId = parseInt(this.getAttribute('data-product-id'), 10);
+    if (!productId) {
+      alert('❌ Error: ID de producto no válido');
+      return;
+    }
+
+    const sizeInput = document.querySelector('input[name="selectedSize"]:checked');
+    if (!sizeInput) {
+      alert('⚠️ Por favor selecciona una talla');
+      return;
+    }
+
+    const data = {
+      productId: productId,
+      size: sizeInput.value,
+      qty: parseInt(document.getElementById('quantity')?.value || '1', 10)
+    };
+
+    const originalHtml = this.innerHTML;
+    this.disabled = true;
+    this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Agregando...';
+
+    try {
+      const response = await fetch('/Cart/Add', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json',
+          'RequestVerificationToken': XSRF
+        },
+        body: JSON.stringify(data)
+      });
+
+      // 🔴 CORRECCIÓN: Manejo mejorado de respuestas
+      if (response.status === 401) {
+        window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(location.pathname + location.search);
+        return;
+      }
+
+      // Intentar parsear JSON
+      let result;
+      try {
+        result = await response.json();
+      } catch (jsonError) {
+        // Si no es JSON válido, verificar si fue exitoso por el status code
+        if (response.ok) {
+          // Considerarlo éxito si el status es 200-299
+          result = { ok: true };
+        } else {
+          throw new Error('Error al procesar la respuesta del servidor');
         }
+      }
 
-        function markActive(btn) {
-            btn.classList.add('active');
-            btn.setAttribute('aria-pressed', 'true');
-            // opcional: cambia el icono/estilo
-            const i = btn.querySelector('i.fas.fa-heart');
-            if (i) i.classList.add('text-danger');
+      // Verificar éxito
+      if (result.ok || response.ok) {
+        // ✅ Éxito
+        if (typeof window.refreshCartBadges === 'function') {
+          await window.refreshCartBadges();
         }
-
-        function bindWishlistButtons() {
-            document.querySelectorAll('.js-add-wishlist').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    e.preventDefault();
-                    const pid = parseInt(btn.getAttribute('data-product-id'), 10);
-                    if (!pid) return;
-                    const res = await postJson('/Wishlist/Add', { productId: pid });
-                    if (res && res.ok) {
-                        markActive(btn);
-                        // Actualiza contador global (definido en _Layout)
-                        try { if (typeof updateWishlistCount === 'function') updateWishlistCount(); } catch {}
-                    }
-                });
-            });
+        if (typeof window.openCartAfterAdd === 'function') {
+          await window.openCartAfterAdd();
         }
+        
+        this.innerHTML = '<i class="fas fa-check me-2"></i>¡Agregado!';
+        setTimeout(() => {
+          this.innerHTML = originalHtml;
+          this.disabled = false;
+        }, 1500);
+      } else {
+        throw new Error(result.message || 'No se pudo agregar al carrito');
+      }
+    } catch (error) {
+      console.error('Error al agregar al carrito:', error);
+      // 🔴 Solo mostrar alerta si realmente hay un error (no si funcionó)
+      if (!error.message.includes('JSON')) {
+        alert('❌ ' + error.message);
+      }
+      this.innerHTML = originalHtml;
+      this.disabled = false;
+    }
+  });
+})();
 
-        document.addEventListener('DOMContentLoaded', bindWishlistButtons);
-    })();
+// PRODUCTOS RELACIONADOS (CORREGIDO)
+document.addEventListener('click', async function(e) {
+  const btn = e.target.closest('.js-related-quick-add');
+  if (!btn) return;
 
-    console.log('🛍️ Página de producto cargada');
-    console.log('Producto ID:', document.querySelector('.product-info-section')?.dataset.productId);
-    console.log('Token:', document.querySelector('input[name="__RequestVerificationToken"]') ? '✅ Presente' : (document.querySelector('meta[name="RequestVerificationToken"]') ? '✅ Meta' : '❌ Faltante'));
+  e.preventDefault();
+  const productId = parseInt(btn.getAttribute('data-product-id'), 10);
+  if (!productId) return;
+
+  const originalHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Agregando';
+
+  try {
+    const response = await fetch('/Cart/Add', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json',
+        'RequestVerificationToken': XSRF
+      },
+      body: JSON.stringify({ productId: productId, size: 'M', qty: 1 })
+    });
+
+    if (response.status === 401) {
+      window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(location.pathname + location.search);
+      return;
+    }
+
+    // 🔴 CORRECCIÓN: Mismo manejo mejorado
+    let result;
+    try {
+      result = await response.json();
+    } catch (jsonError) {
+      if (response.ok) {
+        result = { ok: true };
+      } else {
+        throw new Error('Error al procesar respuesta');
+      }
+    }
+
+    if (result.ok || response.ok) {
+      if (typeof window.refreshCartBadges === 'function') await window.refreshCartBadges();
+      if (typeof window.openCartAfterAdd === 'function') await window.openCartAfterAdd();
+
+      btn.innerHTML = '<i class="fas fa-check me-2"></i>¡Agregado!';
+      setTimeout(() => {
+        btn.innerHTML = originalHtml;
+        btn.disabled = false;
+      }, 1500);
+    } else {
+      throw new Error(result.message || 'Error');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    if (!error.message.includes('JSON')) {
+      alert('❌ ' + error.message);
+    }
+    btn.innerHTML = originalHtml;
+    btn.disabled = false;
+  }
+});
+
+// COMPRAR AHORA
+document.getElementById('btnBuyNow')?.addEventListener('click', function() {
+  alert('🚀 Función próximamente');
+});
+
+console.log('🛍️ Página de producto cargada correctamente');
 </script>
 
 </body>

@@ -17,10 +17,9 @@ namespace TiendaPlayeras.Web.Data
         public DbSet<Product> Products => Set<Product>();
 
         public DbSet<DesignUpload> DesignUploads => Set<DesignUpload>();
-        public DbSet<Cart> Carts => Set<Cart>();
-        public DbSet<CartItem> CartItems => Set<CartItem>();
         public DbSet<WishlistItem> WishlistItems => Set<WishlistItem>();
         public DbSet<Order> Orders => Set<Order>();
+        public DbSet<CartItem> CartItems => Set<CartItem>();
         public DbSet<OrderItem> OrderItems => Set<OrderItem>();
         public DbSet<Category> Categories => Set<Category>();
         public DbSet<Tag> Tags => Set<Tag>();
@@ -121,46 +120,6 @@ namespace TiendaPlayeras.Web.Data
                     .HasDefaultValue(true);
             });
 
-            // === CARRITO ===
-            builder.Entity<Cart>(entity =>
-            {
-                entity.HasIndex(c => c.UserId);
-                entity.HasIndex(c => c.SessionId);
-                entity.HasIndex(c => c.IsActive);
-
-                // Un usuario puede tener solo un carrito activo
-                entity.HasIndex(c => new { c.UserId, c.IsActive })
-                    .IsUnique()
-                    .HasFilter("\"UserId\" IS NOT NULL");
-            });
-
-            builder.Entity<CartItem>(entity =>
-            {
-                entity.HasKey(ci => ci.Id);
-
-                // Relación con Cart
-                entity.HasOne(ci => ci.Cart)
-                    .WithMany(c => c.Items)
-                    .HasForeignKey(ci => ci.CartId)
-                    .OnDelete(DeleteBehavior.Cascade);
-
-                // ✅ CAMBIO: Relación con Product (no con ProductVariant)
-                entity.HasOne(ci => ci.Product)
-                    .WithMany()
-                    .HasForeignKey(ci => ci.ProductId)
-                    .OnDelete(DeleteBehavior.Restrict); // No eliminar si el producto se elimina
-
-                // Índice único: no puede haber el mismo producto+talla en el mismo carrito
-                entity.HasIndex(ci => new { ci.CartId, ci.ProductId, ci.Size })
-                    .IsUnique();
-
-                entity.HasIndex(ci => ci.IsActive);
-
-                // Configurar tamaño máximo para Size
-                entity.Property(ci => ci.Size)
-                    .HasMaxLength(10)
-                    .IsRequired();
-            });
 
             // === WISHLIST (productos simples) ===
             builder.Entity<WishlistItem>(entity =>

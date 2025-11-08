@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@* _Layout.cshtml (carrito dinámico CORREGIDO) *@
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <title>Kaira - Bootstrap 5 Fashion Store HTML CSS Template</title>
@@ -33,11 +34,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&family=Marcellus&display=swap" rel="stylesheet">
 
-    <!-- 🔽🔽🔽 TU CSS DE PROYECTO: AL FINAL para ganar especificidad -->
+    <!-- 🔽 CSS del proyecto -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <!-- (Opcional) estilos de cuenta; colócalos aquí si los separaste -->
     <link rel="stylesheet" href="~/css/account.css" asp-append-version="true" />
-    <!-- 🔼🔼🔼 -->
+    <!-- 🔼 -->
 
     <style>
         :root {
@@ -62,7 +62,6 @@
         .panel-button.employee { background: linear-gradient(135deg, var(--employee-color), #00f2fe); box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3); }
         .panel-button:hover { transform: translateY(-2px) scale(1.05); box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4); color: white!important; }
         .panel-button.employee:hover { box-shadow: 0 6px 25px rgba(79, 172, 254, 0.4); }
-        .panel-button i { font-size: 1.1em; }
 
         .dropdown-menu-enhanced { border: none; border-radius: 12px; box-shadow: var(--shadow); padding: 1rem 0; margin-top: .5rem; opacity: 0; transform: translateY(-10px); transition: all var(--transition-speed) ease; pointer-events: none; }
         .dropdown:hover .dropdown-menu-enhanced, .dropdown-menu-enhanced.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
@@ -71,33 +70,24 @@
         .user-box .dropdown-menu-enhanced { min-width: 200px; right: 0; left: auto; }
         .user-button-enhanced { position: relative; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; transition: all var(--transition-speed) ease; }
         .user-button-enhanced:hover { background: rgb(102,81,62); transform: scale(1.1); }
+
         .nav-icon-enhanced { transition: all .2s ease; }
         .nav-icon-enhanced:hover { transform: scale(1.2); filter: drop-shadow(0 0 5px rgb(102,81,62)); }
+
         .mobile-icon-enhanced { width: 24px; height: 24px; transition: all .2s ease; }
         .mobile-icon-enhanced:hover { transform: scale(1.2); color: var(--hover-color); }
+
         .badge-enhanced { font-size: .7em; padding: .3em .5em; border-radius: 50px; background: var(--hover-color); color: #fff; margin-left: .2rem; }
-        .navbar-toggler { border: none; transition: all .2s ease; }
-        .navbar-toggler:hover { transform: scale(1.1); }
-        .navbar-toggler:focus { box-shadow: none; }
 
-        .admin-nav { background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05))!important; }
-        .employee-nav { background: linear-gradient(135deg, rgba(79, 172, 254, 0.05), rgba(0, 242, 254, 0.05))!important; }
-
-        .cart-item { transition: all 0.3s ease; }
         .cart-item:hover { background-color: #f8f9fa; }
-        .quantity-selector { max-width: 120px; }
-        .quantity-selector .btn { padding: 0.25rem 0.5rem; }
-        .quantity-selector .form-control { padding: 0.25rem; }
-
         .alert-position { position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px; }
-
         .breadcrumb-custom { font-size: 0.9rem; }
         .breadcrumb-custom a { color: #666; text-decoration: none; }
         .breadcrumb-custom a:hover { color: #111; }
         .breadcrumb-custom .current { color: #111; font-weight: 500; }
     </style>
 
-    @* === Anti-forgery token accesible vía <meta> (para AJAX) === *@
+    @* Anti-forgery para wishlist/carrito *@
     @inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
     @{
         var token = Xsrf.GetAndStoreTokens(Context).RequestToken;
@@ -213,7 +203,6 @@
                                         </a>
                                         <ul class="dropdown-menu dropdown-menu-enhanced list-unstyled" aria-labelledby="dropdownPages">
                                             <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>About</a></li>
-                                            <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Cart</a></li>
                                             <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Contact</a></li>
                                             <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Wishlist</a></li>
                                         </ul>
@@ -246,15 +235,18 @@
                         else
                         {
                             <li class="d-none d-lg-block">
-                               <a id="btnOpenWishlist" href="#" class="text-uppercase mx-2 text-decoration-none nav-link-enhanced position-relative" title="Lista de deseos">
+                                <a id="btnOpenWishlist" href="#" class="text-uppercase mx-2 text-decoration-none nav-link-enhanced position-relative" title="Lista de deseos">
                                     <i class="fas fa-heart me-1"></i>Wishlist
                                     <span class="wishlist-count badge-enhanced">(0)</span>
                                 </a>
                             </li>
                             <li class="d-none d-lg-block">
-                                <a href="#" class="text-uppercase mx-2 text-decoration-none nav-link-enhanced position-relative" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart" title="Carrito">
+                                <a href="#" class="text-uppercase mx-2 text-decoration-none nav-link-enhanced position-relative"
+                                   data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart" title="Carrito" id="btnOpenCart">
                                     <i class="fas fa-shopping-cart me-1"></i>Cart
                                     <span class="cart-count badge-enhanced">(0)</span>
+                                    <!-- total del carrito -->
+                                    <span class="ms-1 cart-total-amount">$0.00</span>
                                 </a>
                             </li>
                             <li class="d-lg-none">
@@ -265,10 +257,11 @@
                                 </a>
                             </li>
                             <li class="d-lg-none">
-                                <a href="#" class="nav-icon-enhanced" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart" title="Carrito">
+                                <a href="#" class="nav-icon-enhanced" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart" title="Carrito" id="btnOpenCartMobile">
                                     <svg width="24" height="24" viewBox="0 0 24 24" class="mobile-icon-enhanced">
                                         <use xlink:href="#cart"></use>
                                     </svg>
+                                    <span class="cart-count badge-enhanced ms-1">(0)</span>
                                 </a>
                             </li>
                             <li class="search-box">
@@ -344,22 +337,31 @@
 
     @if (!User.IsInRole("Admin") && !User.IsInRole("Employee"))
     {
+        <!-- Offcanvas del carrito (dinámico) -->
         <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="offcanvasCart" aria-labelledby="offcanvasCartLabel">
             <div class="offcanvas-header border-bottom">
                 <h5 class="offcanvas-title" id="offcanvasCartLabel">
                     <i class="fas fa-shopping-cart me-2"></i>Mi Carrito
                 </h5>
-                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                <button type="button" class="btn-close text-reset ms-auto" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
-            <div class="offcanvas-body">
+
+            <!-- Aquí se carga /Cart/Drawer -->
+            <div class="offcanvas-body" id="cart-drawer-container">
                 <div class="text-center py-5">
-                    <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
-                    <h6>Tu carrito está vacío</h6>
-                    <p class="text-muted">Agrega algunos productos para comenzar</p>
-                    <a href="/Shop" class="btn btn-primary">
-                        <i class="fas fa-shopping-bag me-2"></i>Ir a la tienda
-                    </a>
+                    <i class="fas fa-spinner fa-spin fa-2x text-muted mb-3"></i>
+                    <div class="text-muted">Cargando carrito…</div>
                 </div>
+            </div>
+
+            <div class="border-top p-3">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="fw-semibold">Total:</span>
+                    <span class="fw-bold cart-total-amount fs-5">$0.00</span>
+                </div>
+                <button class="btn btn-success w-100 btn-lg" id="btnCartCheckout" type="button" disabled>
+                    <i class="fas fa-credit-card me-2"></i>Comprar
+                </button>
             </div>
         </div>
     }
@@ -394,6 +396,7 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     <script>
+        // Efectos de navbar y dropdowns
         document.addEventListener('DOMContentLoaded', function () {
             const navbar = document.querySelector('.navbar-enhanced');
             window.addEventListener('scroll', function () {
@@ -438,137 +441,310 @@
                     }
                 });
             });
-
-            console.log('✅ Navbar ASP.NET Core layout cargado correctamente');
-        });
-
-        async function updateCartCount() {
-            try {
-                const response = await fetch('/Cart/GetCartSummary');
-                const result = await response.json();
-                if (result.success) {
-                    document.querySelectorAll('.cart-count').forEach(el => { el.textContent = `(${result.data.totalItems})`; });
-                }
-            } catch (error) { console.error('Error updating cart count:', error); }
-        }
-
-        async function updateWishlistCount() {
-            try {
-                const response = await fetch('/Wishlist/Count');
-                const result = await response.json();
-                document.querySelectorAll('.wishlist-count').forEach(el => { el.textContent = `(${result.count})`; });
-            } catch (error) { console.error('Error updating wishlist count:', error); }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            updateCartCount();
-            updateWishlistCount();
         });
     </script>
 
+    <!-- Wishlist (CORREGIDO - con actualización de contador) -->
+<script>
+(function () {
+  const metaToken = document.querySelector('meta[name="RequestVerificationToken"]');
+  const XSRF = metaToken?.content || '';
+
+  // 🔴 FUNCIÓN GLOBAL para actualizar el contador
+  async function updateWishlistCount() {
+    try {
+      const resp = await fetch('/Wishlist/Count', { credentials: 'same-origin' });
+      if (!resp.ok) return;
+      const data = await resp.json();
+      
+      // Actualizar TODOS los elementos con clase wishlist-count
+      document.querySelectorAll('.wishlist-count').forEach(el => {
+        el.textContent = `(${data.count || 0})`;
+      });
+      
+      // Actualizar badge específico si existe
+      const badge = document.getElementById('js-wishlist-count');
+      if (badge) {
+        badge.textContent = data.count || 0;
+        badge.style.display = (data.count > 0) ? 'inline-block' : 'none';
+      }
+      
+      console.log('✅ Wishlist count actualizado:', data.count);
+    } catch (err) {
+      console.error('Error al actualizar wishlist count:', err);
+    }
+  }
+
+  // 🔓 Exponer globalmente
+  window.updateWishlistCount = updateWishlistCount;
+
+  async function loadWishlistDrawer() {
+    try {
+      const resp = await fetch('/Wishlist/Drawer', { credentials: 'same-origin' });
+      const html = await resp.text();
+      const container = document.getElementById('wishlist-modal-content');
+      if (container) {
+        container.innerHTML = html;
+        bindWishlistRemoveButtons(container);
+      }
+    } catch (err) {
+      console.error('Error al cargar wishlist drawer:', err);
+    }
+  }
+
+  function bindWishlistRemoveButtons(container) {
+    container.querySelectorAll('.js-wishlist-remove').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const pid = parseInt(btn.getAttribute('data-product-id'), 10);
+        if (!pid) return;
+
+        const r = await fetch('/Wishlist/Remove', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {
+            'Content-Type': 'application/json',
+            'RequestVerificationToken': XSRF
+          },
+          body: JSON.stringify({ productId: pid })
+        });
+
+        if (r.ok) {
+          await loadWishlistDrawer();
+          await updateWishlistCount(); // 🔴 ACTUALIZAR CONTADOR
+        }
+      });
+    });
+  }
+
+  async function openWishlistModal() {
+    await loadWishlistDrawer();
+    const modalEl = document.getElementById('wishlist-modal');
+    if (modalEl && typeof bootstrap !== 'undefined') {
+      const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+      modal.show();
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    // Actualizar contador al cargar la página
+    updateWishlistCount();
+
+    // Abrir modal
+    const btn = document.getElementById('btnOpenWishlist');
+    if (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        openWishlistModal();
+      });
+    }
+
+    // Botón alternativo si existe
+    const btnAlt = document.getElementById('js-wishlist-open');
+    if (btnAlt) {
+      btnAlt.addEventListener('click', function (e) {
+        e.preventDefault();
+        openWishlistModal();
+      });
+    }
+  });
+
+  console.log('🎯 Script de Wishlist cargado');
+
+  // === Wishlist AJAX (CORREGIDO) ===
+(function () {
+  async function postJson(url, data) {
+    const resp = await fetch(url, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': XSRF },
+      body: JSON.stringify(data || {})
+    });
+    if (resp.status === 401) {
+      window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(location.pathname + location.search);
+      return null;
+    }
+    try { return await resp.json(); } catch { return null; }
+  }
+
+  function markActive(btn) {
+    btn.classList.add('active');
+    btn.setAttribute('aria-pressed', 'true');
+    const i = btn.querySelector('i.fas.fa-heart');
+    if (i) i.classList.add('text-danger');
+  }
+
+  document.querySelectorAll('.js-add-wishlist').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const pid = parseInt(btn.getAttribute('data-product-id'), 10);
+      if (!pid) return;
+      
+      const res = await postJson('/Wishlist/Add', { productId: pid });
+      
+      if (res && res.ok) {
+        markActive(btn);
+        
+        // 🔴 ACTUALIZAR CONTADOR
+        if (typeof window.updateWishlistCount === 'function') {
+          await window.updateWishlistCount();
+        }
+        
+        console.log('✅ Producto agregado a wishlist');
+      }
+    });
+  });
+})();
+})();
+</script>
+
+    <!-- 🛒 Carrito: helpers globales (CORREGIDO) -->
     <script>
-      (function () {
+    (function () {
         const metaToken = document.querySelector('meta[name="RequestVerificationToken"]');
         const XSRF = metaToken?.content || '';
 
-        async function loadWishlistDrawer() {
-          const resp = await fetch('/Wishlist/Drawer', { credentials: 'same-origin' });
-          const html = await resp.text();
-          const container = document.getElementById('wishlist-modal-content');
-          container.innerHTML = html;
-
-          container.querySelectorAll('.js-wishlist-remove').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-              e.preventDefault();
-              const pid = parseInt(btn.getAttribute('data-product-id'), 10);
-              if (!pid) return;
-
-              const r = await fetch('/Wishlist/Remove', {
-                method: 'POST',
-                credentials: 'same-origin',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'RequestVerificationToken': XSRF
-                },
-                body: JSON.stringify({ productId: pid })
-              });
-
-              if (r.ok) {
-                await loadWishlistDrawer();
-                try { if (typeof updateWishlistCount === 'function') updateWishlistCount(); } catch {}
-              }
-            });
-          });
+        async function getCartSummary() {
+            try {
+                const r = await fetch('/Cart/Summary', { credentials: 'same-origin' });
+                if (!r.ok) return null;
+                return await r.json(); // { count, total, totalFormatted, hasItems }
+            } catch { return null; }
         }
 
-        async function openWishlistModal() {
-          await loadWishlistDrawer();
-          const modalEl = document.getElementById('wishlist-modal');
-          const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-          modal.show();
+        async function refreshCartBadges() {
+            const s = await getCartSummary();
+            if (!s) return;
+
+            document.querySelectorAll('.cart-count').forEach(el => el.textContent = `(${s.count ?? 0})`);
+
+            const formatted = s.totalFormatted ??
+                new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(s.total ?? 0);
+
+            document.querySelectorAll('.cart-total-amount').forEach(el => el.textContent = formatted);
+
+            const btnBuy = document.getElementById('btnCartCheckout');
+            if (btnBuy) btnBuy.disabled = !(s.hasItems ?? (s.count > 0));
+        }
+
+        // Vincula eventos dentro del drawer (remove / clear)
+        function bindCartDrawerEvents(container) {
+            if (!container) return;
+
+            // Quitar línea
+            container.querySelectorAll('.js-cart-remove').forEach(btn => {
+                btn.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    const id = this.getAttribute('data-cart-item-id');
+                    if (!id) return;
+                    
+                    try {
+                        const r = await fetch('/Cart/Remove', {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: { 
+                                'Content-Type': 'application/json', 
+                                'RequestVerificationToken': XSRF 
+                            },
+                            body: JSON.stringify({ cartItemId: parseInt(id, 10) })
+                        });
+                        
+                        const data = await r.json();
+                        if (data.ok) {
+                            await loadCartDrawer();
+                        } else {
+                            alert(data.message || 'Error al eliminar');
+                        }
+                    } catch (err) {
+                        alert('Error de conexión');
+                        console.error(err);
+                    }
+                });
+            });
+
+            // Vaciar carrito
+            const clearBtn = container.querySelector('.js-cart-clear');
+            if (clearBtn) {
+                clearBtn.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    if (!confirm('¿Vaciar todo el carrito?')) return;
+                    
+                    try {
+                        const r = await fetch('/Cart/Clear', {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: { 'RequestVerificationToken': XSRF }
+                        });
+                        
+                        if (r.ok) await loadCartDrawer();
+                        else alert('Error al vaciar carrito');
+                    } catch (err) {
+                        alert('Error de conexión');
+                        console.error(err);
+                    }
+                });
+            }
+        }
+
+        async function loadCartDrawer() {
+            try {
+                const r = await fetch('/Cart/Drawer', { credentials: 'same-origin' });
+                const html = await r.text();
+                const container = document.getElementById('cart-drawer-container');
+                if (container) {
+                    container.innerHTML = html;
+                    bindCartDrawerEvents(container); // 🔴 importante: re-bindeo eventos
+                }
+            } catch {
+                const container = document.getElementById('cart-drawer-container');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="text-center py-5">
+                            <i class="fas fa-triangle-exclamation text-warning fa-2x mb-2"></i>
+                            <div class="text-muted">No se pudo cargar el carrito.</div>
+                        </div>`;
+                }
+            } finally {
+                refreshCartBadges();
+            }
+        }
+
+        // 🔓 Exponer helpers globales (usados desde Catálogo/Producto)
+        window.refreshCartBadges = refreshCartBadges;
+        window.loadCartDrawer = loadCartDrawer;
+        // alias para compatibilidad con código previo del proyecto
+        window.updateCartCount = refreshCartBadges;
+
+        // Abre el offcanvas recargando antes su contenido
+        window.openCartAfterAdd = async function () {
+            await loadCartDrawer();
+            const offcanvasEl = document.getElementById('offcanvasCart');
+            if (offcanvasEl && typeof bootstrap !== 'undefined') {
+                bootstrap.Offcanvas.getOrCreateInstance(offcanvasEl).show();
+            }
         }
 
         document.addEventListener('DOMContentLoaded', function () {
-          const btn = document.getElementById('btnOpenWishlist');
-          if (btn) {
-            btn.addEventListener('click', function (e) {
-              e.preventDefault();
-              openWishlistModal();
+            // Sincroniza totales/contador al cargar (solo clientes)
+            const isAdminOrEmployee = document.querySelector('.admin-nav, .employee-nav');
+            if (!isAdminOrEmployee) {
+                refreshCartBadges();
+            }
+
+            // Cargar drawer al abrir el offcanvas
+            document.querySelectorAll('[data-bs-target="#offcanvasCart"]').forEach(b => {
+                b.addEventListener('click', loadCartDrawer);
             });
-          }
+
+            // Botón pagar del drawer (navega a /Checkout si hay items)
+            const btnCheckout = document.getElementById('btnCartCheckout');
+            if (btnCheckout) {
+                btnCheckout.addEventListener('click', () => {
+                    window.location.href = '/Checkout';
+                });
+            }
         });
-      })();
-    </script>
-
-    <script>
-      (function () {
-        const metaToken = document.querySelector('meta[name="RequestVerificationToken"]');
-        const XSRF = metaToken?.content || '';
-
-        async function addToWishlist(productId) {
-          const resp = await fetch('/Wishlist/Add', {
-            method: 'POST',
-            credentials: 'same-origin',
-            headers: {
-              'Content-Type': 'application/json',
-              'RequestVerificationToken': XSRF
-            },
-            body: JSON.stringify({ productId })
-          });
-
-          if (resp.status === 401) {
-            window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(location.pathname + location.search);
-            return;
-          }
-
-          let json = null;
-          try { json = await resp.json(); } catch {}
-          if (json && json.ok) return true;
-          return false;
-        }
-
-        function markWishActive(btn) {
-          btn.classList.add('active');
-          btn.setAttribute('aria-pressed', 'true');
-          const i = btn.querySelector('i.fas.fa-heart, i.fa-heart');
-          if (i) i.classList.add('text-danger');
-        }
-
-        document.addEventListener('click', async function (e) {
-          const btn = e.target.closest('.js-add-wishlist, [data-action="add-wishlist"]');
-          if (!btn) return;
-
-          e.preventDefault();
-          const pid = parseInt(btn.getAttribute('data-product-id'), 10);
-          if (!pid) return;
-
-          const ok = await addToWishlist(pid);
-          if (ok) {
-            markWishActive(btn);
-            try { if (typeof updateWishlistCount === 'function') updateWishlistCount(); } catch {}
-          }
-        });
-      })();
+    })();
     </script>
 
     @RenderSection("Scripts", required: false)
