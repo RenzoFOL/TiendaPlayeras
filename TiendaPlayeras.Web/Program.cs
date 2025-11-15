@@ -17,7 +17,7 @@ var requireConfirmed = builder.Configuration.GetValue<bool>("Auth:RequireConfirm
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>(opt =>
     {
-        opt.SignIn.RequireConfirmedEmail = requireConfirmed; // <- opcional
+        opt.SignIn.RequireConfirmedEmail = requireConfirmed;
         opt.User.RequireUniqueEmail = true;
         opt.Password.RequiredLength = 6;
     })
@@ -27,36 +27,32 @@ builder.Services
 
 builder.Services.ConfigureApplicationCookie(opt =>
 {
-    opt.LoginPath = "/Account";          // siempre centralizamos el acceso en /Account
+    opt.LoginPath = "/Account";
     opt.LogoutPath = "/Account/Logout";
     opt.AccessDeniedPath = "/Account";
 });
 
+// ⛑️ Anti-Forgery: usa la cabecera que envía tu JS
+builder.Services.AddAntiforgery(o => o.HeaderName = "RequestVerificationToken");
 
-// 3) MVC + Razor Pages (para Identity UI)
+// 3) MVC + Razor Pages
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 // 4) Servicios personalizados
-builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<EmailSender>(); // MailKit sender
 
-// 5) Límite de carga (10 MB para diseños)
+// 5) Carrito (DI)
+builder.Services.AddScoped<ICartService, CartService>();
+
+// 6) Límite de carga (10 MB para diseños)
 builder.Services.Configure<FormOptions>(o =>
 {
     o.MultipartBodyLengthLimit = 10 * 1024 * 1024; // 10 MB
 });
 
-// 6) Session (carrito invitado)
-builder.Services.AddSession(options =>
-{
-    options.Cookie.Name = ".TiendaPlayeras.Session"; // nombre de cookie de sesión
-    options.IdleTimeout = TimeSpan.FromMinutes(5);;    // expira tras 12 h de inactividad
-    options.Cookie.HttpOnly = true;                  // mitiga XSS
-    options.Cookie.IsEssential = true;               // requerida para funcionalidad básica
-});
-
+builder.Services.AddSession();
 var app = builder.Build();
 
 // 7) Migraciones + seeding de roles/usuario admin (dev)
@@ -72,25 +68,19 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
     app.UseHttpsRedirection();
-    
 }
 
 app.UseStaticFiles();
-
 app.UseRouting();
-
-// Session antes de Auth si la usas en eventos de login (merge de carrito)
 app.UseSession();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 // 8) Rutas MVC por defecto
-
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-
 
 // 9) Identity UI (Razor Pages)
 app.MapRazorPages();

@@ -1,143 +1,84 @@
-@model TiendaPlayeras.Web.Models.Cart
+@model TiendaPlayeras.Web.Models.CartSummary
 @{
-    ViewData["Title"] = "Mi Carrito";
+    ViewData["Title"] = "Tu carrito";
 }
 
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-12">
-            <nav class="breadcrumb-custom mb-4">
-                <a href="/">Inicio</a>
-                <span>/</span>
-                <span class="current">Carrito de Compras</span>
-            </nav>
-        </div>
-    </div>
+<div class="container my-4">
+    <h2 class="mb-3">Carrito</h2>
 
-    <h2 class="mb-4">Mi Carrito de Compras</h2>
-    
-    @if (!Model.Items.Any())
+    @if (Model is null || !Model.Lines.Any())
     {
-        <div class="text-center py-5">
-            <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
-            <h4 class="text-muted">Tu carrito está vacío</h4>
-            <p class="text-muted mb-4">Agrega algunos productos increíbles para comenzar</p>
-            <a href="/Catalog" class="btn btn-primary btn-lg">
-                <i class="fas fa-shopping-bag me-2"></i>Continuar comprando
-            </a>
-        </div>
+        <div class="alert alert-info">Tu carrito está vacío.</div>
+        <a class="btn btn-primary" href="@Url.Action("Index","Catalog")">Ir al catálogo</a>
     }
     else
     {
-        <div class="row">
-            <!-- Items del Carrito -->
-            <div class="col-lg-8">
-                <div class="card">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0">Productos (@Model.TotalItems items)</h5>
-                    </div>
-                    <div class="card-body p-0">
-                        @foreach (var item in Model.Items.Where(i => i.IsActive))
-                        {
-                            <div class="cart-item p-4 border-bottom" data-item-id="@item.Id">
-                                <div class="row align-items-center">
-                                    <!-- Imagen -->
-                                    <div class="col-md-2 col-3">
-                                        <img src="@item.Product?.MainImagePath ?? "/images/placeholder.png"" 
-                                             alt="@item.Product?.Name" 
-                                             class="img-fluid rounded"
-                                             onerror="this.src='/images/placeholder.png'">
-                                    </div>
-                                    
-                                    <!-- Información del Producto -->
-                                    <div class="col-md-4 col-9">
-                                        <h6 class="product-name mb-1">@item.Product?.Name</h6>
-                                        <p class="text-muted mb-1 small">Talla: <strong>@item.Size</strong></p>
-                                        <p class="text-primary mb-0 fw-bold">@item.UnitPrice.ToString("C")</p>
-                                    </div>
-                                    
-                                    <!-- Selector de Cantidad -->
-                                    <div class="col-md-3 col-6">
-                                        <div class="input-group input-group-sm quantity-selector" style="max-width: 120px;">
-                                            <button class="btn btn-outline-secondary decrease-qty" type="button">
-                                                <i class="fas fa-minus"></i>
-                                            </button>
-                                            <input type="number" class="form-control text-center qty-input" 
-                                                   value="@item.Quantity" min="1" max="99"
-                                                   data-item-id="@item.Id">
-                                            <button class="btn btn-outline-secondary increase-qty" type="button">
-                                                <i class="fas fa-plus"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Subtotal -->
-                                    <div class="col-md-2 col-4">
-                                        <span class="subtotal fw-bold">@item.Subtotal.ToString("C")</span>
-                                    </div>
-                                    
-                                    <!-- Eliminar -->
-                                    <div class="col-md-1 col-2 text-end">
-                                        <button class="btn btn-outline-danger btn-sm remove-item" 
-                                                data-item-id="@item.Id"
-                                                title="Eliminar producto">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Talla</th>
+                    <th class="text-center">Cantidad</th>
+                    <th class="text-end">Precio</th>
+                    <th class="text-end">Subtotal</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var line in Model.Lines)
+                {
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <img src="@line.ImageUrl" 
+                                     onerror="this.src='/images/placeholder.png'"
+                                     style="width:60px;height:60px;object-fit:cover;border-radius:.5rem;" />
+                                <div class="fw-semibold">@line.ProductName</div>
                             </div>
-                        }
-                    </div>
-                </div>
-                
-                <!-- Botones de Acción -->
-                <div class="d-flex justify-content-between mt-3">
-                    <a href="/Catalog" class="btn btn-outline-primary">
-                        <i class="fas fa-arrow-left me-2"></i>Seguir comprando
-                    </a>
-                    <button class="btn btn-outline-danger" id="btnClearCart">
+                        </td>
+                        <td>@line.Size</td>
+                        <td class="text-center">
+                            <form asp-action="UpdateQty" method="post" class="d-inline-flex align-items-center gap-2">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="cartItemId" value="@line.CartItemId" />
+                                <input type="number" name="qty" min="1" value="@line.Quantity" 
+                                       class="form-control form-control-sm" style="width:80px;" />
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">Actualizar</button>
+                            </form>
+                        </td>
+                        <td class="text-end">$@line.UnitPrice.ToString("0.00")</td>
+                        <td class="text-end fw-semibold">$@line.Subtotal.ToString("0.00")</td>
+                        <td class="text-end">
+                            <button type="button" class="btn btn-sm btn-outline-danger js-remove-from-cart"
+                                    data-cart-item-id="@line.CartItemId">
+                                Quitar
+                            </button>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Total y botón comprar (SIMPLIFICADO) -->
+        <div class="border-top pt-3 mt-3">
+            <div class="row">
+                <div class="col-md-6">
+                    <button type="button" class="btn btn-outline-secondary js-clear-cart">
                         <i class="fas fa-trash me-2"></i>Vaciar carrito
                     </button>
                 </div>
-            </div>
-            
-            <!-- Resumen del Pedido -->
-            <div class="col-lg-4 mt-4 mt-lg-0">
-                <div class="card sticky-top" style="top: 100px;">
-                    <div class="card-header bg-dark text-white">
-                        <h5 class="mb-0">Resumen del Pedido</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Subtotal:</span>
-                            <span>@Model.Total.ToString("C")</span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Envío:</span>
-                            <span id="shipping-cost">@(Model.Total >= 500 ? "Gratis" : "$50.00")</span>
-                        </div>
-                        @if (Model.Total < 500)
-                        {
-                            <div class="alert alert-info small mb-3">
-                                <i class="fas fa-info-circle me-2"></i>
-                                ¡Faltan @((500 - Model.Total).ToString("C")) para envío gratis!
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="fw-semibold">Total:</span>
+                                <span class="fw-bold fs-4 text-success">$@Model.TotalAmount.ToString("0.00")</span>
                             </div>
-                        }
-                        <hr>
-                        <div class="d-flex justify-content-between fw-bold fs-5">
-                            <span>Total:</span>
-                            <span id="total-amount">@((Model.Total + (Model.Total >= 500 ? 0 : 50)).ToString("C"))</span>
-                        </div>
-                        
-                        <a href="/Orders/Checkout" class="btn btn-primary w-100 mt-3 py-2">
-                            <i class="fas fa-lock me-2"></i>Proceder al Pago
-                        </a>
-                        
-                        <div class="text-center mt-3">
-                            <small class="text-muted">
-                                <i class="fas fa-shield-alt me-1"></i>
-                                Compra 100% segura
-                            </small>
+                            <a href="/Checkout" class="btn btn-success w-100 btn-lg">
+                                <i class="fas fa-credit-card me-2"></i>Comprar
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -147,117 +88,62 @@
 </div>
 
 @section Scripts {
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Token anti-forgery
-            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
-            
-            // Actualizar cantidad
-            document.querySelectorAll('.quantity-selector').forEach(selector => {
-                const decreaseBtn = selector.querySelector('.decrease-qty');
-                const increaseBtn = selector.querySelector('.increase-qty');
-                const input = selector.querySelector('.qty-input');
-                
-                decreaseBtn?.addEventListener('click', async function() {
-                    let currentQty = parseInt(input.value);
-                    if (currentQty > 1) {
-                        await updateQuantity(parseInt(input.dataset.itemId), currentQty - 1);
-                    }
+<script>
+(function() {
+    const metaToken = document.querySelector('meta[name="RequestVerificationToken"]');
+    const XSRF = metaToken?.content || '';
+
+    // Eliminar item individual
+    document.querySelectorAll('.js-remove-from-cart').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const id = this.getAttribute('data-cart-item-id');
+            if (!id || !confirm('¿Eliminar este producto?')) return;
+
+            try {
+                const r = await fetch('/Cart/Remove', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': XSRF
+                    },
+                    body: JSON.stringify({ cartItemId: parseInt(id, 10) })
                 });
-                
-                increaseBtn?.addEventListener('click', async function() {
-                    let currentQty = parseInt(input.value);
-                    if (currentQty < 99) {
-                        await updateQuantity(parseInt(input.dataset.itemId), currentQty + 1);
-                    }
-                });
-                
-                // Actualizar al cambiar input manualmente
-                input?.addEventListener('change', async function() {
-                    let newQty = parseInt(this.value);
-                    if (newQty >= 1 && newQty <= 99) {
-                        await updateQuantity(parseInt(this.dataset.itemId), newQty);
-                    } else {
-                        this.value = 1; // Reset si es inválido
-                    }
-                });
-            });
-            
-            // Eliminar item
-            document.querySelectorAll('.remove-item').forEach(btn => {
-                btn.addEventListener('click', async function() {
-                    const itemId = parseInt(this.dataset.itemId);
-                    await removeItem(itemId);
-                });
-            });
-            
-            // Vaciar carrito
-            document.getElementById('btnClearCart')?.addEventListener('click', async function() {
-                if (confirm('¿Estás seguro de que quieres vaciar tu carrito?')) {
-                    await clearCart();
+
+                const data = await r.json();
+                if (data.ok) {
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Error al eliminar');
                 }
-            });
-            
-            // Funciones API
-            async function updateQuantity(itemId, newQuantity) {
-                try {
-                    const response = await fetch('/Cart/UpdateQuantity', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'RequestVerificationToken': token
-                        },
-                        body: JSON.stringify({ cartItemId: itemId, quantity: newQuantity })
-                    });
-                    
-                    if (response.ok) {
-                        location.reload(); // Recargar para ver cambios
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Error al actualizar la cantidad');
-                }
-            }
-            
-            async function removeItem(itemId) {
-                try {
-                    const response = await fetch('/Cart/RemoveItem', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'RequestVerificationToken': token
-                        },
-                        body: JSON.stringify({ cartItemId: itemId })
-                    });
-                    
-                    if (response.ok) {
-                        location.reload(); // Recargar para ver cambios
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Error al eliminar el producto');
-                }
-            }
-            
-            async function clearCart() {
-                try {
-                    const response = await fetch('/Cart/ClearCart', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'RequestVerificationToken': token
-                        },
-                        body: JSON.stringify({})
-                    });
-                    
-                    if (response.ok) {
-                        location.reload(); // Recargar para ver carrito vacío
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Error al vaciar el carrito');
-                }
+            } catch (err) {
+                alert('Error de conexión');
+                console.error(err);
             }
         });
-    </script>
+    });
+
+    // Vaciar carrito
+    const clearBtn = document.querySelector('.js-clear-cart');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', async function() {
+            if (!confirm('¿Vaciar todo el carrito?')) return;
+
+            try {
+                const r = await fetch('/Cart/Clear', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'RequestVerificationToken': XSRF }
+                });
+
+                if (r.ok) window.location.reload();
+                else alert('Error al vaciar carrito');
+            } catch (err) {
+                alert('Error de conexión');
+                console.error(err);
+            }
+        });
+    }
+})();
+</script>
 }

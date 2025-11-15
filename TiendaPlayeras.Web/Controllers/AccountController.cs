@@ -7,7 +7,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
-using System.Web; // si prefieres WebUtility, cambia a System.Net y usa WebUtility.UrlEncode
+using System.Web;
+using System.Security.Cryptography;
+using System.Text;
 using TiendaPlayeras.Web.Models;
 using TiendaPlayeras.Web.Services;
 
@@ -22,22 +24,38 @@ namespace TiendaPlayeras.Web.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly EmailSender _email;
-        private readonly ICartService _cart;
         private readonly IWebHostEnvironment _env;
+
+        private const string SecQSessionPrefix = "SECQ_OK_";
+        
+        private static readonly Dictionary<string, string> _secQuestions = new()
+        {
+            { "pet",     "¿Cuál fue el nombre de tu primera mascota?" },
+            { "school",  "¿En qué primaria estudiaste?" },
+            { "city",    "¿En qué ciudad nació tu madre?" },
+            { "color",   "¿Cuál es tu color favorito?" },
+            { "nick",    "¿Cuál era tu apodo en la infancia?" }
+        };
+
+        private static string HashAnswer(string? answer)
+        {
+            var clean = (answer ?? "").Trim().ToLowerInvariant();
+            using var sha = SHA256.Create();
+            var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(clean));
+            return Convert.ToHexString(bytes);
+        }
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             RoleManager<IdentityRole> roleManager,
             EmailSender email,
-            ICartService cart,
             IWebHostEnvironment env)
         {
             _userManager   = userManager;
             _signInManager = signInManager;
             _roleManager   = roleManager;
             _email         = email;
-            _cart          = cart;
             _env           = env;
         }
 
@@ -75,8 +93,6 @@ namespace TiendaPlayeras.Web.Controllers
                 var result = await _signInManager.PasswordSignInAsync(user, password, rememberMe, lockoutOnFailure: true);
                 if (!result.Succeeded)
                     return Json(new { ok = false, error = result.IsLockedOut ? "Cuenta bloqueada temporalmente." : "Credenciales inválidas." });
-
-                try { await _cart.MergeGuestCartToUserAsync(HttpContext.Session.Id, user.Id); } catch { }
 
                 var roles = await _userManager.GetRolesAsync(user);
                 var redirect = RoleRedirect(roles);
@@ -134,6 +150,14 @@ namespace TiendaPlayeras.Web.Controllers
             var exists = await _userManager.FindByEmailAsync(vm.Email);
             if (exists != null) return Json(new { ok = false, error = "El correo ya está registrado." });
 
+            // Validación mínima de la pregunta/respuesta (solo para nuevos)
+            if (string.IsNullOrWhiteSpace(vm.SecurityQuestionKey))
+                return Json(new { ok = false, error = "Selecciona una pregunta de seguridad." });
+
+            if (string.IsNullOrWhiteSpace(vm.SecurityAnswer))
+                return Json(new { ok = false, error = "Escribe la respuesta a tu pregunta de seguridad." });
+
+            // Crea el usuario
             var user = new ApplicationUser
             {
                 UserName    = vm.Email,
@@ -141,7 +165,11 @@ namespace TiendaPlayeras.Web.Controllers
                 FirstName   = vm.FirstName?.Trim() ?? "",
                 LastName    = vm.LastName?.Trim() ?? "",
                 PhoneNumber = string.IsNullOrWhiteSpace(vm.Phone) ? null : vm.Phone.Trim(),
-                IsActive    = true
+                IsActive    = true,
+
+                // Guardamos la pregunta + hash de la respuesta (normalizada a minúsculas)
+                SecurityQuestionKey = vm.SecurityQuestionKey.Trim(),
+                SecurityAnswerHash  = HashAnswer(vm.SecurityAnswer) // usa tu helper SHA-256
             };
 
             var create = await _userManager.CreateAsync(user, vm.Password);
@@ -167,8 +195,8 @@ namespace TiendaPlayeras.Web.Controllers
 
                 await _email.SendAsync(user.Email!, "Confirma tu correo",
                     $@"<p>Hola {user.FirstName},</p>
-                       <p>Confirma tu correo haciendo clic:</p>
-                       <p><a href=""{url}"">Confirmar correo</a></p>");
+                    <p>Confirma tu correo haciendo clic:</p>
+                    <p><a href=""{url}"">Confirmar correo</a></p>");
 
                 return Json(new { ok = true, message = "Registro exitoso. Revisa tu correo para confirmar tu cuenta." });
             }
@@ -188,6 +216,41 @@ namespace TiendaPlayeras.Web.Controllers
             var result = await _userManager.ConfirmEmailAsync(user, token);
             return Redirect(result.Succeeded ? "/Account?confirmed=1" : "/Account?confirmed=0");
         }
+
+        [AllowAnonymous]
+        [HttpGet("account/forgot-check-email")]
+        public async Task<IActionResult> ForgotCheckEmail([FromQuery] string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return Json(new { ok = false, error = "Ingresa tu correo." });
+
+            var norm = email.Trim().ToUpperInvariant();
+            var user = await _userManager.Users.AsNoTracking()
+                .FirstOrDefaultAsync(u => u.NormalizedEmail == norm || u.NormalizedUserName == norm);
+
+            if (user == null)
+                return Json(new { ok = false, error = "No encontramos ese correo." });
+
+            if (string.IsNullOrWhiteSpace(user.SecurityQuestionKey) ||
+                string.IsNullOrWhiteSpace(user.SecurityAnswerHash))
+            {
+                return Json(new
+                {
+                    ok = false,
+                    needsSetup = true,
+                    error = "Esta cuenta aún no tiene pregunta de seguridad configurada. Inicia sesión y configúrala en tu perfil."
+                });
+            }
+
+            var questionText = _secQuestions.TryGetValue(user.SecurityQuestionKey, out var txt) ? txt : "Pregunta de seguridad";
+
+            // limpiar verificación previa
+            HttpContext.Session.Remove($"{SecQSessionPrefix}{email.Trim()}");
+
+            return Json(new { ok = true, questionText });
+        }
+
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -239,12 +302,10 @@ namespace TiendaPlayeras.Web.Controllers
         /// </summary>
 
         [AllowAnonymous]
-        [HttpPost("account/reset-direct")] // <-- ruta única
+        [HttpPost("account/reset-direct")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ResetPasswordDirect([FromForm] ResetPasswordDirectVM vm)
         {
-            ViewBag.ActiveTab = "forgot";
-
             vm.Email = (vm.Email ?? "").Trim();
             vm.Password = vm.Password?.Trim() ?? "";
             vm.ConfirmPassword = vm.ConfirmPassword?.Trim() ?? "";
@@ -252,12 +313,17 @@ namespace TiendaPlayeras.Web.Controllers
             if (!ModelState.IsValid)
                 return View("Account");
 
-            var user = await _userManager.FindByEmailAsync(vm.Email)
-                    ?? await _userManager.FindByNameAsync(vm.Email);
-
+            var user = await _userManager.FindByEmailAsync(vm.Email) ?? await _userManager.FindByNameAsync(vm.Email);
             if (user == null)
             {
                 ModelState.AddModelError(nameof(vm.Email), "No existe una cuenta con ese correo.");
+                return View("Account");
+            }
+
+            var verified = HttpContext.Session.GetString($"{SecQSessionPrefix}{vm.Email}") == "1";
+            if (!verified)
+            {
+                ModelState.AddModelError(string.Empty, "Primero debes responder correctamente tu pregunta de seguridad.");
                 return View("Account");
             }
 
@@ -271,11 +337,16 @@ namespace TiendaPlayeras.Web.Controllers
                 return View("Account");
             }
 
-            // Opcional: invalida sesiones antiguas
             await _userManager.UpdateSecurityStampAsync(user);
-
             TempData["ResetOk"] = "Tu contraseña se actualizó correctamente. Ya puedes iniciar sesión.";
             return RedirectToAction(nameof(Index), new { tab = "login" });
+        }
+
+        public class ResetPasswordDirectVM
+        {
+            public string Email { get; set; } = "";
+            public string Password { get; set; } = "";
+            public string ConfirmPassword { get; set; } = "";
         }
 
         [AllowAnonymous]
@@ -290,6 +361,61 @@ namespace TiendaPlayeras.Web.Controllers
                     ?? await _userManager.FindByNameAsync(email);
 
             return Json(new { exists = user != null });
+        }
+
+        [AllowAnonymous]
+        [HttpGet("account/security-question")]
+        public async Task<IActionResult> GetSecurityQuestion([FromQuery] string email)
+        {
+            var mail = (email ?? "").Trim();
+            if (string.IsNullOrWhiteSpace(mail))
+                return Json(new { ok = false, error = "Ingresa tu correo." });
+
+            var user = await _userManager.FindByEmailAsync(mail)
+                    ?? await _userManager.FindByNameAsync(mail);
+
+            if (user == null)
+                return Json(new { ok = false, error = "No existe una cuenta con ese correo." });
+
+            if (string.IsNullOrWhiteSpace(user.SecurityQuestionKey))
+                return Json(new { ok = false, error = "Esta cuenta no tiene pregunta de seguridad registrada." });
+
+            var question = _secQuestions.TryGetValue(user.SecurityQuestionKey, out var txt)
+                ? txt : "Pregunta no definida";
+
+            return Json(new { ok = true, question });
+        }
+
+        [AllowAnonymous]
+        [HttpPost("account/verify-security-answer")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> VerifySecurityAnswer([FromBody] SecQAnswerReq dto)
+        {
+            if (dto == null || string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Answer))
+                return Json(new { ok = false, error = "Datos incompletos." });
+
+            var norm = dto.Email.Trim().ToUpperInvariant();
+            var user = await _userManager.Users.FirstOrDefaultAsync(u =>
+                u.NormalizedEmail == norm || u.NormalizedUserName == norm);
+
+            if (user == null)
+                return Json(new { ok = false, error = "Correo no encontrado." });
+
+            if (string.IsNullOrWhiteSpace(user.SecurityAnswerHash))
+                return Json(new { ok = false, error = "No hay pregunta de seguridad configurada en esta cuenta." });
+
+            var ok = string.Equals(user.SecurityAnswerHash, HashAnswer(dto.Answer), StringComparison.OrdinalIgnoreCase);
+            if (!ok)
+                return Json(new { ok = false, error = "Respuesta incorrecta." });
+
+            HttpContext.Session.SetString($"{SecQSessionPrefix}{dto.Email.Trim()}", "1");
+            return Json(new { ok = true });
+        }
+
+        public class SecQAnswerReq
+        {
+            public string Email { get; set; } = "";
+            public string Answer { get; set; } = "";
         }
 
         [Authorize]
@@ -381,6 +507,9 @@ namespace TiendaPlayeras.Web.Controllers
             public string ConfirmNewPassword { get; set; } = "";
         }
 
+
+        private readonly PasswordHasher<ApplicationUser> _answerHasher = new();
+
         [Authorize]
         [HttpPost("account/profile/change-password")]
         [ValidateAntiForgeryToken]
@@ -437,10 +566,24 @@ namespace TiendaPlayeras.Web.Controllers
     {
         public string? FirstName { get; set; }
         public string? LastName  { get; set; }
+
+        [Required, EmailAddress]
         public string  Email     { get; set; } = string.Empty;
+
+        [Required]
         public string  Password  { get; set; } = string.Empty;
+
+        [Required]
         public string  ConfirmPassword { get; set; } = string.Empty;
+
         public string? Phone     { get; set; }
+
+        // === nuevos campos para pregunta de seguridad ===
+        [Required]
+        public string SecurityQuestionKey { get; set; } = string.Empty; // ej. "pet", "school"...
+
+        [Required, StringLength(200)]
+        public string SecurityAnswer { get; set; } = string.Empty;      // respuesta libre del usuario
     }
 
     public class ResetPasswordVm

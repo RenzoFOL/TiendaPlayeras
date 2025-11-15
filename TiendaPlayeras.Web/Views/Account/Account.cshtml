@@ -328,19 +328,19 @@
 <div class="form-container">
 <h2 class="form-title">Bienvenido de vuelta</h2>
 <p class="form-subtitle">Inicia sesión en tu cuenta para continuar</p>
-<form action="/Account/Login" id="loginForm" method="post">@Html.AntiForgeryToken()
+<form action="/Account/Login" id="loginForm" method="post" autocomplete="off">@Html.AntiForgeryToken()
 <div class="row">
 <div class="col-12">
 <div class="form-group">
 <label class="form-label" for="loginEmail">Email</label>
-<input class="form-control" id="loginEmail" name="email" placeholder="tu@email.com" required="" type="email"/>
+<input class="form-control" id="loginEmail" name="email" placeholder="tu@email.com" required="" type="email" autocomplete="off" autocapitalize="none" spellcheck="false" inputmode="email"/>
 <div id="loginAlert" class="alert alert-danger d-none mt-3" role="alert"></div>
 </div>
 </div>
 <div class="col-12">
 <div class="form-group">
 <label class="form-label" for="loginPassword">Contraseña</label>
-<input class="form-control" id="loginPassword" name="password" placeholder="Tu contraseña" required="" type="password"/>
+<input class="form-control" id="loginPassword" name="password" placeholder="Tu contraseña" required="" type="password"  autocomplete="new-password" autocapitalize="none" spellcheck="false" />
 </div>
 </div>
 <div class="col-12">
@@ -367,7 +367,7 @@
 <div class="form-container">
 <h2 class="form-title">Crear cuenta</h2>
 <p class="form-subtitle">Únete a nuestra comunidad de fashion lovers</p>
-<form action="/Account/Register" id="registerForm" method="post">@Html.AntiForgeryToken()
+<form action="/Account/Register" id="registerForm" method="post" autocomplete="off">@Html.AntiForgeryToken()
 <div class="row">
 <div class="col-md-6">
 <div class="form-group">
@@ -384,13 +384,13 @@
 <div class="col-12">
 <div class="form-group">
 <label class="form-label" for="registerEmail">Email</label>
-<input class="form-control" id="registerEmail" name="email" placeholder="tu@email.com" required="" type="email"/>
+<input class="form-control" id="registerEmail" name="email" placeholder="tu@email.com" required="" type="email" autocomplete="off" autocapitalize="none" spellcheck="false" inputmode="email"/>
 </div>
 </div>
 <div class="col-md-6">
 <div class="form-group">
 <label class="form-label" for="registerPassword">Contraseña</label>
-<input class="form-control" id="registerPassword" minlength="6" name="password" placeholder="Tu contraseña" required="" type="password"/>
+<input class="form-control" id="registerPassword" minlength="6" name="password" placeholder="Tu contraseña" required="" type="password" autocomplete="new-password" autocapitalize="none" spellcheck="false"/>
 
 <small id="passwordHelp" class="form-text text-muted d-block mt-1">
       La contraseña debe tener <strong>mínimo 8 caracteres</strong> e incluir
@@ -400,11 +400,37 @@
 
 </div>
 </div>
+
+<!-- RPregunta de seguridad -->
 <div class="col-md-6">
 <div class="form-group">
 <label class="form-label" for="confirmPassword">Confirmar contraseña</label>
 <input class="form-control" id="confirmPassword" minlength="6" name="confirmPassword" placeholder="Confirma tu contraseña" required="" type="password"/>
 </div>
+</div>
+<div class="row">
+  <div class="col-md-6">
+    <div class="form-group">
+      <label class="form-label" for="SecurityQuestionKey">Pregunta de seguridad</label>
+      <select class="form-control" id="SecurityQuestionKey" name="SecurityQuestionKey" required>
+        <option value="">Selecciona una pregunta</option>
+        <option value="pet">¿Cuál fue el nombre de tu primera mascota?</option>
+        <option value="school">¿En qué primaria estudiaste?</option>
+        <option value="city">¿En qué ciudad nació tu madre?</option>
+        <option value="color">¿Cuál es tu color favorito?</option>
+        <option value="nick">¿Cuál era tu apodo en la infancia?</option>
+      </select>
+      <small class="form-text text-muted">Guárdala bien. La usarás para recuperar tu cuenta.</small>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="form-group">
+      <label class="form-label" for="SecurityAnswer">Respuesta</label>
+      <input class="form-control" id="SecurityAnswer" name="SecurityAnswer" type="text" autocomplete="off" required />
+      <small class="form-text text-muted">No uses datos obvios; evita tildes y mayúsculas innecesarias.</small>
+    </div>
+  </div>
 </div>
 <div class="col-12">
 <div class="form-group">
@@ -430,110 +456,119 @@
 </div>
 
 <!-- Forgot Password -->
-<div class="tab-pane fade @( (ViewBag.ActiveTab as string) == "forgot" ? "show active" : "" )"
-     id="forgot-password" role="tabpanel">
+<div class="tab-pane fade" id="forgot-password" role="tabpanel">
   <div class="form-container">
+
     <h2 class="form-title">Recuperar contraseña</h2>
-    <p class="form-subtitle">Ingresa tu correo y define tu nueva contraseña.</p>
+    <p class="form-subtitle">Ingresa tu correo y responde tu pregunta de seguridad.</p>
 
-    @* Éxito *@
-    @if (TempData["ResetOk"] != null)
-    {
-      <div class="alert alert-success alert-dismissible fade show" role="alert">
-        @TempData["ResetOk"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-      </div>
-    }
-
-    @* Errores del servidor con el MISMO estilo *@
-    @if ((ViewBag.ActiveTab as string) == "forgot" && !ViewData.ModelState.IsValid)
-    {
-      var allErrors = ViewData.ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).Where(m => !string.IsNullOrWhiteSpace(m));
-      if (allErrors.Any())
-      {
-        <div class="alert alert-danger" role="alert">
-          @foreach (var m in allErrors) { <div>@m</div> }
-        </div>
-      }
-    }
-
-    <form id="resetDirectForm" method="post" action="/account/reset-direct">
+    <!-- ÚNICO FORMULARIO: incluye todo el flujo -->
+    <form id="resetDirectForm" method="post" action="/account/reset-direct" autocomplete="off">
       @Html.AntiForgeryToken()
-      <div class="row">
+
+      <!-- Paso 1: Email -->
+      <div id="fpStep1" class="row">
         <div class="col-12">
           <div class="form-group">
             <label class="form-label" for="Email">Email</label>
-            <input class="form-control" id="Email" name="Email" placeholder="tu@email.com" required type="email" />
+            <input class="form-control" id="Email" name="Email" type="email" required autocomplete="off" autocapitalize="none" spellcheck="false" inputmode="email"/>
           </div>
         </div>
+        <div class="col-12 mt-3">
+          <button id="btnForgotContinue" type="button" class="btn btn-account w-100">Continuar</button>
+        </div>
+      </div>
 
+      <!-- Alertas -->
+      <div class="row mt-3">
+        <div class="col-12">
+          <div id="fpAlert" class="alert alert-danger d-none" role="alert"></div>
+        </div>
+      </div>
+
+      <!-- Paso 2: Pregunta + respuesta -->
+      <div id="secQBlock" class="row mt-3 d-none">
+        <div class="col-12">
+          <div class="form-group">
+            <label class="form-label">Pregunta de seguridad</label>
+            <input class="form-control" id="fpQuestion" type="text" readonly />
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="form-group">
+            <label class="form-label" for="fpAnswer">Tu respuesta</label>
+            <input class="form-control" id="fpAnswer" type="text" autocomplete="off" />
+          </div>
+        </div>
+        <div class="col-12">
+          <button class="btn btn-account" type="button" id="btnVerifyAnswer">Verificar</button>
+        </div>
+      </div>
+
+      <!-- Paso 3: Nuevas contraseñas (visible sólo si la respuesta es correcta) -->
+      <div id="pwdSection" class="row d-none">
         <div class="col-12">
           <div class="form-group">
             <label class="form-label" for="Password">Nueva contraseña</label>
-            <input class="form-control" id="Password" name="Password" type="password" minlength="6" required />
-            <small class="form-text text-muted d-block mt-1">
-              Debe tener <strong>mínimo 8</strong> caracteres e incluir
-              <strong>mayúscula</strong>, <strong>minúscula</strong>,
+            <input
+              class="form-control"
+              id="Password"
+              name="Password"
+              type="password"
+              minlength="8"
+              autocomplete="new-password"
+              pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$"
+              required
+              aria-describedby="pwdPolicyHelp invalidPwdFeedback" />
+            <div id="pwdPolicyHelp" class="form-text">
+              La contraseña debe tener <strong>mínimo 8 caracteres</strong> e incluir
+              <strong>mayúsculas</strong>, <strong>minúsculas</strong>,
               <strong>números</strong> y <strong>símbolos</strong>.
-            </small>
+            </div>
+            <div id="invalidPwdFeedback" class="invalid-feedback">
+              Tu contraseña no cumple la política (8+, mayúscula, minúscula, número y símbolo).
+            </div>
           </div>
         </div>
 
         <div class="col-12">
           <div class="form-group">
             <label class="form-label" for="ConfirmPassword">Confirmar contraseña</label>
-            <input class="form-control" id="ConfirmPassword" name="ConfirmPassword" type="password" minlength="6" required />
+            <input
+              class="form-control"
+              id="ConfirmPassword"
+              name="ConfirmPassword"
+              type="password"
+              autocomplete="new-password"
+              required />
           </div>
         </div>
 
         <div class="col-12">
-          <div class="alert alert-danger d-none" id="pwdMismatch" role="alert">
-            Las contraseñas no coinciden.
-          </div>
-        </div>
-
-        <div class="col-12">
-          <button class="btn btn-account" type="submit">Guardar nueva contraseña</button>
-        </div>
-
-        <div class="col-12 mt-3">
-          <button class="btn btn-secondary-account" onclick="showLogin()" type="button">
-            Volver al inicio de sesión
+          <div id="pwdMismatch" class="alert alert-danger d-none">Las contraseñas no coinciden.</div>
+          <button id="btnSavePwd" type="submit" class="btn btn-account w-100" disabled>
+            Guardar nueva contraseña
           </button>
         </div>
       </div>
     </form>
+
   </div>
 </div>
 
-@section Scripts {
-  <script>
-    // Validación en cliente con MISMO estilo (alerta Bootstrap)
-    document.getElementById('resetDirectForm')?.addEventListener('submit', function (e) {
-      const p = document.getElementById('Password')?.value || '';
-      const c = document.getElementById('ConfirmPassword')?.value || '';
-      const box = document.getElementById('pwdMismatch');
-      box?.classList.add('d-none');
-      if (p !== c) {
-        e.preventDefault();
-        box?.classList.remove('d-none');
-        document.getElementById('ConfirmPassword')?.focus();
-      }
-    });
-  </script>
-}
-
 <!-- Scripts -->
-<script crossorigin="anonymous" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    // Form validation and interaction
-    document.addEventListener('DOMContentLoaded', function() {
-      // Password confirmation validation
-      const registerForm = document.getElementById('registerForm');
-      const password = document.getElementById('registerPassword');
-      const confirmPassword = document.getElementById('confirmPassword');
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+        crossorigin="anonymous"></script>
 
-      function validatePasswords() {
+<script>
+  // Validación de confirmación de contraseña (registro)
+  document.addEventListener('DOMContentLoaded', function () {
+    const password = document.getElementById('registerPassword');
+    const confirmPassword = document.getElementById('confirmPassword');
+
+    function validatePasswords() {
+      if (password && confirmPassword) {
         if (password.value !== confirmPassword.value) {
           confirmPassword.setCustomValidity('Las contraseñas no coinciden');
           confirmPassword.classList.add('is-invalid');
@@ -542,184 +577,270 @@
           confirmPassword.classList.remove('is-invalid');
         }
       }
+    }
 
-      if (password && confirmPassword) {
-        password.addEventListener('input', validatePasswords);
-        confirmPassword.addEventListener('input', validatePasswords);
-      }
+    if (password && confirmPassword) {
+      password.addEventListener('input', validatePasswords);
+      confirmPassword.addEventListener('input', validatePasswords);
+    }
 
-      // Enhanced form interactions
-      document.querySelectorAll('.form-control').forEach(function(input) {
-        input.addEventListener('focus', function() {
-          this.parentElement.classList.add('focused');
-        });
-        
-        input.addEventListener('blur', function() {
-          if (!this.value) {
-            this.parentElement.classList.remove('focused');
-          }
-        });
+    // Micro-interacciones de inputs
+    document.querySelectorAll('.form-control').forEach(function (input) {
+      input.addEventListener('focus', function () {
+        this.parentElement.classList.add('focused');
+      });
+      input.addEventListener('blur', function () {
+        if (!this.value) this.parentElement.classList.remove('focused');
       });
     });
+  });
 
-    // Show forgot password form
-    function showForgotPassword() {
-      // Hide current tabs
-      document.getElementById('login').classList.remove('show', 'active');
-      document.getElementById('register').classList.remove('show', 'active');
-      document.getElementById('login-tab').classList.remove('active');
-      document.getElementById('register-tab').classList.remove('active');
-      
-      // Show forgot password
-      document.getElementById('forgot-password').classList.add('show', 'active');
-      
-      // Hide tabs navigation
-      document.getElementById('accountTabs').style.display = 'none';
-    }
+  // Mostrar formulario "Olvidé mi contraseña"
+  function showForgotPassword() {
+    document.getElementById('login')?.classList.remove('show', 'active');
+    document.getElementById('register')?.classList.remove('show', 'active');
+    document.getElementById('login-tab')?.classList.remove('active');
+    document.getElementById('register-tab')?.classList.remove('active');
 
-    // Show login form
-    function showLogin() {
-      // Hide forgot password
-      document.getElementById('forgot-password').classList.remove('show', 'active');
-      
-      // Show login
-      document.getElementById('login').classList.add('show', 'active');
-      document.getElementById('login-tab').classList.add('active');
-      
-      // Show tabs navigation
-      document.getElementById('accountTabs').style.display = 'flex';
-    }
-
-    // Función para mostrar alertas
-    function showAlert(alertId, message, type = 'danger') {
-        const alertBox = document.getElementById(alertId);
-        const alertMessage = document.getElementById(alertId + 'Message');
-        
-        // Cambiar clase según el tipo
-        alertBox.className = `alert alert-${type} d-none alert-dismissible fade show`;
-        
-        alertMessage.textContent = message;
-        alertBox.classList.remove('d-none');
-        
-        // Ocultar automáticamente después de 5 segundos
-        setTimeout(() => {
-            alertBox.classList.add('d-none');
-        }, 5000);
-    }
-
-    // Función para mostrar toasts
-    function showToast(toastId) {
-        const toastEl = document.getElementById(toastId);
-        const toast = new bootstrap.Toast(toastEl);
-        toast.show();
-    }
-  </script>
-
-<script>
-(async function(){
-  // 1) Si ya hay sesión, no mostrar /Account
-  try {
-    const st = await fetch('/Account/Status', { credentials:'same-origin' });
-    const s = await st.json();
-    if (s.authenticated && s.redirect) {
-      localStorage.setItem('tp_auth', JSON.stringify({ authenticated:true, roles:s.roles||[] }));
-      window.location.href = s.redirect;
-      return;
-    } else {
-      localStorage.removeItem('tp_auth');
-    }
-  } catch(e){ /* silencioso */ }
-
-  function hook(formId, endpoint){
-    const f = document.getElementById(formId);
-    if(!f || f.dataset.bound) return; // evita doble registro
-    f.dataset.bound = "1";
-
-    f.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-
-      const tokenEl = f.querySelector('input[name="__RequestVerificationToken"]');
-      const token = tokenEl ? tokenEl.value : null;
-
-      const fd = new FormData(f);
-      try{
-        const res = await fetch(endpoint, {
-          method: 'POST',
-          body: fd,
-          headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            ...(token ? { 'RequestVerificationToken': token } : {})
-          },
-          credentials: 'same-origin'
-        });
-
-        // Si no es JSON (p.ej. HTML/redirect), no alertar.
-        const ct = (res.headers.get('content-type') || '').toLowerCase();
-        const text = await res.text();
-        if (!ct.includes('application/json')) {
-          // navegación iniciada o respuesta no-JSON: no espantes al usuario
-          return;
-        }
-
-        let data;
-        try { data = JSON.parse(text); } catch { return; } // silencioso
-
-        if (data.ok) {
-          try {
-            const st = await fetch('/Account/Status', { credentials:'same-origin' });
-            const s = await st.json();
-            if (s.authenticated) {
-              localStorage.setItem('tp_auth', JSON.stringify({ authenticated:true, roles:s.roles||[] }));
-            } else {
-              localStorage.removeItem('tp_auth');
-            }
-          } catch {}
-
-          // Mostrar toast de éxito
-          if (formId === 'loginForm') {
-            showToast('loginToast');
-          } else if (formId === 'registerForm') {
-            showToast('registerToast');
-          } else if (formId === 'forgotForm') {
-            showToast('forgotToast');
-          }
-
-          if (data.redirectUrl) {
-            setTimeout(() => {
-              window.location.href = data.redirectUrl;
-            }, 2000);
-          }
-        } else {
-          // Mostrar alerta de error
-          if (formId === 'loginForm') {
-            showAlert('loginAlert', data.error || 'Error en la operación.');
-          } else if (formId === 'registerForm') {
-            showAlert('registerAlert', data.error || 'Error en la operación.');
-          } else if (formId === 'forgotForm') {
-            showAlert('forgotAlert', data.error || 'Error en la operación.');
-          }
-        }
-      }catch(err){
-        // Solo muestra si no se inicia navegación y sí es un fallo real de red
-        console.warn('Network error:', err);
-      }
-    });
+    document.getElementById('forgot-password')?.classList.add('show', 'active');
+    document.getElementById('accountTabs')?.style && (document.getElementById('accountTabs').style.display = 'none');
   }
 
-  hook('loginForm','/Account/Login');
-  hook('registerForm','/Account/Register');
-  hook('forgotForm','/Account/ResetPasswordDirect');
-})();
+  // Volver a login
+  function showLogin() {
+    document.getElementById('forgot-password')?.classList.remove('show', 'active');
+    document.getElementById('login')?.classList.add('show', 'active');
+    document.getElementById('login-tab')?.classList.add('active');
+    document.getElementById('accountTabs')?.style && (document.getElementById('accountTabs').style.display = 'flex');
+  }
+
+  // Helpers UI (alertas / toasts)
+  function showAlert(alertId, message, type = 'danger') {
+    const alertBox = document.getElementById(alertId);
+    const alertMessage = document.getElementById(alertId + 'Message') || alertBox;
+    if (!alertBox) return;
+
+    alertBox.className = `alert alert-${type} d-none alert-dismissible fade show`;
+    alertMessage.textContent = message;
+    alertBox.classList.remove('d-none');
+
+    setTimeout(() => alertBox.classList.add('d-none'), 5000);
+  }
+
+  function showToast(toastId) {
+    const el = document.getElementById(toastId);
+    if (el && window.bootstrap) {
+      new bootstrap.Toast(el).show();
+    }
+  }
 </script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function(){
-  const f = document.getElementById('resetDirectForm');
-  if (!f) return;
+  // Hook Ajax común (login/registro/forgot)
+  (async function () {
+    // Si ya está autenticado, redirige
+    try {
+      const st = await fetch('/Account/Status', { credentials: 'same-origin' });
+      const s = await st.json();
+      if (s.authenticated && s.redirect) {
+        localStorage.setItem('tp_auth', JSON.stringify({ authenticated: true, roles: s.roles || [] }));
+        window.location.href = s.redirect;
+        return;
+      } else {
+        localStorage.removeItem('tp_auth');
+      }
+    } catch { /* silencioso */ }
 
-  if (window.jQuery) { try { $(f).off('submit'); } catch(e){} }
+    function hook(formId, endpoint) {
+      const f = document.getElementById(formId);
+      if (!f || f.dataset.bound) return;
+      f.dataset.bound = "1";
 
-   f.addEventListener('submit', function(e){
+      f.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const tokenEl = f.querySelector('input[name="__RequestVerificationToken"]');
+        const token = tokenEl ? tokenEl.value : null;
+        const fd = new FormData(f);
+
+        try {
+          const res = await fetch(endpoint, {
+            method: 'POST',
+            body: fd,
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest',
+              ...(token ? { 'RequestVerificationToken': token } : {})
+            },
+            credentials: 'same-origin'
+          });
+
+          const ct = (res.headers.get('content-type') || '').toLowerCase();
+          const text = await res.text();
+          if (!ct.includes('application/json')) return;
+
+          let data; try { data = JSON.parse(text); } catch { return; }
+
+          if (data.ok) {
+            try {
+              const st = await fetch('/Account/Status', { credentials: 'same-origin' });
+              const s = await st.json();
+              if (s.authenticated) {
+                localStorage.setItem('tp_auth', JSON.stringify({ authenticated: true, roles: s.roles || [] }));
+              } else {
+                localStorage.removeItem('tp_auth');
+              }
+            } catch { }
+
+            if (formId === 'loginForm')      showToast('loginToast');
+            else if (formId === 'registerForm') showToast('registerToast');
+            else if (formId === 'forgotForm')   showToast('forgotToast');
+
+            if (data.redirectUrl) setTimeout(() => window.location.href = data.redirectUrl, 2000);
+          } else {
+            if (formId === 'loginForm')        showAlert('loginAlert',    data.error || 'Error en la operación.');
+            else if (formId === 'registerForm') showAlert('registerAlert', data.error || 'Error en la operación.');
+            else if (formId === 'forgotForm')   showAlert('forgotAlert',   data.error || 'Error en la operación.');
+          }
+        } catch { /* red silenciosa */ }
+      });
+    }
+
+    hook('loginForm', '/Account/Login');
+    hook('registerForm', '/Account/Register');
+  })();
+</script>
+
+<script>
+  // Ir a "Recuperar contraseña" sin exigir email en el login
+  document.getElementById('goToForgot')?.addEventListener('click', async function (e) {
+    e.preventDefault();
+
+    const emailLogin  = document.getElementById('loginEmail');
+    const email       = (emailLogin?.value || '').trim();
+
+    // 1) Abrir SIEMPRE el panel de recuperar
+    showForgotPassword();
+
+    // 2) Si hay un input email en el panel de recuperar, pre-llenar
+    const forgotEmail = document.getElementById('Email');
+    if (forgotEmail && email) forgotEmail.value = email;
+
+    // 3) Si hay email, intentamos cargar la pregunta. Si no, solo dejamos el panel abierto.
+    if (email) {
+      try {
+        const data = await apiEmailExists(email);
+        if (data?.exists) {
+          // dispara la carga de la pregunta (si definiste __secqFetchQuestion)
+          setTimeout(() => { window.__secqFetchQuestion && window.__secqFetchQuestion(); }, 50);
+        } else {
+          // mostramos el aviso en el panel de recuperar (no en login)
+          showAlert('forgotAlert', 'No existe una cuenta con ese correo.');
+        }
+      } catch { /* silencioso */ }
+    } else {
+      // si entraste sin email, ocultamos pregunta/contraseñas por si estuvieran visibles
+      document.getElementById('secQBlock')?.classList.add('d-none');
+      document.getElementById('pwdSection')?.classList.add('d-none');
+      // limpia cualquier alerta en el login
+      document.getElementById('loginAlert')?.classList.add('d-none');
+    }
+  });
+</script>
+
+
+<script>
+(function(){
+  const emailInput  = document.getElementById('Email');
+  const btnContinue = document.getElementById('btnForgotContinue');
+
+  const secQBlock   = document.getElementById('secQBlock');
+  const fpQuestion  = document.getElementById('fpQuestion');
+  const fpAnswer    = document.getElementById('fpAnswer');
+  const btnVerify   = document.getElementById('btnVerifyAnswer');
+
+  const formReset   = document.getElementById('resetDirectForm');
+  const hiddenEmail = document.getElementById('hiddenEmail');
+  const pwdSection  = document.getElementById('pwdSection');
+  const btnSavePwd  = document.getElementById('btnSavePwd');
+
+  const fpAlert     = document.getElementById('fpAlert');
+  function hideFpAlert(){ fpAlert?.classList.add('d-none'); }
+
+  function setPwdUI(enabled) {
+    if (pwdSection) pwdSection.classList.toggle('d-none', !enabled);
+    if (btnSavePwd) btnSavePwd.disabled = !enabled;
+  }
+  setPwdUI(false);
+
+  // Paso 1: validar correo y cargar pregunta
+  async function onContinue(){
+    hideFpAlert();
+
+    const email = (emailInput?.value || '').trim();
+    if (!email) { showAlert('fpAlert','Ingresa tu correo.'); return; }
+
+    try{
+      const res = await fetch('/account/forgot-check-email?email='+encodeURIComponent(email), { credentials:'same-origin' });
+      const data = await res.json();
+
+      if (!data.ok){
+        if (data.needsSetup) {
+          showAlert('fpAlert', data.error || 'Configura tu pregunta de seguridad desde tu perfil.', 'warning');
+        } else {
+          showAlert('fpAlert', data.error || 'No pudimos validar el correo.');
+        }
+        return;
+      }
+
+      if (fpQuestion) fpQuestion.value = data.questionText || 'Pregunta de seguridad';
+      if (hiddenEmail) hiddenEmail.value = email;
+      if (secQBlock) secQBlock.classList.remove('d-none');
+      fpAnswer?.focus();
+    } catch {
+      showAlert('fpAlert','No se pudo consultar la pregunta.');
+    }
+  }
+
+  // Paso 2: verificar respuesta
+  async function onVerify(){
+    hideFpAlert();
+
+    const email  = (hiddenEmail?.value || emailInput?.value || '').trim();
+    const answer = (fpAnswer?.value || '').trim();
+    if (!email)  { showAlert('fpAlert','Ingresa tu correo.'); return; }
+    if (!answer) { showAlert('fpAlert','Escribe tu respuesta.'); return; }
+
+    const tokenEl = formReset?.querySelector('input[name="__RequestVerificationToken"]');
+    const token = tokenEl ? tokenEl.value : null;
+
+    try{
+      const res = await fetch('/account/verify-security-answer', {
+        method:'POST',
+        credentials:'same-origin',
+        headers:{
+          'Content-Type':'application/json',
+          'X-Requested-With':'XMLHttpRequest',
+          ...(token ? { 'RequestVerificationToken': token } : {})
+        },
+        body: JSON.stringify({ email, answer })
+      });
+      const data = await res.json();
+      if (!data.ok){
+        setPwdUI(false);
+        showAlert('fpAlert', data.error || 'Respuesta incorrecta.');
+        return;
+      }
+      setPwdUI(true);
+      showAlert('fpAlert', 'Pregunta verificada. Ahora define tu nueva contraseña.', 'success');
+      document.getElementById('Password')?.focus();
+    } catch {
+      showAlert('fpAlert','No se pudo verificar. Intenta de nuevo.');
+    }
+  }
+
+  // Validación de coincidencia antes de enviar
+  formReset?.addEventListener('submit', function(e){
+    hideFpAlert();
     const p = document.getElementById('Password')?.value || '';
     const c = document.getElementById('ConfirmPassword')?.value || '';
     const box = document.getElementById('pwdMismatch');
@@ -729,65 +850,92 @@ document.addEventListener('DOMContentLoaded', function(){
       box?.classList.remove('d-none');
       document.getElementById('ConfirmPassword')?.focus();
     }
-        f.setAttribute('action', '/account/reset-direct');
-    f.setAttribute('method', 'post');
-  }, { once: false });
-});
+  });
+
+  btnContinue?.addEventListener('click', onContinue);
+  btnVerify?.addEventListener('click', onVerify);
+})();
 </script>
 
 <script>
-    // Llama al endpoint para verificar existencia de email
-    async function apiEmailExists(email) {
-      const url = '/account/email-exists?email=' + encodeURIComponent(email);
-      const res = await fetch(url, { method: 'GET', cache: 'no-store' });
-      if (!res.ok) return { exists: false };
-      try { return await res.json(); } catch { return { exists: false }; }
-    }
+(function(){
+  function clearIds(ids){
+    ids.forEach(id => { const el = document.getElementById(id); if (el) { el.value = ''; el.blur(); } });
+  }
 
-    // Manejador del click en "¿Olvidaste tu contraseña?"
-    document.getElementById('goToForgot')?.addEventListener('click', async function (e) {
+  // Limpiar al cargar (incluye navegación con bfcache)
+  window.addEventListener('pageshow', () => {
+    clearIds(['loginEmail','loginPassword','regEmail','registerPassword','confirmPassword',
+              'Email','Password','ConfirmPassword','fpAnswer']);
+  });
+
+  // Integrarlo con tus helpers
+  const _showForgotPassword = window.showForgotPassword;
+  window.showForgotPassword = function(){
+    clearIds(['Email','Password','ConfirmPassword','fpAnswer']);
+    if (_showForgotPassword) _showForgotPassword();
+  };
+
+  const _showLogin = window.showLogin;
+  window.showLogin = function(){
+    clearIds(['loginEmail','loginPassword']);
+    if (_showLogin) _showLogin();
+  };
+
+  // Si tienes tab de registro:
+  const regTab = document.getElementById('register-tab');
+  regTab?.addEventListener('click', () => clearIds(['regEmail','registerPassword','confirmPassword']));
+})();
+</script>
+
+<script>
+(function () {
+  const form = document.getElementById('resetDirectForm');
+  const p1   = document.getElementById('Password');
+  const p2   = document.getElementById('ConfirmPassword');
+  const mismatch = document.getElementById('pwdMismatch');
+  const btnSave  = document.getElementById('btnSavePwd');
+
+  function meetsPolicy(s) {
+    return s.length >= 8 &&
+           /[A-Z]/.test(s) &&
+           /[a-z]/.test(s) &&
+           /\d/.test(s) &&
+           /[^A-Za-z0-9]/.test(s);
+  }
+
+  function validatePolicy() {
+    if (!p1) return true;
+    const ok = meetsPolicy(p1.value);
+    // Marca visual si el usuario ya empezó a tipear
+    p1.classList.toggle('is-invalid', p1.value.length > 0 && !ok);
+    return ok;
+  }
+
+  function validateMatch() {
+    if (!p1 || !p2) return true;
+    const ok = p1.value === p2.value && p2.value.length > 0;
+    mismatch?.classList.toggle('d-none', ok);
+    return ok;
+  }
+
+  function updateButton() {
+    const ok = validatePolicy() && validateMatch();
+    if (btnSave) btnSave.disabled = !ok;
+  }
+
+  p1?.addEventListener('input', () => { validatePolicy(); updateButton(); });
+  p2?.addEventListener('input', () => { validateMatch();  updateButton(); });
+
+  form?.addEventListener('submit', (e) => {
+    const okPolicy = validatePolicy();
+    const okMatch  = validateMatch();
+    if (!(okPolicy && okMatch)) {
       e.preventDefault();
-      const emailInput = document.getElementById('loginEmail');
-      const email = (emailInput?.value || '').trim();
-
-      const alertBox = document.getElementById('loginAlert');
-      alertBox?.classList.add('d-none');
-      alertBox.textContent = '';
-
-      if (!email) {
-        alertBox.textContent = 'Ingresa tu correo para continuar.';
-        alertBox.classList.remove('d-none');
-        emailInput?.focus();
-        return;
-      }
-
-      const data = await apiEmailExists(email);
-      if (!data.exists) {
-        alertBox.textContent = 'No existe una cuenta con ese correo.';
-        alertBox.classList.remove('d-none');
-        emailInput?.focus();
-        return; // NO cambiamos de pestaña
-      }
-
-      // Si existe: pre-llena el email en la pestaña de "Recuperar contraseña"
-      const forgotEmail = document.getElementById('Email'); // input del form de reset directo
-      if (forgotEmail) { forgotEmail.value = email; }
-
-      // Cambia a la pestaña de "Recuperar contraseña"
-      if (typeof showForgot === 'function') {
-        showForgot();
-      } else {
-        // Fallback: usa Bootstrap Tab si está disponible
-        const trigger = document.querySelector('[data-bs-target="#forgot-password"], a[href="#forgot-password"]');
-        if (trigger && window.bootstrap) {
-          new bootstrap.Tab(trigger).show();
-        } else {
-          // Último recurso: togglear clases
-          document.querySelector('#forgot-password')?.classList.add('show', 'active');
-          document.querySelector('#login')?.classList.remove('show', 'active');
-        }
-      }
-    });
+      (!okPolicy ? p1 : p2)?.focus();
+    }
+  });
+})();
 </script>
 
 </body>

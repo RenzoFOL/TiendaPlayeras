@@ -14,108 +14,30 @@
 
     int totalPages = Math.Max(1, (int)Math.Ceiling(total / (double)pageSize));
 
-    // Helper: fusiona los valores actuales con overrides
     RouteValueDictionary Merge(object extra)
     {
-        var rv = new RouteValueDictionary(new {
-            q, tag, sort, page, pageSize
-        });
-        foreach (var kv in new RouteValueDictionary(extra))
-            rv[kv.Key] = kv.Value;
+        var rv = new RouteValueDictionary(new { q, tag, sort, page, pageSize });
+        foreach (var kv in new RouteValueDictionary(extra)) rv[kv.Key] = kv.Value;
         return rv;
     }
 }
 
 <style>
-.product-card {
-    transition: all 0.3s ease;
-    border: 1px solid #dee2e6;
-}
-
-.product-card:hover {
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    transform: translateY(-2px);
-}
-
-.product-image-container {
-    position: relative;
-    overflow: hidden;
-}
-
-.product-image {
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.product-card:hover .product-image {
-    transform: scale(1.05);
-}
-
-.product-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: all 0.3s ease;
-}
-
-.product-card:hover .product-overlay {
-    opacity: 1;
-}
-
-.overlay-buttons {
-    display: flex;
-    gap: 8px;
-}
-
-.btn-overlay {
-    width: 40px;
-    height: 40px;
-    border: none;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    font-size: 14px;
-}
-
-.btn-cart { background: #28a745; }
-.btn-cart:hover { background: #218838; transform: scale(1.1); }
-
-.btn-favorite { background: #dc3545; }
-.btn-favorite:hover { background: #c82333; transform: scale(1.1); }
-
-.btn-view { background: #007bff; }
-.btn-view:hover { background: #0056b3; transform: scale(1.1); }
-
-.tag-badge {
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    color: #6c757d;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 10px;
-    margin-right: 4px;
-    margin-bottom: 4px;
-    display: inline-block;
-}
-
-/* Animación para el click en imagen */
-.image-click-animation {
-    transition: transform 0.3s ease;
-}
-.image-click-animation:active {
-    transform: scale(0.95);
-}
+.product-card{transition:.3s;border:1px solid #dee2e6}
+.product-card:hover{box-shadow:0 4px 15px rgba(0,0,0,.1);transform:translateY(-2px)}
+.product-image-container{position:relative;overflow:hidden}
+.product-image{transition:.3s;cursor:pointer}
+.product-card:hover .product-image{transform:scale(1.05)}
+.product-overlay{position:absolute;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;opacity:0;transition:.3s}
+.product-card:hover .product-overlay{opacity:1}
+.overlay-buttons{display:flex;gap:8px}
+.btn-overlay{width:40px;height:40px;border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;transition:.2s;text-decoration:none;font-size:14px}
+.btn-cart{background:#28a745}.btn-cart:hover{background:#218838;transform:scale(1.1)}
+.btn-favorite{background:#dc3545}.btn-favorite:hover{background:#c82333;transform:scale(1.1)}
+.btn-view{background:#007bff}.btn-view:hover{background:#0056b3;transform:scale(1.1)}
+.tag-badge{background:#f8f9fa;border:1px solid #dee2e6;color:#6c757d;padding:2px 8px;border-radius:4px;font-size:10px;margin-right:4px;margin-bottom:4px;display:inline-block}
+.image-click-animation{transition:transform .3s}.image-click-animation:active{transform:scale(.95)}
+.btn-overlay.is-loading { pointer-events:none; opacity:.8 }
 </style>
 
 <div class="container my-4">
@@ -125,7 +47,6 @@
             <div class="card">
                 <div class="card-header fw-bold">Filtros</div>
                 <div class="card-body">
-                    <!-- Acción corregida al controlador público Catalog -->
                     <form method="get" action="@Url.Action("Index","Catalog")" id="filterForm">
                         <div class="mb-3">
                             <label class="form-label">Buscar</label>
@@ -184,9 +105,7 @@
                     @if (!string.IsNullOrEmpty(q) || !string.IsNullOrEmpty(tag))
                     {
                         <div class="mt-2">
-                            <a href="@Url.Action("Index", "Catalog")" class="btn btn-sm btn-outline-primary">
-                                Limpiar filtros
-                            </a>
+                            <a href="@Url.Action("Index", "Catalog")" class="btn btn-sm btn-outline-primary">Limpiar filtros</a>
                         </div>
                     }
                 </div>
@@ -196,7 +115,6 @@
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h5 class="mb-0">Resultados</h5>
                     <div class="d-flex gap-2">
-                        <!-- Acción definida directamente a Catalog/Index -->
                         <form method="get" id="sortForm" action="@Url.Action("Index","Catalog")" class="d-flex gap-2">
                             <input type="hidden" name="q" value="@q" />
                             <input type="hidden" name="tag" value="@tag" />
@@ -228,12 +146,11 @@
                             <div class="card h-100 product-card">
                                 <div class="product-image-container">
                                     <div class="ratio ratio-1x1 bg-light">
-                                        <!-- Navega a Catalog/Product -->
                                         <img src="@firstImage"
                                              class="card-img-top object-fit-cover product-image image-click-animation"
                                              alt="@p.Name"
                                              onclick="goToProduct('@p.Slug')"
-                                             style="cursor: pointer;" />
+                                             style="cursor:pointer" />
                                     </div>
                                     
                                     <div class="product-overlay">
@@ -243,13 +160,18 @@
                                                title="Ver detalles">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            <button type="button" 
-                                                    class="btn-overlay btn-cart" 
-                                                    onclick="addToCart(@p.Id)"
+
+                                            <!-- Agregar al carrito (AJAX) -->
+                                            <button type="button"
+                                                    class="btn-overlay btn-cart js-add-to-cart"
+                                                    data-product-id="@p.Id"
+                                                    data-size="M"
+                                                    data-qty="1"
                                                     title="Agregar al carrito">
                                                 <i class="fas fa-shopping-cart"></i>
                                             </button>
-                                            <!-- ❤️ Corazón: usa el handler global -->
+
+                                            <!-- ❤️ Wishlist -->
                                             <button type="button"
                                                     class="btn-overlay btn-favorite js-add-wishlist"
                                                     data-product-id="@p.Id"
@@ -327,7 +249,7 @@
 
 @section Scripts {
 <script>
-// Función para redirigir a la página del producto con animación
+// Redirección con mini animación en la imagen
 function goToProduct(slug) {
     const image = event.target;
     image.style.transform = 'scale(0.95)';
@@ -337,34 +259,78 @@ function goToProduct(slug) {
     }, 150);
 }
 
-// Demo carrito (puedes sustituirlo por tu lógica real)
-function addToCart(productId) {
-    console.log('Agregando al carrito producto ID:', productId);
-    const button = event.target.closest('.btn-cart');
-    const originalHtml = button.innerHTML;
-    button.innerHTML = '<i class="fas fa-check"></i>';
-    button.style.background = '#28a745';
-    setTimeout(() => {
-        button.innerHTML = originalHtml;
-        button.style.background = '';
-    }, 1000);
-}
+// Agregar al carrito por AJAX (usa helpers del _Layout)
+(function() {
+  const metaToken = document.querySelector('meta[name="RequestVerificationToken"]');
+  const XSRF = metaToken?.content || '';
 
-// Inicialización visual
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Catálogo inicializado correctamente');
+  async function postAddToCart(productId, size, qty) {
+    const resp = await fetch('/Cart/Add', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json',
+        'RequestVerificationToken': XSRF
+      },
+      body: JSON.stringify({ productId, size: (size||'M'), qty: (qty||1) })
+    });
 
-    // Efecto de entrada
+    if (resp.status === 401) {
+      window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(location.pathname + location.search);
+      return false;
+    }
+
+    try { 
+      const json = await resp.json();
+      return !!json?.ok;
+    } catch { 
+      return resp.ok;
+    }
+  }
+
+  document.addEventListener('click', async function(e) {
+    const btn = e.target.closest('.js-add-to-cart');
+    if (!btn) return;
+
+    e.preventDefault();
+    const pid  = parseInt(btn.dataset.productId, 10);
+    const size = btn.dataset.size || 'M';
+    const qty  = parseInt(btn.dataset.qty || '1', 10);
+
+    if (!pid) return;
+
+    // loading UI
+    btn.classList.add('is-loading');
+    const oldHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+    const ok = await postAddToCart(pid, size, qty);
+
+    // restore UI
+    btn.classList.remove('is-loading');
+    btn.innerHTML = oldHtml;
+
+    if (ok && typeof window.refreshCartBadges === 'function') {
+      try { await window.refreshCartBadges(); } catch {}
+      // mini feedback
+      btn.classList.add('btn-success');
+      setTimeout(()=>btn.classList.remove('btn-success'), 600);
+    }
+  });
+
+  // Efecto de entrada
+  document.addEventListener('DOMContentLoaded', function() {
     const cards = document.querySelectorAll('.product-card');
     cards.forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        setTimeout(() => {
-            card.style.transition = 'all 0.5s ease';
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-        }, index * 100);
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(20px)';
+      setTimeout(() => {
+        card.style.transition = 'all 0.5s ease';
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
+      }, index * 100);
     });
-});
+  });
+})();
 </script>
 }
