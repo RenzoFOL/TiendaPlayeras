@@ -1,45 +1,225 @@
-@model IEnumerable<TiendaPlayeras.Web.Models.ApplicationUser>
+@model TiendaPlayeras.Web.Models.Employees.EmployeesIndexVm
 @{
-    ViewData["Title"] = "Empleados";
+    ViewData["Title"] = "Gestión de Empleados";
+    var totalEmployees = Model?.Employees?.Count() ?? 0;
+    var lockedEmployees = Model?.Employees?.Count(e => e.LockoutEnd != null && e.LockoutEnd > DateTimeOffset.UtcNow) ?? 0;
 }
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="mb-0">Empleados</h2>
-    <a class="btn btn-primary" asp-action="Create"><i class="fas fa-user-plus me-1"></i> Nuevo empleado</a>
-</div>
 
-@if (TempData["Success"] != null)
-{ <div class="alert alert-success">@TempData["Success"]</div> }
+<link rel="stylesheet" href="~/css/employees.css">
 
-<table class="table table-striped align-middle">
-    <thead>
-        <tr>
-            <th>Correo</th>
-            <th>Teléfono</th>
-            <th>Bloqueado</th>
-            <th style="width:200px;"></th>
-        </tr>
-    </thead>
-    <tbody>
-    @foreach (var u in Model)
+<div class="employees-container">
+    <div class="page-header">
+        <h1>
+            <i class="fas fa-users-cog"></i> Gestión de Empleados
+        </h1>
+        <p>Administra el equipo y sus accesos</p>
+    </div>
+
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: var(--primary-gradient);">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-info">
+                <h3>@totalEmployees</h3>
+                <p>Total Empleados</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background: var(--success-gradient);">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-info">
+                <h3>@(totalEmployees - lockedEmployees)</h3>
+                <p>Activos</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background: var(--danger-gradient);">
+                <i class="fas fa-lock"></i>
+            </div>
+            <div class="stat-info">
+                <h3>@lockedEmployees</h3>
+                <p>Bloqueados</p>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
     {
-        var locked = u.LockoutEnd != null && u.LockoutEnd > DateTimeOffset.UtcNow;
-        <tr>
-            <td>@u.Email</td>
-            <td>@u.PhoneNumber</td>
-            <td>@(locked ? "Sí" : "No")</td>
-            <td class="text-end">
-                <a class="btn btn-sm btn-outline-secondary" asp-action="ResetPassword" asp-route-id="@u.Id">
-                    <i class="fas fa-key"></i> Reset pass
-                </a>
-                <form asp-action="ToggleLock" method="post" class="d-inline">
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+        </div>
+    }
+
+    <div class="main-content">
+        <!-- TABLA DE EMPLEADOS -->
+        <div class="employees-table-card">
+            <div class="card-header-section">
+                <h2><i class="fas fa-list me-2"></i>Lista de Empleados</h2>
+            </div>
+
+            @if (Model?.Employees != null && Model.Employees.Any())
+            {
+                <table class="employees-table">
+                    <thead>
+                        <tr>
+                            <th>Correo</th>
+                            <th>Teléfono</th>
+                            <th>Estado</th>
+                            <th style="width: 200px; text-align: right;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var user in Model.Employees)
+                    {
+                        var locked = user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow;
+                        <tr>
+                            <td>
+                                <strong>@user.Email</strong>
+                            </td>
+                            <td>@(string.IsNullOrEmpty(user.PhoneNumber) ? "—" : user.PhoneNumber)</td>
+                            <td>
+                                <span class="status-badge @(locked ? "status-locked" : "status-active")">
+                                    @(locked ? "Bloqueado" : "Activo")
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button type="button" 
+                                            class="btn-action btn-reset" 
+                                            onclick="selectUserForReset('@user.Id', '@user.Email')">
+                                        <i class="fas fa-key"></i> Reset
+                                    </button>
+                                    <form asp-action="ToggleLock" method="post" style="display: inline;">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@user.Id" />
+                                        <button type="submit" class="btn-action @(locked ? "btn-unlock" : "btn-lock")">
+                                            <i class="fas fa-@(locked ? "unlock" : "lock")"></i>
+                                            @(locked ? "Desbloquear" : "Bloquear")
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <i class="fas fa-users-slash"></i>
+                    <p>No hay empleados registrados</p>
+                </div>
+            }
+        </div>
+
+        <!-- PANEL DE FORMULARIOS -->
+        <div class="forms-panel">
+            <!-- FORMULARIO: CREAR EMPLEADO -->
+            <div class="form-card">
+                <h3>
+                    <i class="fas fa-user-plus"></i>
+                    Nuevo Empleado
+                </h3>
+                <form method="post" asp-action="Create">
                     @Html.AntiForgeryToken()
-                    <input type="hidden" name="id" value="@u.Id" />
-                    <button class="btn btn-sm @(locked ? "btn-success" : "btn-warning")">
-                        @(locked ? "Desbloquear" : "Bloquear")
+                    <div class="form-group">
+                        <label>Correo electrónico</label>
+                        <input type="email" 
+                               asp-for="CreateModel.Email"
+                               class="form-control" 
+                               placeholder="empleado@empresa.com" />
+                        <span asp-validation-for="CreateModel.Email" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono <span style="color: #64748b;">(opcional)</span></label>
+                        <input type="tel" 
+                               asp-for="CreateModel.PhoneNumber"
+                               class="form-control" 
+                               placeholder="+52 123 456 7890" />
+                    </div>
+                    <div class="form-group">
+                        <label>Contraseña <span style="color: #64748b;">(opcional)</span></label>
+                        <input type="password" 
+                               asp-for="CreateModel.Password"
+                               class="form-control" 
+                               placeholder="Dejar vacío para contraseña temporal" />
+                        <div class="form-hint">
+                            Si se deja vacío, se asignará: <strong>Empleado#123</strong>
+                        </div>
+                        <span asp-validation-for="CreateModel.Password" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>Confirmar contraseña <span style="color: #64748b;">(opcional)</span></label>
+                        <input type="password" 
+                               asp-for="CreateModel.ConfirmPassword"
+                               class="form-control" 
+                               placeholder="Confirma la contraseña" />
+                        <span asp-validation-for="CreateModel.ConfirmPassword" class="text-danger"></span>
+                    </div>
+                    <button type="submit" class="btn-submit btn-create">
+                        <i class="fas fa-user-plus"></i>
+                        Crear Empleado
                     </button>
                 </form>
-            </td>
-        </tr>
-    }
-    </tbody>
-</table>
+            </div>
+
+            <!-- FORMULARIO: RESTABLECER CONTRASEÑA -->
+            <div class="form-card">
+                <h3>
+                    <i class="fas fa-key"></i>
+                    Restablecer Contraseña
+                </h3>
+                <form method="post" asp-action="ResetPassword" id="resetPasswordForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="ResetModel.UserId" id="resetUserId" />
+                    <div class="form-group">
+                        <label>Empleado seleccionado</label>
+                        <input type="text" 
+                               id="resetUserEmail" 
+                               class="form-control" 
+                               readonly 
+                               placeholder="Selecciona un empleado de la tabla" 
+                               style="background: #f1f5f9; cursor: not-allowed;" />
+                    </div>
+                    <div class="form-group">
+                        <label>Nueva contraseña</label>
+                        <input type="password" 
+                               asp-for="ResetModel.NewPassword"
+                               id="newPassword"
+                               class="form-control" 
+                               placeholder="Ingresa la nueva contraseña" />
+                        <span asp-validation-for="ResetModel.NewPassword" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>Confirmar contraseña</label>
+                        <input type="password" 
+                               asp-for="ResetModel.ConfirmPassword"
+                               id="confirmPassword"
+                               class="form-control" 
+                               placeholder="Confirma la nueva contraseña" />
+                        <span asp-validation-for="ResetModel.ConfirmPassword" class="text-danger"></span>
+                    </div>
+                    <button type="submit" class="btn-submit btn-reset-pass" id="resetSubmitBtn" disabled>
+                        <i class="fas fa-key"></i>
+                        Cambiar Contraseña
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/employees.js"></script>
+}
