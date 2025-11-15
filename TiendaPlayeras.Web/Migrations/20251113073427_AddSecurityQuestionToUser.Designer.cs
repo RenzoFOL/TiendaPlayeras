@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TiendaPlayeras.Web.Data;
@@ -11,9 +12,11 @@ using TiendaPlayeras.Web.Data;
 namespace TiendaPlayeras.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251113073427_AddSecurityQuestionToUser")]
+    partial class AddSecurityQuestionToUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -208,15 +211,10 @@ namespace TiendaPlayeras.Web.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("SecurityAnswerHash")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("text");
 
                     b.Property<string>("SecurityQuestion")
                         .HasColumnType("text");
-
-                    b.Property<string>("SecurityQuestionKey")
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");

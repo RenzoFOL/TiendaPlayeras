@@ -52,6 +52,7 @@ builder.Services.Configure<FormOptions>(o =>
     o.MultipartBodyLengthLimit = 10 * 1024 * 1024; // 10 MB
 });
 
+builder.Services.AddSession();
 var app = builder.Build();
 
 // 7) Migraciones + seeding de roles/usuario admin (dev)
@@ -71,6 +72,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseStaticFiles();
 app.UseRouting();
+app.UseSession();
 
 app.UseAuthentication();
 app.UseAuthorization();
