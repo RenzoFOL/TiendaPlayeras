@@ -76,9 +76,11 @@
                                 <span class="fw-semibold">Total:</span>
                                 <span class="fw-bold fs-4 text-success">$@Model.TotalAmount.ToString("0.00")</span>
                             </div>
-                            <a href="/Checkout" class="btn btn-success w-100 btn-lg">
-                                <i class="fas fa-credit-card me-2"></i>Comprar
-                            </a>
+                            <a asp-controller="Orders"
+   asp-action="CheckoutFromCart"
+   class="btn btn-success w-100 btn-lg">
+    <i class="fas fa-credit-card me-2"></i>Comprar
+</a>
                         </div>
                     </div>
                 </div>

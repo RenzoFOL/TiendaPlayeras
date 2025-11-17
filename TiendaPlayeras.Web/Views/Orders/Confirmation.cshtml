@@ -1,0 +1,52 @@
+@model TiendaPlayeras.Web.Models.OrderConfirmationViewModel
+
+@{
+    ViewData["Title"] = "Pedido confirmado";
+}
+
+<div class="container my-4">
+    <h2>¡Gracias por tu compra!</h2>
+
+    <p>Tu pedido ha sido registrado correctamente.</p>
+
+    <div class="card my-3">
+        <div class="card-body">
+            <h5 class="card-title">Detalles del pedido</h5>
+
+            <p><strong>Folio:</strong> @Model.TicketId</p>
+            <p><strong>Producto:</strong> @Model.ProductName</p>
+
+            <p>
+                <strong>Talla:</strong> @Model.Size<br />
+                <strong>Cantidad:</strong> @Model.Quantity<br />
+                <strong>Precio unitario:</strong> @Model.UnitPrice.ToString("C")<br />
+                <strong>Total:</strong> @Model.TotalPrice.ToString("C")
+            </p>
+
+            @if (!string.IsNullOrEmpty(Model.UserName))
+            {
+                <p><strong>Cliente:</strong> @Model.UserName</p>
+            }
+
+            <p><strong>Punto de entrega:</strong> @Model.DeliveryPoint</p>
+            <p><strong>Horario:</strong> @Model.DeliverySchedule</p>
+            <p><strong>Método de pago:</strong> @Model.PaymentMethod</p>
+            <p><strong>Fecha de registro:</strong> @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p>
+
+            @if (!string.IsNullOrEmpty(Model.PdfFileName))
+            {
+                <p>
+                    <strong>Ticket en PDF:</strong>
+                    <a href="~/tickets/@Model.PdfFileName" target="_blank">
+                        Descargar ticket
+                    </a>
+                </p>
+            }
+        </div>
+    </div>
+
+<a asp-controller="Catalog" asp-action="Index" class="btn btn-outline-secondary">
+    Volver al catálogo
+</a>
+
+</div>

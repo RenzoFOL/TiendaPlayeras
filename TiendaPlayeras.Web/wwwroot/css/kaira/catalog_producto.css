@@ -1199,3 +1199,19 @@ h1, h2, h3, h4, h5, h6 {
 .border-animation-left:hover::after {
     width: 100%;
 }
+
+.btn-main-action {
+    background-color: #8f9471;      /* color del botón AGREGAR AL CARRITO */
+    border-color: #8f9471;
+    color: #fff;
+    border-radius: 0;
+    padding: 14px 24px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.btn-main-action:hover {
+    background-color: #7d8263;
+    border-color: #7d8263;
+    color: #fff;
+}

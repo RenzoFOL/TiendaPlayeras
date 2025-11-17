@@ -740,7 +740,7 @@
             const btnCheckout = document.getElementById('btnCartCheckout');
             if (btnCheckout) {
                 btnCheckout.addEventListener('click', () => {
-                    window.location.href = '/Checkout';
+                    window.location.href = '@Url.Action("CheckoutFromCart", "Orders")';
                 });
             }
         });
