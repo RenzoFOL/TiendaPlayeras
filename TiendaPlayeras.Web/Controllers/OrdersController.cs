@@ -134,127 +134,138 @@ namespace TiendaPlayeras.Web.Controllers
         }
 
         // POST: /Orders/Checkout
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Checkout(CheckoutViewModel model)
+        // POST: /Orders/Checkout
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Checkout(CheckoutViewModel model)
+{
+    // Recargamos opciones en el modelo para re-mostrar la vista si hay error
+    model.AvailableDeliveryOptions = DeliveryOptions.All;
+
+    if (string.IsNullOrEmpty(model.SelectedDeliveryOptionId))
+    {
+        ModelState.AddModelError("SelectedDeliveryOptionId", "Selecciona un lugar y fecha de entrega.");
+    }
+
+    if (!ModelState.IsValid)
+    {
+        return View(model);
+    }
+
+    var selectedOption = DeliveryOptions.All
+        .FirstOrDefault(o => o.Id == model.SelectedDeliveryOptionId);
+
+    if (selectedOption == null)
+    {
+        ModelState.AddModelError("SelectedDeliveryOptionId", "Opción de entrega no válida.");
+        return View(model);
+    }
+
+    OrderTicket ticket;
+
+    if (model.FromCart)
+    {
+        // ---------- Flujo: compra desde el carrito ----------
+        if (string.IsNullOrEmpty(CurrentUserId))
+            return Unauthorized();
+
+        var summary = await _cart.GetSummaryAsync(CurrentUserId);
+        if (summary == null || summary.Lines == null || !summary.Lines.Any())
         {
-            // Recargamos opciones en el modelo para re-mostrar la vista si hay error
-            model.AvailableDeliveryOptions = DeliveryOptions.All;
-
-            if (string.IsNullOrEmpty(model.SelectedDeliveryOptionId))
-            {
-                ModelState.AddModelError("SelectedDeliveryOptionId", "Selecciona un lugar y fecha de entrega.");
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
-            var selectedOption = DeliveryOptions.All
-                .FirstOrDefault(o => o.Id == model.SelectedDeliveryOptionId);
-
-            if (selectedOption == null)
-            {
-                ModelState.AddModelError("SelectedDeliveryOptionId", "Opción de entrega no válida.");
-                return View(model);
-            }
-
-            OrderTicket ticket;
-
-            if (model.FromCart)
-            {
-                // ---------- Flujo: compra desde el carrito ----------
-                if (string.IsNullOrEmpty(CurrentUserId))
-                    return Unauthorized();
-
-                var summary = await _cart.GetSummaryAsync(CurrentUserId);
-                if (summary == null || summary.Lines == null || !summary.Lines.Any())
-                {
-                    ModelState.AddModelError(string.Empty, "Tu carrito está vacío.");
-                    return View(model);
-                }
-
-                var totalPrice = summary.TotalAmount;
-                var totalItems = summary.TotalItems;
-
-                // Actualizamos el modelo para coherencia
-                model.Quantity = totalItems;
-                model.TotalPrice = totalPrice;
-                model.ProductName = $"Compra de carrito ({totalItems} productos)";
-                model.Size = "Varios";
-
-                // Creamos un solo ticket que representa la compra completa del carrito
-                ticket = new OrderTicket
-                {
-                    ProductId = 0, // No hay un solo producto, es el carrito
-                    ProductName = model.ProductName,
-                    UnitPrice = totalPrice,  // mostramos el total como un ítem
-                    Quantity = 1,
-                    Size = "VARIOS",
-                    TotalPrice = totalPrice,
-                    UserName = User?.Identity?.Name ?? "Invitado",
-                    DeliveryPoint = selectedOption.Point,
-                    DeliverySchedule = selectedOption.Schedule,
-                    PaymentMethod = "Contra Entrega",
-                    CreatedAt = DateTime.UtcNow
-                };
-
-                // Limpiamos el carrito después de generar el ticket
-                await _cart.ClearAsync(CurrentUserId);
-            }
-            else
-            {
-                // ---------- Flujo original: compra de un solo producto ----------
-                var product = await _context.Products
-                    .FirstOrDefaultAsync(p => p.Id == model.ProductId);
-
-                if (product == null)
-                    return NotFound();
-
-                // Normalizar cantidad y recalcular total
-                if (model.Quantity < 1)
-                    model.Quantity = 1;
-
-                var totalPrice = product.BasePrice * model.Quantity;
-                model.TotalPrice = totalPrice;
-
-                ticket = new OrderTicket
-                {
-                    ProductId = product.Id,
-                    ProductName = product.Name,
-                    UnitPrice = product.BasePrice,
-                    Quantity = model.Quantity,
-                    Size = model.Size ?? string.Empty,
-                    TotalPrice = totalPrice,
-                    UserName = User?.Identity?.Name ?? "Invitado",
-                    DeliveryPoint = selectedOption.Point,
-                    DeliverySchedule = selectedOption.Schedule,
-                    PaymentMethod = "Contra Entrega",
-                    CreatedAt = DateTime.UtcNow
-                };
-            }
-
-            _context.OrderTickets.Add(ticket);
-            await _context.SaveChangesAsync();
-
-            // Generar y guardar PDF en wwwroot/tickets
-            var ticketsFolder = Path.Combine(_env.WebRootPath, "tickets");
-            if (!Directory.Exists(ticketsFolder))
-                Directory.CreateDirectory(ticketsFolder);
-
-            var pdfFileName = $"ticket-{ticket.Id}.pdf";
-            var pdfFilePath = Path.Combine(ticketsFolder, pdfFileName);
-
-            var document = new TicketDocument(ticket);
-            document.GeneratePdf(pdfFilePath);
-
-            ticket.PdfFileName = pdfFileName;
-            await _context.SaveChangesAsync();
-
-            // Redirigir a página de confirmación
-            return RedirectToAction(nameof(Confirmation), new { id = ticket.Id });
+            ModelState.AddModelError(string.Empty, "Tu carrito está vacío.");
+            return View(model);
         }
+
+        var totalPrice = summary.TotalAmount;
+        var totalItems = summary.TotalItems;
+
+        // Actualizamos el modelo para coherencia
+        model.Quantity = totalItems;
+        model.TotalPrice = totalPrice;
+        model.ProductName = $"Compra de carrito ({totalItems} productos)";
+        model.Size = "Varios";
+
+        // Creamos un solo ticket que representa la compra completa del carrito
+        ticket = new OrderTicket
+        {
+            ProductId = 0, // No hay un solo producto, es el carrito
+            ProductName = model.ProductName,
+            UnitPrice = totalPrice,  // mostramos el total como un ítem
+            Quantity = 1,
+            Size = "VARIOS",
+            TotalPrice = totalPrice,
+            UserName = User?.Identity?.Name ?? "Invitado",
+            UserId = CurrentUserId, // 👈 AQUÍ
+            DeliveryPoint = selectedOption.Point,
+            DeliverySchedule = selectedOption.Schedule,
+            PaymentMethod = "Contra Entrega",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        // Agregar historial inicial
+        ticket.AddStatusHistory(OrderStatus.Pending, "System", "Pedido creado automáticamente");
+
+        // Limpiamos el carrito después de generar el ticket
+        await _cart.ClearAsync(CurrentUserId);
+    }
+    else
+    {
+        // ---------- Flujo original: compra de un solo producto ----------
+        var product = await _context.Products
+            .FirstOrDefaultAsync(p => p.Id == model.ProductId);
+
+        if (product == null)
+            return NotFound();
+
+        // Normalizar cantidad y recalcular total
+        if (model.Quantity < 1)
+            model.Quantity = 1;
+
+        var totalPrice = product.BasePrice * model.Quantity;
+        model.TotalPrice = totalPrice;
+
+        ticket = new OrderTicket
+        {
+            ProductId = product.Id,
+            ProductName = product.Name,
+            UnitPrice = product.BasePrice,
+            Quantity = model.Quantity,
+            Size = model.Size ?? string.Empty,
+            TotalPrice = totalPrice,
+            UserName = User?.Identity?.Name ?? "Invitado",
+            UserId = CurrentUserId, // 👈 AQUÍ
+            DeliveryPoint = selectedOption.Point,
+            DeliverySchedule = selectedOption.Schedule,
+            PaymentMethod = "Contra Entrega",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        // Agregar historial inicial (SOLO UNA VEZ)
+        ticket.AddStatusHistory(OrderStatus.Pending, "System", "Pedido creado automáticamente");
+    }
+
+    // Guardar el ticket en la base de datos
+    _context.OrderTickets.Add(ticket);
+    await _context.SaveChangesAsync();
+
+    // Generar y guardar PDF en wwwroot/tickets
+    var ticketsFolder = Path.Combine(_env.WebRootPath, "tickets");
+    if (!Directory.Exists(ticketsFolder))
+        Directory.CreateDirectory(ticketsFolder);
+
+    var pdfFileName = $"ticket-{ticket.Id}.pdf";
+    var pdfFilePath = Path.Combine(ticketsFolder, pdfFileName);
+
+    var document = new TicketDocument(ticket);
+    document.GeneratePdf(pdfFilePath);
+
+    // Actualizar el ticket con el nombre del archivo PDF
+    ticket.PdfFileName = pdfFileName;
+    await _context.SaveChangesAsync();
+
+    // Redirigir a página de confirmación
+    return RedirectToAction(nameof(Confirmation), new { id = ticket.Id });
+}
 
         // GET: /Orders/Confirmation/10
         [HttpGet]

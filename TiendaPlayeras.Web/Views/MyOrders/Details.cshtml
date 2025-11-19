@@ -1,0 +1,223 @@
+@model OrderTicket
+@{
+    ViewData["Title"] = $"Pedido #{Model.Id}";
+}
+
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Pedido #@Model.Id</h2>
+        <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Volver a Mis Pedidos</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Detalles del Pedido</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Producto:</dt>
+                        <dd class="col-sm-8">@Model.ProductName</dd>
+
+                        <dt class="col-sm-4">Talla:</dt>
+                        <dd class="col-sm-8">@Model.Size</dd>
+
+                        <dt class="col-sm-4">Cantidad:</dt>
+                        <dd class="col-sm-8">@Model.Quantity</dd>
+
+                        <dt class="col-sm-4">Precio Unitario:</dt>
+                        <dd class="col-sm-8">@Model.UnitPrice.ToString("C")</dd>
+
+                        <dt class="col-sm-4">Total:</dt>
+                        <dd class="col-sm-8"><strong>@Model.TotalPrice.ToString("C")</strong></dd>
+
+                        <dt class="col-sm-4">Punto de Entrega:</dt>
+                        <dd class="col-sm-8">@Model.DeliveryPoint</dd>
+
+                        <dt class="col-sm-4">Horario:</dt>
+                        <dd class="col-sm-8">@Model.DeliverySchedule</dd>
+
+                        <dt class="col-sm-4">Método de Pago:</dt>
+                        <dd class="col-sm-8">@Model.PaymentMethod</dd>
+
+                        <dt class="col-sm-4">Estado Actual:</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge @GetStatusBadgeClass(Model.Status)">
+                                @OrderStatus.GetDisplayName(Model.Status)
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-4">Fecha del Pedido:</dt>
+                        <dd class="col-sm-8">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Información de entrega -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Información de Entrega</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle me-2"></i>Instrucciones importantes</h6>
+                        <ul class="mb-0">
+                            <li>Presenta tu ticket al momento de recoger tu pedido</li>
+                            <li>Llega puntual al horario seleccionado</li>
+                            <li>Trae identificación oficial</li>
+                            <li>El pago se realiza al momento de la entrega</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Acciones -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Acciones</h5>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(Model.PdfFileName))
+                    {
+                        <a href="@Url.Action("DownloadTicket", new { id = Model.Id })" 
+                           class="btn btn-primary w-100 mb-2" target="_blank">
+                            <i class="fas fa-download me-2"></i>Descargar Ticket
+                        </a>
+                    }
+                    
+                    @if (Model.Status == "ReadyForPickup")
+                    {
+                        <div class="alert alert-success">
+                            <h6><i class="fas fa-check-circle me-2"></i>¡Listo para recoger!</h6>
+                            <p class="mb-0">Tu pedido está listo. Acude al punto de entrega en el horario seleccionado.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Estado actual -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Seguimiento</h5>
+                </div>
+                <div class="card-body">
+                    <div class="order-timeline">
+                        @{
+                            var statuses = new[] { "Pending", "Confirmed", "InProgress", "ReadyForPickup", "Completed" };
+                            var currentIndex = Array.IndexOf(statuses, Model.Status);
+                        }
+                        
+                        @foreach (var status in statuses)
+                        {
+                            var isCompleted = Array.IndexOf(statuses, status) <= currentIndex;
+                            var isCurrent = status == Model.Status;
+                            
+                            <div class="timeline-step @(isCompleted ? "completed" : "") @(isCurrent ? "current" : "")">
+                                <div class="timeline-icon">
+                                    @if (isCompleted)
+                                    {
+                                        <i class="fas fa-check"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-circle"></i>
+                                    }
+                                </div>
+                                <div class="timeline-label">
+                                    @OrderStatus.GetDisplayName(status)
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+<style>
+    .order-timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+    
+    .timeline-step {
+        position: relative;
+        padding: 10px 0;
+        display: flex;
+        align-items: center;
+    }
+    
+    .timeline-step:not(:last-child):after {
+        content: '';
+        position: absolute;
+        left: 12px;
+        top: 40px;
+        bottom: -10px;
+        width: 2px;
+        background: #dee2e6;
+    }
+    
+    .timeline-step.completed:after {
+        background: #198754;
+    }
+    
+    .timeline-icon {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: #dee2e6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        position: relative;
+        z-index: 2;
+        font-size: 12px;
+    }
+    
+    .timeline-step.completed .timeline-icon {
+        background: #198754;
+        color: white;
+    }
+    
+    .timeline-step.current .timeline-icon {
+        background: #0d6efd;
+        color: white;
+    }
+    
+    .timeline-label {
+        font-size: 0.9rem;
+    }
+    
+    .timeline-step.completed .timeline-label {
+        color: #198754;
+        font-weight: 500;
+    }
+    
+    .timeline-step.current .timeline-label {
+        color: #0d6efd;
+        font-weight: 600;
+    }
+</style>
+}
+
+@functions {
+    string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Pending" => "bg-warning",
+            "Confirmed" => "bg-info",
+            "InProgress" => "bg-primary",
+            "ReadyForPickup" => "bg-success",
+            "Completed" => "bg-secondary",
+            "Cancelled" => "bg-danger",
+            _ => "bg-light text-dark"
+        };
+    }
+}

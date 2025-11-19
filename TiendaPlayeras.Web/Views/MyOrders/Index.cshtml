@@ -1,0 +1,75 @@
+@model List<OrderTicket>
+@{
+    ViewData["Title"] = "Mis Pedidos";
+}
+
+<div class="container my-4">
+    <h2>Mis Pedidos</h2>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            <h5>No tienes pedidos aún</h5>
+            <p class="mb-0">¡Explora nuestro catálogo y realiza tu primer pedido!</p>
+            <a href="@Url.Action("Index", "Catalog")" class="btn btn-primary mt-3">Ir al Catálogo</a>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var order in Model)
+            {
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">Pedido #@order.Id</h5>
+                            <span class="badge @GetStatusBadgeClass(order.Status)">
+                                @OrderStatus.GetDisplayName(order.Status)
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-subtitle mb-2">@order.ProductName</h6>
+                            <p class="card-text">
+                                <strong>Talla:</strong> @order.Size<br>
+                                <strong>Cantidad:</strong> @order.Quantity<br>
+                                <strong>Total:</strong> @order.TotalPrice.ToString("C")<br>
+                                <strong>Punto de entrega:</strong> @order.DeliveryPoint<br>
+                                <strong>Horario:</strong> @order.DeliverySchedule
+                            </p>
+                            <p class="text-muted small">
+                                <strong>Fecha:</strong> @order.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="@Url.Action("Details", new { id = order.Id })" 
+                               class="btn btn-outline-primary btn-sm">Ver Detalles</a>
+                            @if (!string.IsNullOrEmpty(order.PdfFileName))
+                            {
+                                <a href="@Url.Action("DownloadTicket", new { id = order.Id })" 
+                                   class="btn btn-outline-secondary btn-sm" target="_blank">
+                                    <i class="fas fa-download"></i> Ticket
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@functions {
+    string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Pending" => "bg-warning",
+            "Confirmed" => "bg-info",
+            "InProgress" => "bg-primary",
+            "ReadyForPickup" => "bg-success",
+            "Completed" => "bg-secondary",
+            "Cancelled" => "bg-danger",
+            _ => "bg-light text-dark"
+        };
+    }
+}
