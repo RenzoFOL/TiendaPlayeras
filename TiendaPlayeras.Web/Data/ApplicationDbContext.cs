@@ -15,6 +15,7 @@ namespace TiendaPlayeras.Web.Data
         public DbSet<ProductImage> ProductImages { get; set; }
         public DbSet<UserAddress> UserAddresses => Set<UserAddress>();
         public DbSet<Product> Products => Set<Product>();
+        public DbSet<OrderTicket> OrderTickets { get; set; }
 
         public DbSet<DesignUpload> DesignUploads => Set<DesignUpload>();
         public DbSet<WishlistItem> WishlistItems => Set<WishlistItem>();

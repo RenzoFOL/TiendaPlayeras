@@ -178,11 +178,25 @@
                                     <i class="fas fa-shopping-cart me-2"></i>
                                     @(Model.IsActive ? "AGREGAR AL CARRITO" : "Agotado")
                                 </button>
-                                <button type="button" class="btn-kaira btn-kaira-success" id="btnBuyNow"
-                                        @(!Model.IsActive ? "disabled" : "")>
-                                    <i class="fas fa-bolt me-2"></i>
-                                    Comprar ahora
-                                </button>
+    
+                                <!-- Botón Comprar ahora - ahora usa JS para enviar talla/cantidad -->
+                                @if (Model.IsActive)
+                                {
+                                    <button type="button"
+                                            class="btn-kaira btn-kaira-success"
+                                            id="btnBuyNow">
+                                        <i class="fas fa-bolt me-2"></i>
+                                        COMPRAR AHORA
+                                    </button>
+                                }
+                                else
+                                {
+                                    <span class="btn-kaira btn-kaira-success disabled" aria-disabled="true">
+                                        <i class="fas fa-bolt me-2"></i>
+                                        Agotado
+                                    </span>
+                                }
+
                                 <button type="button" class="btn-wishlist-kaira js-add-wishlist" id="btnWishlist"
                                         data-product-id="@Model.Id" title="Agregar a mi wishlist">
                                     <i class="fas fa-heart"></i>
@@ -498,6 +512,14 @@
         </div>
     </div>
 
+    <!-- FORMULARIO OCULTO PARA COMPRAR AHORA -->
+    <form id="buyNowForm" method="post" action="/Orders/CheckoutFromProduct">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="productId" value="@Model.Id" />
+        <input type="hidden" name="size" id="buyNowSize" />
+        <input type="hidden" name="quantity" id="buyNowQuantity" />
+    </form>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <!-- <script src="~/js/kaira/catalog_producto.js"></script> -->
 
@@ -549,7 +571,7 @@ const XSRF = metaToken?.content || '';
   });
 })();
 
-// AGREGAR AL CARRITO PRINCIPAL (CORREGIDO - sin alerta de error 404)
+// AGREGAR AL CARRITO PRINCIPAL (igual que ya tenías)
 (function () {
   const btnAdd = document.getElementById('btnAddToCart');
   if (!btnAdd) return;
@@ -588,29 +610,23 @@ const XSRF = metaToken?.content || '';
         body: JSON.stringify(data)
       });
 
-      // 🔴 CORRECCIÓN: Manejo mejorado de respuestas
       if (response.status === 401) {
         window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(location.pathname + location.search);
         return;
       }
 
-      // Intentar parsear JSON
       let result;
       try {
         result = await response.json();
       } catch (jsonError) {
-        // Si no es JSON válido, verificar si fue exitoso por el status code
         if (response.ok) {
-          // Considerarlo éxito si el status es 200-299
           result = { ok: true };
         } else {
           throw new Error('Error al procesar la respuesta del servidor');
         }
       }
 
-      // Verificar éxito
       if (result.ok || response.ok) {
-        // ✅ Éxito
         if (typeof window.refreshCartBadges === 'function') {
           await window.refreshCartBadges();
         }
@@ -628,7 +644,6 @@ const XSRF = metaToken?.content || '';
       }
     } catch (error) {
       console.error('Error al agregar al carrito:', error);
-      // 🔴 Solo mostrar alerta si realmente hay un error (no si funcionó)
       if (!error.message.includes('JSON')) {
         alert('❌ ' + error.message);
       }
@@ -667,7 +682,6 @@ document.addEventListener('click', async function(e) {
       return;
     }
 
-    // 🔴 CORRECCIÓN: Mismo manejo mejorado
     let result;
     try {
       result = await response.json();
@@ -701,10 +715,31 @@ document.addEventListener('click', async function(e) {
   }
 });
 
-// COMPRAR AHORA
-document.getElementById('btnBuyNow')?.addEventListener('click', function() {
-  alert('🚀 Función próximamente');
-});
+// COMPRAR AHORA - usar talla y cantidad y enviar al OrdersController
+(function () {
+  const btnBuy = document.getElementById('btnBuyNow');
+  if (!btnBuy) return;
+
+  btnBuy.addEventListener('click', function () {
+    const sizeInput = document.querySelector('input[name="selectedSize"]:checked');
+    if (!sizeInput) {
+      alert('⚠️ Por favor selecciona una talla');
+      return;
+    }
+
+    const qtyInput = document.getElementById('quantity');
+    const qty = parseInt(qtyInput?.value || '1', 10);
+    if (!qty || qty < 1) {
+      alert('⚠️ Cantidad no válida');
+      return;
+    }
+
+    document.getElementById('buyNowSize').value = sizeInput.value;
+    document.getElementById('buyNowQuantity').value = qty;
+
+    document.getElementById('buyNowForm').submit();
+  });
+})();
 
 console.log('🛍️ Página de producto cargada correctamente');
 </script>

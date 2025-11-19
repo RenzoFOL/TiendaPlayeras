@@ -862,7 +862,7 @@
                         showAuthRequiredModal();
                         return;
                     }
-                    window.location.href = '/Checkout';
+                    window.location.href = '@Url.Action("CheckoutFromCart", "Orders")';
                 });
             }
         });

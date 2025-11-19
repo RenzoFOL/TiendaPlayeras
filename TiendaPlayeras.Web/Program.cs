@@ -4,8 +4,11 @@ using Microsoft.AspNetCore.Http.Features;
 using TiendaPlayeras.Web.Data;
 using TiendaPlayeras.Web.Models;
 using TiendaPlayeras.Web.Services;
+using QuestPDF.Infrastructure;
+
 
 var builder = WebApplication.CreateBuilder(args);
+QuestPDF.Settings.License = LicenseType.Community;
 
 // 1) DbContext PostgreSQL
 builder.Services.AddDbContext<ApplicationDbContext>(options =>

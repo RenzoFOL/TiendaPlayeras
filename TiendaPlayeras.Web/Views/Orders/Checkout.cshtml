@@ -1,0 +1,68 @@
+@model TiendaPlayeras.Web.Models.CheckoutViewModel
+
+@{
+    ViewData["Title"] = "Finalizar compra";
+}
+
+<div class="container my-4">
+    <h2>@Model.ProductName</h2>
+<p>
+    <strong>Talla:</strong> @Model.Size
+    &nbsp;|&nbsp;
+    <strong>Cantidad:</strong> @Model.Quantity
+    &nbsp;|&nbsp;
+    <strong>Total:</strong> @Model.TotalPrice.ToString("C")
+</p>
+
+    <hr />
+
+    <h4>Selecciona tu lugar y fecha de entrega</h4>
+
+    <form asp-action="Checkout" method="post">
+        @Html.AntiForgeryToken()
+
+        <!-- 👇 Campos ocultos para que el POST tenga toda la info -->
+        <input type="hidden" asp-for="ProductId" />
+        <input type="hidden" asp-for="Quantity" />
+        <input type="hidden" asp-for="Size" />
+        <input type="hidden" asp-for="TotalPrice" />
+        <input type="hidden" asp-for="FromCart" />
+
+        <div class="list-group mb-3">
+            @for (int i = 0; i < Model.AvailableDeliveryOptions.Count; i++)
+            {
+                var opt = Model.AvailableDeliveryOptions[i];
+                <label class="list-group-item">
+                    <input type="radio"
+                           name="SelectedDeliveryOptionId"
+                           value="@opt.Id"
+                           @(opt.Id == Model.SelectedDeliveryOptionId ? "checked" : "") />
+                    <strong>@opt.Point</strong><br />
+                    <span>@opt.Schedule</span>
+                </label>
+            }
+        </div>
+        <span class="text-danger">
+            @Html.ValidationMessageFor(m => m.SelectedDeliveryOptionId)
+        </span>
+
+        <hr />
+
+        <h4>Método de pago</h4>
+        <div class="form-check mb-3">
+            <input class="form-check-input"
+                   type="radio"
+                   id="pagoContraEntrega"
+                   asp-for="PaymentMethod"
+                   value="Contra Entrega"
+                   checked />
+            <label class="form-check-label" for="pagoContraEntrega">
+                Contra Entrega
+            </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Finalizar compra
+        </button>
+    </form>
+</div>
