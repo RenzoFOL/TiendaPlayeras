@@ -1,8 +1,7 @@
-@model IEnumerable<TiendaPlayeras.Web.Models.Product>
 @{
     ViewData["Title"] = "Gestión de Productos";
-    var totalProducts = Model?.Count() ?? 0;
-    var activeProducts = Model?.Count(p => p.IsActive) ?? 0;
+    var totalProducts = ViewBag.TotalProducts ?? 0;
+    var activeProducts = ViewBag.ActiveProducts ?? 0;
 }
 <link rel="stylesheet" type="text/css/kaira" href="admin.css">
 <style> 
@@ -297,7 +296,6 @@
         <h1>
             <i class="fas fa-box-open"></i> Gestión de Productos
         </h1>
-        <p>Administra tu inventario de forma eficiente</p>
     </div>
 
     <!-- Resumen de estadísticas -->
@@ -329,7 +327,7 @@
            class="menu-card" data-card="list">
             <div class="card-stats">
                 <i class="fas fa-database me-1"></i>
-                <span>@totalProducts items</span>
+                <span>@totalProducts productos</span>
             </div>
             <div class="card-content">
                 <div class="card-icon">
@@ -339,7 +337,7 @@
                 <p class="card-description">
                     Ver, buscar y filtrar todos los productos con paginación y ordenamiento
                 </p>
-                <span class="card-badge">Ver lista</span>
+                <span class="card-badge">Entrar</span>
             </div>
             <div class="card-arrow">
                 <i class="fas fa-arrow-right"></i>
@@ -351,7 +349,7 @@
            class="menu-card" data-card="create">
             <div class="card-stats">
                 <i class="fas fa-plus-circle me-1"></i>
-                <span>Nuevo</span>
+                <span>Agregar</span>
             </div>
             <div class="card-content">
                 <div class="card-icon">
@@ -361,15 +359,12 @@
                 <p class="card-description">
                     Agrega un nuevo producto con nombre, descripción, precio e imagen
                 </p>
-                <span class="card-badge">Agregar</span>
+                <span class="card-badge">Entrar</span>
             </div>
             <div class="card-arrow">
                 <i class="fas fa-arrow-right"></i>
             </div>
         </a>
-
-        <!-- Card: Gestionar Variantes -->
-        
 
         <!-- Card: Etiquetas y Categorías -->
         <a href="@Url.Action("Tags", "CategoryTags")" 
@@ -386,7 +381,7 @@
                 <p class="card-description">
                     Organiza productos con categorías y etiquetas personalizadas
                 </p>
-                <span class="card-badge">Organizar</span>
+                <span class="card-badge">Entrar</span>
             </div>
             <div class="card-arrow">
                 <i class="fas fa-arrow-right"></i>
@@ -408,41 +403,16 @@
                 <p class="card-description">
                     Previsualiza cómo se ven los productos en la tienda pública
                 </p>
-                <span class="card-badge">Previsualizar</span>
+                <span class="card-badge">Entrar</span>
             </div>
             <div class="card-arrow">
                 <i class="fas fa-external-link-alt"></i>
             </div>
         </a>
 
-        <!-- Card: Ver Producto Público -->
-        @if (Model != null && Model.Any())
-        {
-            var firstProduct = Model.First();
-            <a href="/p/@firstProduct.Slug" target="_blank" 
-               class="menu-card" data-card="public">
-                <div class="card-stats">
-                    <i class="fas fa-eye me-1"></i>
-                    <span>Ejemplo</span>
-                </div>
-                <div class="card-content">
-                    <div class="card-icon">
-                        <i class="fas fa-shopping-bag"></i>
-                    </div>
-                    <h3 class="card-title">Vista Cliente</h3>
-                    <p class="card-description">
-                        Ver cómo los clientes interactúan con los productos y variantes
-                    </p>
-                    <span class="card-badge">Ver ejemplo</span>
-                </div>
-                <div class="card-arrow">
-                    <i class="fas fa-external-link-alt"></i>
-                </div>
-            </a>
-        }
         <!-- Card: Empleados -->
         <a href="@Url.Action("Index","Employees")"
-        class="menu-card" data-card="employees">
+           class="menu-card" data-card="employees">
             <div class="card-stats">
                 <i class="fas fa-user-shield me-1"></i>
                 <span>Equipo</span>
@@ -456,7 +426,7 @@
                     Registra nuevos empleados, restablece contraseñas y
                     bloquea/desbloquea accesos.
                 </p>
-                <span class="card-badge">Administrar</span>
+                <span class="card-badge">Entrar</span>
             </div>
             <div class="card-arrow">
                 <i class="fas fa-arrow-right"></i>

@@ -10,8 +10,7 @@ namespace TiendaPlayeras.Web.Controllers
     [Authorize(Roles = "Employee,Admin")]
     public class ProductsController : Controller
     {
-        private readonly ApplicationDbContext _context;
-        private readonly IWebHostEnvironment _webHostEnvironment;
+
         private readonly ApplicationDbContext _db;
         private readonly ILogger<ProductsController> _logger;
         private readonly SlugHelper _slugHelper;
@@ -800,6 +799,5 @@ public async Task<IActionResult> DeleteImage(int id)
             return slug;
         }
 
-       
     }
 }

@@ -4,458 +4,28 @@
     var cats = (List<TiendaPlayeras.Web.Models.Category>)ViewBag.Categories;
     int? catId = ViewBag.CategoryId as int?;
     string q = ViewBag.Q as string ?? "";
+    string catSearch = ViewBag.CategorySearch as string ?? "";
+    
+    // Paginación de categorías
+    int catPage = ViewBag.CategoryPage ?? 1;
+    int catPageSize = 5;
+    var catsFiltered = cats.AsEnumerable();
+    if (!string.IsNullOrWhiteSpace(catSearch))
+    {
+        catsFiltered = catsFiltered.Where(c => c.Name.Contains(catSearch, StringComparison.OrdinalIgnoreCase) || 
+                                                c.Slug.Contains(catSearch, StringComparison.OrdinalIgnoreCase));
+    }
+    var catsPaged = catsFiltered.Skip((catPage - 1) * catPageSize).Take(catPageSize).ToList();
+    int catTotalPages = (int)Math.Ceiling(catsFiltered.Count() / (double)catPageSize);
+    
+    // Paginación de etiquetas
+    int tagPage = ViewBag.TagPage ?? 1;
+    int tagPageSize = 5;
+    var tagsPaged = Model.Skip((tagPage - 1) * tagPageSize).Take(tagPageSize).ToList();
+    int tagTotalPages = (int)Math.Ceiling(Model.Count() / (double)tagPageSize);
 }
-<link rel="stylesheet" type="text/css/kaira" href="Tag-eti.css">
-<style>
-    :root {
-        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-        --danger-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-        --card-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-    }
+<link rel="stylesheet" href="~/css/kaira/Tag-eti.css">
 
-    .tags-container {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        min-height: 100vh;
-        padding: 40px 20px;
-    }
-
-    .page-header {
-        background: white;
-        border-radius: 20px;
-        padding: 30px;
-        margin-bottom: 30px;
-        box-shadow: var(--card-shadow);
-        animation: slideDown 0.6s ease;
-    }
-
-    .page-header h1 {
-        background: var(--primary-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        font-weight: 700;
-        font-size: 32px;
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-
-    .page-header h1 i {
-        background: var(--primary-gradient);
-        -webkit-background-clip: initial;
-        -webkit-text-fill-color: initial;
-        padding: 12px;
-        border-radius: 12px;
-        color: white;
-    }
-
-    .premium-card {
-        background: white;
-        border-radius: 20px;
-        padding: 0;
-        box-shadow: var(--card-shadow);
-        overflow: hidden;
-        animation: slideUp 0.8s ease;
-        margin-bottom: 30px;
-        border: none;
-    }
-
-    .card-header-premium {
-        background: linear-gradient(135deg, #667eea10, #764ba210);
-        padding: 25px;
-        border-bottom: 2px solid #f0f4f8;
-    }
-
-    .card-header-premium h5 {
-        color: #667eea;
-        font-weight: 700;
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-size: 18px;
-    }
-
-    .card-header-premium i {
-        width: 35px;
-        height: 35px;
-        background: var(--primary-gradient);
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 16px;
-    }
-
-    .card-body-premium {
-        padding: 25px;
-    }
-
-    .form-control, .form-select {
-        border: 2px solid #e0e7ff;
-        border-radius: 12px;
-        padding: 12px 16px;
-        transition: all 0.3s ease;
-        font-size: 14px;
-        background: #f8fafc;
-    }
-
-    .form-control:focus, .form-select:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
-        outline: none;
-        background: white;
-    }
-
-    .form-label {
-        font-weight: 600;
-        color: #2d3748;
-        margin-bottom: 8px;
-        font-size: 13px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .btn-create {
-        background: var(--success-gradient);
-        border: none;
-        padding: 12px 24px;
-        border-radius: 12px;
-        color: white;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        box-shadow: 0 5px 15px rgba(79, 172, 254, 0.3);
-    }
-
-    .btn-create:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(79, 172, 254, 0.5);
-        color: white;
-    }
-
-    .btn-filter {
-        background: var(--primary-gradient);
-        border: none;
-        padding: 12px 24px;
-        border-radius: 12px;
-        color: white;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .btn-filter:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-        color: white;
-    }
-
-    .table-premium {
-        margin: 0;
-    }
-
-    .table-premium thead {
-        background: linear-gradient(135deg, #667eea10, #764ba210);
-    }
-
-    .table-premium thead th {
-        border: none;
-        padding: 18px 15px;
-        font-weight: 700;
-        color: #2d3748;
-        text-transform: uppercase;
-        font-size: 11px;
-        letter-spacing: 0.5px;
-    }
-
-    .table-premium tbody tr {
-        transition: all 0.3s ease;
-        border-bottom: 1px solid #f7fafc;
-    }
-
-    .table-premium tbody tr:hover {
-        background: linear-gradient(135deg, #667eea05, #764ba205);
-        transform: scale(1.01);
-    }
-
-    .table-premium tbody td {
-        padding: 18px 15px;
-        vertical-align: middle;
-        border: none;
-    }
-
-    .badge-premium {
-        padding: 8px 14px;
-        border-radius: 20px;
-        font-weight: 600;
-        font-size: 12px;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .badge-primary {
-        background: var(--primary-gradient);
-        color: white;
-    }
-
-    .badge-success {
-        background: var(--success-gradient);
-        color: white;
-    }
-
-    .badge-secondary {
-        background: linear-gradient(135deg, #a0aec0, #718096);
-        color: white;
-    }
-
-    .badge-id {
-        background: linear-gradient(135deg, #2d3748, #1a202c);
-        color: white;
-        font-family: 'Courier New', monospace;
-    }
-
-    .code-badge {
-        background: linear-gradient(135deg, #4facfe15, #00f2fe15);
-        color: #4facfe;
-        padding: 6px 12px;
-        border-radius: 8px;
-        font-family: 'Courier New', monospace;
-        font-size: 12px;
-        font-weight: 600;
-    }
-
-    .category-name {
-        font-weight: 700;
-        color: #2d3748;
-        font-size: 15px;
-    }
-
-    .category-slug {
-        color: #94a3b8;
-        font-size: 12px;
-        font-family: 'Courier New', monospace;
-    }
-
-    .btn-action {
-        padding: 8px 12px;
-        border-radius: 10px;
-        border: 2px solid;
-        transition: all 0.3s ease;
-        font-size: 13px;
-    }
-
-    .btn-action:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    }
-
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-    }
-
-    .empty-state i {
-        background: linear-gradient(135deg, #667eea15, #764ba215);
-        padding: 30px;
-        border-radius: 50%;
-        color: #667eea;
-        margin-bottom: 20px;
-    }
-
-    .empty-state h5 {
-        color: #2d3748;
-        font-weight: 700;
-        margin-bottom: 10px;
-    }
-
-    .empty-state p {
-        color: #64748b;
-        font-size: 14px;
-    }
-
-    .modal-content {
-        border-radius: 20px;
-        border: none;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    }
-
-    .modal-header {
-        background: linear-gradient(135deg, #667eea10, #764ba210);
-        border-bottom: 2px solid #f0f4f8;
-        border-radius: 20px 20px 0 0;
-        padding: 25px;
-    }
-
-    .modal-title {
-        color: #667eea;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .modal-title i {
-        width: 35px;
-        height: 35px;
-        background: var(--primary-gradient);
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-    }
-
-    .modal-body {
-        padding: 30px;
-    }
-
-    .modal-footer {
-        border-top: 2px solid #f0f4f8;
-        padding: 20px 30px;
-    }
-
-    .btn-modal-save {
-        background: var(--primary-gradient);
-        border: none;
-        padding: 12px 30px;
-        border-radius: 12px;
-        color: white;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .btn-modal-save:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-        color: white;
-    }
-
-    .btn-modal-cancel {
-        background: white;
-        border: 2px solid #e0e7ff;
-        padding: 12px 30px;
-        border-radius: 12px;
-        color: #667eea;
-        font-weight: 600;
-    }
-
-    .btn-modal-cancel:hover {
-        background: #f8fafc;
-    }
-
-    .form-check-input {
-        width: 50px;
-        height: 26px;
-        cursor: pointer;
-        border: 2px solid #cbd5e0;
-        background-color: #e2e8f0;
-    }
-
-    .form-check-input:checked {
-        background-color: #667eea;
-        border-color: #667eea;
-    }
-
-    .form-check-input:focus {
-        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
-        border-color: #667eea;
-    }
-
-    .form-check-label {
-        font-weight: 600;
-        color: #2d3748;
-        margin-left: 10px;
-    }
-
-    /* Toast Notifications */
-    .toast-container {
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        z-index: 9999;
-    }
-
-    .toast-premium {
-        background: white;
-        border-radius: 15px;
-        padding: 20px 25px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-        margin-bottom: 15px;
-        min-width: 350px;
-        animation: slideInRight 0.5s ease;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-
-    .toast-premium.success {
-        border-left: 5px solid #4facfe;
-    }
-
-    .toast-premium.error {
-        border-left: 5px solid #ff6b6b;
-    }
-
-    .toast-icon {
-        width: 45px;
-        height: 45px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-        flex-shrink: 0;
-    }
-
-    .toast-premium.success .toast-icon {
-        background: var(--success-gradient);
-        color: white;
-    }
-
-    .toast-premium.error .toast-icon {
-        background: var(--danger-gradient);
-        color: white;
-    }
-
-    .toast-content {
-        flex: 1;
-    }
-
-    .toast-title {
-        font-weight: 700;
-        color: #2d3748;
-        margin-bottom: 5px;
-        font-size: 15px;
-    }
-
-    .toast-message {
-        color: #64748b;
-        font-size: 13px;
-    }
-
-    .toast-close {
-        background: none;
-        border: none;
-        color: #94a3b8;
-        cursor: pointer;
-        font-size: 20px;
-        padding: 0;
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        transition: all 0.3s ease;
-    }
-
-    .toast-close:hover {
-        background: #f0f4f8;
-        color: #2d3748;
-    }
-
-</style>
 
 <div class="tags-container">
     <div class="container-fluid">
@@ -467,244 +37,401 @@
             </h1>
         </div>
 
-        <div class="row">
-            <!-- Columna de Categorías -->
-            <div class="col-md-6">
-                <!-- Crear Categoría -->
-                <div class="premium-card">
-                    <div class="card-header-premium">
-                        <h5>
-                            <i class="fas fa-folder-plus"></i>
-                            Gestión de Categorías
-                        </h5>
-                    </div>
-                    <div class="card-body-premium">
-                        <form asp-action="CreateCategory" method="post" class="row g-3 mb-4">
-                            @Html.AntiForgeryToken()
-                            <div class="col-md-8">
-                                <label class="form-label">Nueva Categoría</label>
-                                <input type="text" name="name" class="form-control" placeholder="Nombre de categoría..." required />
-                            </div>
-                            <div class="col-md-4 d-flex align-items-end">
-                                <button type="submit" class="btn btn-create w-100">
-                                    <i class="fas fa-plus me-2"></i>Crear
-                                </button>
-                            </div>
-                        </form>
+        <!-- ============ LAYOUT HORIZONTAL: CATEGORÍAS IZQUIERDA - ETIQUETAS DERECHA ============ -->
+<div class="container-fluid">
+    <div class="row">
+        <!-- ============ COLUMNA IZQUIERDA: CATEGORÍAS ============ -->
+        <div class="col-lg-6">
+            <div class="section-block">
+                <div class="section-title">
+                    <i class="fas fa-folder"></i>
+                    <h2>Gestión de Categorías</h2>
+                </div>
 
-                        <!-- Lista de categorías -->
-                        <div class="table-responsive">
-                            <table class="table table-premium">
-                                <thead>
-                                    <tr>
-                                        <th>Categoría</th>
-                                        <th style="width:100px;">Etiquetas</th>
-                                        <th style="width:120px;">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var cat in cats)
-                                    {
-                                        <tr>
-                                            <td>
-                                                <div class="category-name">@cat.Name</div>
-                                                <div class="category-slug">@cat.Slug</div>
-                                            </td>
-                                            <td>
-                                                <span class="badge-premium badge-primary">
-                                                    <i class="fas fa-tags"></i>
-                                                    @cat.Tags.Count
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <div class="btn-group btn-group-sm">
-                                                    <button type="button" class="btn btn-outline-primary btn-action" 
-                                                            data-bs-toggle="modal" data-bs-target="#editCategoryModal"
-                                                            data-cat-id="@cat.Id" 
-                                                            data-cat-name="@cat.Name"
-                                                            data-cat-description="@cat.Description"
-                                                            title="Editar">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <form asp-action="ToggleCategory" method="post" class="d-inline">
-                                                        @Html.AntiForgeryToken()
-                                                        <input type="hidden" name="id" value="@cat.Id" />
-                                                        <button type="submit" 
-                                                                class="btn btn-outline-@(cat.IsActive ? "warning" : "success") btn-action"
-                                                                title="@(cat.IsActive ? "Desactivar" : "Activar")">
-                                                            <i class="fas fa-@(cat.IsActive ? "eye-slash" : "eye")"></i>
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
+                <div class="row">
+                    <!-- Formulario Crear Categoría -->
+                    <div class="col-lg-12">
+                        <div class="premium-card mb-3">
+                            <div class="card-header-premium">
+                                <h5>
+                                    <i class="fas fa-folder-plus"></i>
+                                    Crear Categoría
+                                </h5>
+                            </div>
+                            <div class="card-body-premium">
+                                <form asp-action="CreateCategory" method="post" class="form-create">
+                                    @Html.AntiForgeryToken()
+                                    <div class="mb-3">
+                                        <label class="form-label">Nombre de la Categoría</label>
+                                        <input type="text" name="name" class="form-control" placeholder="Ej: Música, Deportes..." required />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Descripción (opcional)</label>
+                                        <textarea name="description" class="form-control" rows="3" placeholder="Descripción opcional..."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-create w-100">
+                                        <i class="fas fa-plus me-2"></i>Crear Categoría
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Buscador y Tabla de Categorías -->
+                    <div class="col-lg-12">
+                        <!-- Buscador -->
+                        <div class="premium-card mb-3">
+                            <div class="card-body-premium">
+                                <form method="get" action="@Url.Action("Tags")" class="search-form">
+                                    <input type="hidden" name="categoryId" value="@catId" />
+                                    <input type="hidden" name="q" value="@q" />
+                                    <input type="hidden" name="tagPage" value="@tagPage" />
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white">
+                                            <i class="fas fa-search text-primary"></i>
+                                        </span>
+                                        <input type="text" name="categorySearch" value="@catSearch" class="form-control" placeholder="Buscar categorías por nombre o slug..." />
+                                        <button type="submit" class="btn btn-filter">
+                                            <i class="fas fa-search me-2"></i>Buscar
+                                        </button>
+                                        @if (!string.IsNullOrWhiteSpace(catSearch))
+                                        {
+                                            <a href="@Url.Action("Tags", new { categoryId = catId, q = q, tagPage = tagPage })" class="btn btn-outline-secondary">
+                                                <i class="fas fa-times"></i>
+                                            </a>
+                                        }
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Tabla de Categorías -->
+                        <div class="premium-card">
+                            <div class="card-header-premium">
+                                <h5>
+                                    <i class="fas fa-list"></i>
+                                    Lista de Categorías (@catsFiltered.Count())
+                                </h5>
+                            </div>
+                            @if (!catsPaged.Any())
+                            {
+                                <div class="empty-state">
+                                    <i class="fas fa-folder-open fa-4x"></i>
+                                    <h5>No hay categorías</h5>
+                                    <p>@(string.IsNullOrWhiteSpace(catSearch) ? "Crea tu primera categoría usando el formulario." : "No se encontraron categorías con ese criterio.")</p>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-premium">
+                                        <thead>
+                                            <tr>
+                                                <th>Categoría</th>
+                                                <th style="width:100px;">Etiquetas</th>
+                                                <th style="width:100px;">Estado</th>
+                                                <th style="width:120px;">Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var cat in catsPaged)
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        <div class="category-name">@cat.Name</div>
+                                                        <div class="category-slug">@cat.Slug</div>
+                                                        @if (!string.IsNullOrEmpty(cat.Description))
+                                                        {
+                                                            <small class="text-muted">@cat.Description</small>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge-premium badge-primary">
+                                                            <i class="fas fa-tags"></i>
+                                                            @cat.Tags.Count
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        @if (cat.IsActive)
+                                                        {
+                                                            <span class="badge-premium badge-success">
+                                                                <i class="fas fa-check-circle"></i>
+                                                                Activa
+                                                            </span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge-premium badge-secondary">
+                                                                <i class="fas fa-times-circle"></i>
+                                                                Inactiva
+                                                            </span>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-group btn-group-sm">
+                                                            <button type="button" class="btn btn-outline-primary btn-action" 
+                                                                    data-bs-toggle="modal" data-bs-target="#editCategoryModal"
+                                                                    data-cat-id="@cat.Id" 
+                                                                    data-cat-name="@cat.Name"
+                                                                    data-cat-description="@cat.Description"
+                                                                    title="Editar">
+                                                                <i class="fas fa-edit"></i>
+                                                            </button>
+                                                            <form asp-action="ToggleCategory" method="post" style="display:inline;">
+                                                                @Html.AntiForgeryToken()
+                                                                <input type="hidden" name="id" value="@cat.Id" />
+                                                                <button type="submit" 
+                                                                        class="btn btn-outline-@(cat.IsActive ? "warning" : "success") btn-action"
+                                                                        onclick="return confirm('¿Estás seguro de que deseas @(cat.IsActive ? "desactivar" : "activar") la categoría @cat.Name?');"
+                                                                        title="@(cat.IsActive ? "Desactivar" : "Activar")">
+                                                                    <i class="fas fa-@(cat.IsActive ? "eye-slash" : "eye")"></i>
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Paginación Categorías -->
+                                @if (catTotalPages > 1)
+                                {
+                                    <div class="pagination-container">
+                                        <nav>
+                                            <ul class="pagination pagination-premium">
+                                                <li class="page-item @(catPage == 1 ? "disabled" : "")">
+                                                    <a class="page-link" href="@Url.Action("Tags", new { categoryId = catId, q = q, categorySearch = catSearch, catPage = catPage - 1, tagPage = tagPage })">
+                                                        <i class="fas fa-chevron-left"></i>
+                                                    </a>
+                                                </li>
+                                                @for (int i = 1; i <= catTotalPages; i++)
+                                                {
+                                                    <li class="page-item @(catPage == i ? "active" : "")">
+                                                        <a class="page-link" href="@Url.Action("Tags", new { categoryId = catId, q = q, categorySearch = catSearch, catPage = i, tagPage = tagPage })">@i</a>
+                                                    </li>
+                                                }
+                                                <li class="page-item @(catPage == catTotalPages ? "disabled" : "")">
+                                                    <a class="page-link" href="@Url.Action("Tags", new { categoryId = catId, q = q, categorySearch = catSearch, catPage = catPage + 1, tagPage = tagPage })">
+                                                        <i class="fas fa-chevron-right"></i>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </nav>
+                                        <div class="pagination-info">
+                                            Mostrando página @catPage de @catTotalPages (@catsFiltered.Count() categorías)
+                                        </div>
+                                    </div>
+                                }
+                            }
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Columna de Etiquetas -->
-            <div class="col-md-6">
-                <!-- Filtros -->
-                <div class="premium-card">
-                    <div class="card-header-premium">
-                        <h5>
-                            <i class="fas fa-filter"></i>
-                            Filtrar Etiquetas
-                        </h5>
-                    </div>
-                    <div class="card-body-premium">
-                        <form method="get" class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Categoría</label>
-                                <select name="categoryId" class="form-select" onchange="this.form.submit()">
-                                    <option value="">Todas las categorías</option>
-                                    @foreach (var c in cats)
-                                    {
-                                        <option value="@c.Id" selected="@(catId == c.Id)">@c.Name</option>
-                                    }
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Buscar</label>
-                                <input type="text" name="q" value="@q" class="form-control" placeholder="Nombre o slug..." />
-                            </div>
-                            <div class="col-md-2 d-flex align-items-end">
-                                <button type="submit" class="btn btn-filter w-100">
-                                    <i class="fas fa-search"></i>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+        <!-- ============ COLUMNA DERECHA: ETIQUETAS ============ -->
+        <div class="col-lg-6">
+            <div class="section-block">
+                <div class="section-title">
+                    <i class="fas fa-tags"></i>
+                    <h2>Gestión de Etiquetas</h2>
                 </div>
 
-                <!-- Crear Etiqueta -->
-                <div class="premium-card">
-                    <div class="card-header-premium">
-                        <h5>
-                            <i class="fas fa-plus-circle"></i>
-                            Crear Nueva Etiqueta
-                        </h5>
+                <div class="row">
+                    <!-- Formulario Crear Etiqueta -->
+                    <div class="col-lg-12">
+                        <div class="premium-card mb-3">
+                            <div class="card-header-premium">
+                                <h5>
+                                    <i class="fas fa-plus-circle"></i>
+                                    Crear Nueva Etiqueta
+                                </h5>
+                            </div>
+                            <div class="card-body-premium">
+                                <form asp-action="CreateTagInline" method="post" class="form-create">
+                                    @Html.AntiForgeryToken()
+                                    <div class="mb-3">
+                                        <label class="form-label">Categoría</label>
+                                        <select name="categoryId" class="form-select" required>
+                                            <option value="">Seleccionar...</option>
+                                            @foreach (var c in cats.Where(c => c.IsActive))
+                                            { 
+                                                <option value="@c.Id" selected="@(catId == c.Id)">@c.Name</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Nombre de Etiqueta</label>
+                                        <input type="text" name="name" class="form-control" placeholder="Ej: Rock, Fútbol..." required />
+                                    </div>
+                                    <button type="submit" class="btn btn-create w-100">
+                                        <i class="fas fa-plus me-2"></i>Crear Etiqueta
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body-premium">
-                        <form asp-action="CreateTagInline" method="post" class="row g-3">
-                            @Html.AntiForgeryToken()
-                            <div class="col-md-5">
-                                <label class="form-label">Categoría</label>
-                                <select name="categoryId" class="form-select" required>
-                                    <option value="">Seleccionar...</option>
-                                    @foreach (var c in cats)
-                                    { 
-                                        <option value="@c.Id">@c.Name</option>
-                                    }
-                                </select>
-                            </div>
-                            <div class="col-md-5">
-                                <label class="form-label">Nombre</label>
-                                <input type="text" name="name" class="form-control" placeholder="Ej: Mustang, Rock..." required />
-                            </div>
-                            <div class="col-md-2 d-flex align-items-end">
-                                <button type="submit" class="btn btn-create w-100">
-                                    <i class="fas fa-plus"></i>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
 
-                <!-- Lista de Etiquetas -->
-                <div class="premium-card">
-                    <div class="card-header-premium">
-                        <h5>
-                            <i class="fas fa-tags"></i>
-                            Etiquetas (@Model.Count())
-                        </h5>
+                    <!-- Filtros y Tabla de Etiquetas -->
+                    <div class="col-lg-12">
+                        <!-- Filtros -->
+                        <div class="premium-card mb-3">
+                            <div class="card-body-premium">
+                                <form method="get" action="@Url.Action("Tags")" class="row g-3">
+                                    <input type="hidden" name="categorySearch" value="@catSearch" />
+                                    <input type="hidden" name="catPage" value="@catPage" />
+                                    <div class="col-md-6">
+                                        <label class="form-label">Filtrar por Categoría</label>
+                                        <select name="categoryId" class="form-select" onchange="this.form.submit()">
+                                            <option value="">Todas las categorías</option>
+                                            @foreach (var c in cats)
+                                            {
+                                                <option value="@c.Id" selected="@(catId == c.Id)">@c.Name</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Buscar Etiqueta</label>
+                                        <div class="input-group">
+                                            <input type="text" name="q" value="@q" class="form-control" placeholder="Nombre..." />
+                                            <button type="submit" class="btn btn-filter">
+                                                <i class="fas fa-search"></i>
+                                            </button>
+                                            @if (!string.IsNullOrWhiteSpace(q))
+                                            {
+                                                <a href="@Url.Action("Tags", new { categoryId = catId, categorySearch = catSearch, catPage = catPage })" class="btn btn-outline-secondary">
+                                                    <i class="fas fa-times"></i>
+                                                </a>
+                                            }
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Tabla de Etiquetas -->
+                        <div class="premium-card">
+                            <div class="card-header-premium">
+                                <h5>
+                                    <i class="fas fa-tags"></i>
+                                    Lista de Etiquetas (@Model.Count())
+                                </h5>
+                            </div>
+                            @if (!tagsPaged.Any())
+                            {
+                                <div class="empty-state">
+                                    <i class="fas fa-tags fa-4x"></i>
+                                    <h5>No se encontraron etiquetas</h5>
+                                    <p>@(string.IsNullOrEmpty(q) ? "Crea tu primera etiqueta usando el formulario." : "No hay etiquetas que coincidan con tu búsqueda.")</p>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-premium">
+                                        <thead>
+                                            <tr>
+                                                <th style="width:60px;">ID</th>
+                                                <th>Categoría</th>
+                                                <th>Nombre</th>
+                                                <th style="width:90px;">Estado</th>
+                                                <th style="width:120px;">Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var t in tagsPaged)
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        <span class="badge-premium badge-id">#@t.Id</span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge-premium badge-primary">@t.Category?.Name</span>
+                                                    </td>
+                                                    <td>
+                                                        <div>
+                                                            <strong style="color:#2d3748;">@t.Name</strong>
+                                                            <div class="category-slug">@t.Slug</div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        @if (t.IsActive)
+                                                        {
+                                                            <span class="badge-premium badge-success">
+                                                                <i class="fas fa-check-circle"></i>
+                                                                Activa
+                                                            </span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge-premium badge-secondary">
+                                                                <i class="fas fa-times-circle"></i>
+                                                                Inactiva
+                                                            </span>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-group btn-group-sm">
+                                                            <button type="button" class="btn btn-outline-primary btn-action" 
+                                                                    data-bs-toggle="modal" data-bs-target="#editTagModal" 
+                                                                    data-tag-id="@t.Id" 
+                                                                    data-tag-name="@t.Name" 
+                                                                    data-category-id="@t.CategoryId"
+                                                                    title="Editar">
+                                                                <i class="fas fa-edit"></i>
+                                                            </button>
+                                                            <form asp-action="ToggleTag" method="post" style="display:inline;">
+                                                                @Html.AntiForgeryToken()
+                                                                <input type="hidden" name="id" value="@t.Id" />
+                                                                <button type="submit" 
+                                                                        class="btn btn-outline-@(t.IsActive ? "warning" : "success") btn-action"
+                                                                        onclick="return confirm('¿Estás seguro de que deseas @(t.IsActive ? "desactivar" : "activar") la etiqueta @t.Name?');"
+                                                                        title="@(t.IsActive ? "Desactivar" : "Activar")">
+                                                                    <i class="fas fa-@(t.IsActive ? "eye-slash" : "eye")"></i>
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Paginación Etiquetas -->
+                                @if (tagTotalPages > 1)
+                                {
+                                    <div class="pagination-container">
+                                        <nav>
+                                            <ul class="pagination pagination-premium">
+                                                <li class="page-item @(tagPage == 1 ? "disabled" : "")">
+                                                    <a class="page-link" href="@Url.Action("Tags", new { categoryId = catId, q = q, categorySearch = catSearch, catPage = catPage, tagPage = tagPage - 1 })">
+                                                        <i class="fas fa-chevron-left"></i>
+                                                    </a>
+                                                </li>
+                                                @for (int i = 1; i <= tagTotalPages; i++)
+                                                {
+                                                    <li class="page-item @(tagPage == i ? "active" : "")">
+                                                        <a class="page-link" href="@Url.Action("Tags", new { categoryId = catId, q = q, categorySearch = catSearch, catPage = catPage, tagPage = i })">@i</a>
+                                                    </li>
+                                                }
+                                                <li class="page-item @(tagPage == tagTotalPages ? "disabled" : "")">
+                                                    <a class="page-link" href="@Url.Action("Tags", new { categoryId = catId, q = q, categorySearch = catSearch, catPage = catPage, tagPage = tagPage + 1 })">
+                                                        <i class="fas fa-chevron-right"></i>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </nav>
+                                        <div class="pagination-info">
+                                            Mostrando página @tagPage de @tagTotalPages (@Model.Count() etiquetas)
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
                     </div>
-                    @if (!Model.Any())
-                    {
-                        <div class="empty-state">
-                            <i class="fas fa-tags fa-4x"></i>
-                            <h5>No se encontraron etiquetas</h5>
-                            <p>@(string.IsNullOrEmpty(q) ? "Crea tu primera etiqueta usando el formulario superior." : "No hay etiquetas que coincidan con tu búsqueda.")</p>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="table-responsive">
-                            <table class="table table-premium">
-                                <thead>
-                                    <tr>
-                                        <th style="width:70px;">ID</th>
-                                        <th>Categoría</th>
-                                        <th>Nombre</th>
-                                        <th>Slug</th>
-                                        <th style="width:100px;">Estado</th>
-                                        <th style="width:140px;">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var t in Model)
-                                    {
-                                        <tr>
-                                            <td>
-                                                <span class="badge-premium badge-id">#@t.Id</span>
-                                            </td>
-                                            <td>
-                                                <span class="badge-premium badge-primary">@t.Category?.Name</span>
-                                            </td>
-                                            <td>
-                                                <strong style="color:#2d3748;">@t.Name</strong>
-                                            </td>
-                                            <td>
-                                                <span class="code-badge">@t.Slug</span>
-                                            </td>
-                                            <td>
-                                                @if (t.IsActive)
-                                                {
-                                                    <span class="badge-premium badge-success">
-                                                        <i class="fas fa-check-circle"></i>
-                                                        Activa
-                                                    </span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="badge-premium badge-secondary">
-                                                        <i class="fas fa-times-circle"></i>
-                                                        Inactiva
-                                                    </span>
-                                                }
-                                            </td>
-                                            <td>
-                                                <div class="btn-group btn-group-sm">
-                                                    <button type="button" class="btn btn-outline-primary btn-action" 
-                                                            data-bs-toggle="modal" data-bs-target="#editTagModal" 
-                                                            data-tag-id="@t.Id" 
-                                                            data-tag-name="@t.Name" 
-                                                            data-category-id="@t.CategoryId"
-                                                            data-is-active="@t.IsActive"
-                                                            title="Editar">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <form asp-action="ToggleTag" method="post" class="d-inline">
-                                                        @Html.AntiForgeryToken()
-                                                        <input type="hidden" name="id" value="@t.Id" />
-                                                        <button type="submit" 
-                                                                class="btn btn-outline-@(t.IsActive ? "warning" : "success") btn-action"
-                                                                title="@(t.IsActive ? "Desactivar" : "Activar")">
-                                                            <i class="fas fa-@(t.IsActive ? "eye-slash" : "eye")"></i>
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    }
                 </div>
             </div>
         </div>
@@ -757,7 +484,7 @@
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="post" asp-action="UpdateTag">
+            <form method="post" asp-action="EditTag">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="id" id="editTagId" />
                 <div class="modal-body">
@@ -773,10 +500,6 @@
                     <div class="mb-3">
                         <label class="form-label">Nombre</label>
                         <input type="text" name="name" class="form-control" id="editTagName" required />
-                    </div>
-                    <div class="form-check form-switch">
-                        <input type="checkbox" class="form-check-input" name="isActive" id="editIsActive" value="true" />
-                        <label class="form-check-label" for="editIsActive">Etiqueta activa</label>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -796,39 +519,26 @@
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Modal para editar categoría
             const editCatModal = document.getElementById('editCategoryModal');
             if (editCatModal) {
                 editCatModal.addEventListener('show.bs.modal', function(event) {
                     const button = event.relatedTarget;
-                    const catId = button.getAttribute('data-cat-id');
-                    const catName = button.getAttribute('data-cat-name');
-                    const catDescription = button.getAttribute('data-cat-description') || '';
-
-                    document.getElementById('editCatId').value = catId;
-                    document.getElementById('editCatName').value = catName;
-                    document.getElementById('editCatDescription').value = catDescription;
+                    document.getElementById('editCatId').value = button.getAttribute('data-cat-id');
+                    document.getElementById('editCatName').value = button.getAttribute('data-cat-name');
+                    document.getElementById('editCatDescription').value = button.getAttribute('data-cat-description') || '';
                 });
             }
 
-            // Modal para editar etiqueta
             const editTagModal = document.getElementById('editTagModal');
             if (editTagModal) {
                 editTagModal.addEventListener('show.bs.modal', function(event) {
                     const button = event.relatedTarget;
-                    const tagId = button.getAttribute('data-tag-id');
-                    const tagName = button.getAttribute('data-tag-name');
-                    const categoryId = button.getAttribute('data-category-id');
-                    const isActive = button.getAttribute('data-is-active') === 'True';
-
-                    document.getElementById('editTagId').value = tagId;
-                    document.getElementById('editTagName').value = tagName;
-                    document.getElementById('editCategoryId').value = categoryId;
-                    document.getElementById('editIsActive').checked = isActive;
+                    document.getElementById('editTagId').value = button.getAttribute('data-tag-id');
+                    document.getElementById('editTagName').value = button.getAttribute('data-tag-name');
+                    document.getElementById('editCategoryId').value = button.getAttribute('data-category-id');
                 });
             }
 
-            // Animación de filas de tabla
             document.querySelectorAll('.table-premium tbody tr').forEach((row, index) => {
                 row.style.opacity = '0';
                 row.style.transform = 'translateX(-20px)';
@@ -839,33 +549,38 @@
                 }, index * 50);
             });
 
-            // Mostrar mensajes de TempData
             const successMessage = '@Html.Raw(TempData["Success"] ?? "")';
             const errorMessage = '@Html.Raw(TempData["Error"] ?? "")';
 
-            if (successMessage) {
-                showToast('Éxito', successMessage, 'success');
-            }
-            if (errorMessage) {
-                showToast('Error', errorMessage, 'error');
-            }
+            if (successMessage) showToast('Éxito', successMessage, 'success');
+            if (errorMessage) showToast('Error', errorMessage, 'error');
+
+            document.querySelectorAll('form').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    if (submitBtn && !submitBtn.classList.contains('btn-action')) {
+                        const nameInput = this.querySelector('input[name="name"]');
+                        if (nameInput && nameInput.value.trim().length < 2) {
+                            e.preventDefault();
+                            showToast('Error', 'El nombre debe tener al menos 2 caracteres.', 'error');
+                            nameInput.focus();
+                            return;
+                        }
+                        const originalHTML = submitBtn.innerHTML;
+                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Procesando...';
+                        submitBtn.disabled = true;
+                    }
+                });
+            });
         });
 
-        // Sistema de Toast Notifications
         function showToast(title, message, type) {
             const container = document.getElementById('toastContainer');
-            
             const toast = document.createElement('div');
             toast.className = `toast-premium ${type}`;
-            
-            const icon = type === 'success' 
-                ? '<i class="fas fa-check-circle"></i>' 
-                : '<i class="fas fa-exclamation-circle"></i>';
-            
+            const icon = type === 'success' ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-exclamation-circle"></i>';
             toast.innerHTML = `
-                <div class="toast-icon">
-                    ${icon}
-                </div>
+                <div class="toast-icon">${icon}</div>
                 <div class="toast-content">
                     <div class="toast-title">${title}</div>
                     <div class="toast-message">${message}</div>
@@ -874,192 +589,11 @@
                     <i class="fas fa-times"></i>
                 </button>
             `;
-            
             container.appendChild(toast);
-            
-            // Auto-remove después de 5 segundos
             setTimeout(() => {
                 toast.style.animation = 'slideInRight 0.5s ease reverse';
                 setTimeout(() => toast.remove(), 500);
             }, 5000);
         }
-
-        // Confirmación antes de toggle
-        document.querySelectorAll('form[asp-action="ToggleCategory"], form[asp-action="ToggleTag"]').forEach(form => {
-            form.addEventListener('submit', function(e) {
-                const btn = this.querySelector('button[type="submit"]');
-                const isActive = btn.classList.contains('btn-outline-warning');
-                const action = isActive ? 'desactivar' : 'activar';
-                const entity = this.getAttribute('asp-action').includes('Category') ? 'categoría' : 'etiqueta';
-                
-                if (!confirm(`¿Estás seguro de que deseas ${action} esta ${entity}?`)) {
-                    e.preventDefault();
-                }
-            });
-        });
-
-        // Animación de envío de formularios
-        document.querySelectorAll('form').forEach(form => {
-            form.addEventListener('submit', function() {
-                const submitBtn = this.querySelector('button[type="submit"]');
-                if (submitBtn && !submitBtn.classList.contains('btn-action')) {
-                    const originalHTML = submitBtn.innerHTML;
-                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Procesando...';
-                    submitBtn.disabled = true;
-                    
-                    // Restaurar si hay error de validación
-                    setTimeout(() => {
-                        if (document.querySelector('.field-validation-error')) {
-                            submitBtn.innerHTML = originalHTML;
-                            submitBtn.disabled = false;
-                        }
-                    }, 1000);
-                }
-            });
-        });
-
-        // Filtro en tiempo real para tabla de categorías
-        const categorySearch = document.createElement('input');
-        categorySearch.type = 'text';
-        categorySearch.className = 'form-control mb-3';
-        categorySearch.placeholder = 'Buscar categoría...';
-        categorySearch.style.display = 'none';
-
-        // Añadir búsqueda rápida si hay más de 5 categorías
-        const categoryTable = document.querySelector('.col-md-6:first-child .table-premium');
-        if (categoryTable && categoryTable.querySelectorAll('tbody tr').length > 5) {
-            categorySearch.style.display = 'block';
-            categoryTable.parentElement.insertBefore(categorySearch, categoryTable);
-            
-            categorySearch.addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
-                categoryTable.querySelectorAll('tbody tr').forEach(row => {
-                    const text = row.textContent.toLowerCase();
-                    row.style.display = text.includes(searchTerm) ? '' : 'none';
-                });
-            });
-        }
-
-        // Búsqueda rápida para etiquetas
-        const tagSearch = document.createElement('input');
-        tagSearch.type = 'text';
-        tagSearch.className = 'form-control mb-3';
-        tagSearch.placeholder = 'Buscar en la tabla...';
-        
-        const tagTable = document.querySelector('.col-md-6:last-child .table-premium');
-        if (tagTable && tagTable.querySelectorAll('tbody tr').length > 0) {
-            tagTable.parentElement.insertBefore(tagSearch, tagTable);
-            
-            tagSearch.addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
-                tagTable.querySelectorAll('tbody tr').forEach(row => {
-                    const text = row.textContent.toLowerCase();
-                    row.style.display = text.includes(searchTerm) ? '' : 'none';
-                });
-            });
-        }
-
-        // Contador de resultados filtrados
-        function updateFilterCount(table, searchInput) {
-            const visibleRows = Array.from(table.querySelectorAll('tbody tr'))
-                .filter(row => row.style.display !== 'none').length;
-            const totalRows = table.querySelectorAll('tbody tr').length;
-            
-            let countBadge = searchInput.parentElement.querySelector('.filter-count');
-            if (!countBadge && searchInput.value) {
-                countBadge = document.createElement('small');
-                countBadge.className = 'filter-count text-muted mt-1 d-block';
-                searchInput.parentElement.insertBefore(countBadge, searchInput.nextSibling);
-            }
-            
-            if (countBadge) {
-                countBadge.textContent = `Mostrando ${visibleRows} de ${totalRows} resultados`;
-                countBadge.style.display = searchInput.value ? 'block' : 'none';
-            }
-        }
-
-        // Aplicar contador a búsquedas
-        if (categorySearch.style.display !== 'none') {
-            categorySearch.addEventListener('input', () => updateFilterCount(categoryTable, categorySearch));
-        }
-        
-        if (tagTable) {
-            tagSearch.addEventListener('input', () => updateFilterCount(tagTable, tagSearch));
-        }
-
-        // Atajos de teclado
-        document.addEventListener('keydown', function(e) {
-            // Ctrl/Cmd + K para enfocar búsqueda de etiquetas
-            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-                e.preventDefault();
-                const searchInput = document.querySelector('.col-md-6:last-child input[placeholder="Buscar en la tabla..."]');
-                if (searchInput) searchInput.focus();
-            }
-            
-            // Escape para cerrar modales
-            if (e.key === 'Escape') {
-                const openModals = document.querySelectorAll('.modal.show');
-                openModals.forEach(modal => {
-                    const bsModal = bootstrap.Modal.getInstance(modal);
-                    if (bsModal) bsModal.hide();
-                });
-            }
-            // Validación en tiempo real para formularios
-document.addEventListener('DOMContentLoaded', function() {
-    // Validar nombre de categoría antes de enviar
-    const categoryForm = document.querySelector('form[asp-action="CreateCategory"]');
-    if (categoryForm) {
-        categoryForm.addEventListener('submit', function(e) {
-            const nameInput = this.querySelector('input[name="name"]');
-            if (nameInput && nameInput.value.trim().length < 2) {
-                e.preventDefault();
-                showToast('Error', 'El nombre de la categoría debe tener al menos 2 caracteres.', 'error');
-                nameInput.focus();
-            }
-        });
-    }
-
-    // Validar nombre de etiqueta antes de enviar
-    const tagForm = document.querySelector('form[asp-action="CreateTagInline"]');
-    if (tagForm) {
-        tagForm.addEventListener('submit', function(e) {
-            const nameInput = this.querySelector('input[name="name"]');
-            const categorySelect = this.querySelector('select[name="categoryId"]');
-            
-            if (categorySelect && categorySelect.value === '') {
-                e.preventDefault();
-                showToast('Error', 'Debes seleccionar una categoría.', 'error');
-                categorySelect.focus();
-                return;
-            }
-            
-            if (nameInput && nameInput.value.trim().length < 2) {
-                e.preventDefault();
-                showToast('Error', 'El nombre de la etiqueta debe tener al menos 2 caracteres.', 'error');
-                nameInput.focus();
-            }
-        });
-    }
-
-    // Prevenir inyección SQL - sanitizar entradas
-    document.querySelectorAll('input[type="text"], textarea').forEach(input => {
-        input.addEventListener('input', function() {
-            // Remover caracteres potencialmente peligrosos
-            this.value = this.value.replace(/[;'"\\--]/g, '');
-        });
-    });
-
-    // Validación de longitud máxima
-    document.querySelectorAll('input[name="name"]').forEach(input => {
-        input.addEventListener('input', function() {
-            if (this.value.length > 100) {
-                this.value = this.value.substring(0, 100);
-                showToast('Advertencia', 'El nombre no puede exceder los 100 caracteres.', 'error');
-            }
-        });
-    });
-        });
-
-        console.log('✅ Sistema de gestión de categorías y etiquetas cargado');
     </script>
 }

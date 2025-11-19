@@ -85,6 +85,35 @@
         .breadcrumb-custom a { color: #666; text-decoration: none; }
         .breadcrumb-custom a:hover { color: #111; }
         .breadcrumb-custom .current { color: #111; font-weight: 500; }
+
+        /* Estilos para el modal de autenticación */
+        #authRequiredModal .modal-content {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: none;
+        }
+
+        #authRequiredModal .modal-header {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px 15px 0 0;
+        }
+
+        #authRequiredModal .modal-body {
+            padding: 2rem;
+        }
+
+        #authRequiredModal .btn-primary {
+            background: linear-gradient(135deg, #66513e, #66513e);
+            border: none;
+            border-radius: 25px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+        }
+
+        #authRequiredModal .btn-outline-secondary {
+            border-radius: 25px;
+            padding: 0.75rem 1.5rem;
+        }
     </style>
 
     @* Anti-forgery para wishlist/carrito *@
@@ -157,11 +186,6 @@
                                             <i class="fas fa-tachometer-alt me-1 d-lg-none"></i>Dashboard
                                         </a>
                                     </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link nav-link-enhanced" href="/catalogo" target="_blank">
-                                            <i class="fas fa-store me-1 d-lg-none"></i>Ver Catálogo
-                                        </a>
-                                    </li>
                                 </ul>
                             }
                             else
@@ -169,47 +193,13 @@
                                 <!-- Customer Menu -->
                                 <ul class="navbar-nav justify-content-center flex-grow-1 gap-1 gap-md-5 pe-3">
                                     <li class="nav-item dropdown nav-item-enhanced">
-                                        <a class="nav-link dropdown-toggle nav-link-enhanced active" href="#" id="dropdownHome" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <a class="nav-link  nav-link-enhanced active" href="#" id="dropdownHome" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                             <i class="fas fa-home me-1 d-lg-none"></i>Home
                                         </a>
-                                        <ul class="dropdown-menu dropdown-menu-enhanced list-unstyled" aria-labelledby="dropdownHome">
-                                            <li><a href="/Home" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Home Layout 1</a></li>
-                                            <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Home Layout 2</a></li>
-                                            <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Home Layout 3</a></li>
-                                        </ul>
-                                    </li>
-                                    <li class="nav-item dropdown nav-item-enhanced">
-                                        <a class="nav-link dropdown-toggle nav-link-enhanced" href="#" id="dropdownShop" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-shopping-bag me-1 d-lg-none"></i>Shop
-                                        </a>
-                                        <ul class="dropdown-menu dropdown-menu-enhanced list-unstyled" aria-labelledby="dropdownShop">
-                                            <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Shop Sidebar</a></li>
-                                            <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Shop Grid</a></li>
-                                            <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Single Product</a></li>
-                                        </ul>
-                                    </li>
-                                    <li class="nav-item dropdown nav-item-enhanced">
-                                        <a class="nav-link dropdown-toggle nav-link-enhanced" href="#" id="dropdownBlog" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-blog me-1 d-lg-none"></i>Blog
-                                        </a>
-                                        <ul class="dropdown-menu dropdown-menu-enhanced list-unstyled" aria-labelledby="dropdownBlog">
-                                            <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Blog Classic</a></li>
-                                            <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Single Post</a></li>
-                                        </ul>
-                                    </li>
-                                    <li class="nav-item dropdown nav-item-enhanced">
-                                        <a class="nav-link dropdown-toggle nav-link-enhanced" href="#" id="dropdownPages" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-file-alt me-1 d-lg-none"></i>Pages
-                                        </a>
-                                        <ul class="dropdown-menu dropdown-menu-enhanced list-unstyled" aria-labelledby="dropdownPages">
-                                            <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>About</a></li>
-                                            <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Contact</a></li>
-                                            <li><a href="#" class="dropdown-item dropdown-item-enhanced"><i class="fas fa-angle-right me-2"></i>Wishlist</a></li>
-                                        </ul>
                                     </li>
                                     <li class="nav-item nav-item-enhanced">
                                         <a class="nav-link nav-link-enhanced" href="#">
-                                            <i class="fas fa-envelope me-1 d-lg-none"></i>Contact
+                                            <i class="fas fa-envelope me-1 d-lg-none"></i>Contacto
                                         </a>
                                     </li>
                                 </ul>
@@ -250,7 +240,7 @@
                                 </a>
                             </li>
                             <li class="d-lg-none">
-                                <a href="#" class="nav-icon-enhanced" title="Lista de deseos">
+                                <a href="#" class="nav-icon-enhanced" title="Lista de deseos" id="btnOpenWishlistMobile">
                                     <svg width="24" height="24" viewBox="0 0 24 24" class="mobile-icon-enhanced">
                                         <use xlink:href="#heart"></use>
                                     </svg>
@@ -376,6 +366,37 @@
       </div>
     </div>
 
+    <!-- Modal de autenticación requerida -->
+    <div class="modal fade" id="authRequiredModal" tabindex="-1" aria-labelledby="authRequiredModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title" id="authRequiredModalLabel">
+                        <i class="fas fa-exclamation-circle me-2 text-warning"></i>Acceso Requerido
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <div class="mb-3">
+                        <i class="fas fa-user-lock fa-3x text-muted"></i>
+                    </div>
+                    <h6 class="mb-3">Solo disponible para usuarios registrados</h6>
+                    <p class="text-muted mb-4">
+                        Para acceder a esta función necesitas tener una cuenta activa en nuestra plataforma.
+                    </p>
+                </div>
+                <div class="modal-footer border-top-0 justify-content-center">
+                    <button type="button" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Cerrar
+                    </button>
+                    <a href="/Account" class="btn btn-primary">
+                        <i class="fas fa-user-plus me-1"></i>Crear Cuenta
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <footer id="footer" class="mt-5">
         <div class="footer-intro mb-4 text-center">
             <a href="/">
@@ -444,172 +465,239 @@
         });
     </script>
 
-    <!-- Wishlist (CORREGIDO - con actualización de contador) -->
-<script>
-(function () {
-  const metaToken = document.querySelector('meta[name="RequestVerificationToken"]');
-  const XSRF = metaToken?.content || '';
-
-  // 🔴 FUNCIÓN GLOBAL para actualizar el contador
-  async function updateWishlistCount() {
-    try {
-      const resp = await fetch('/Wishlist/Count', { credentials: 'same-origin' });
-      if (!resp.ok) return;
-      const data = await resp.json();
-      
-      // Actualizar TODOS los elementos con clase wishlist-count
-      document.querySelectorAll('.wishlist-count').forEach(el => {
-        el.textContent = `(${data.count || 0})`;
-      });
-      
-      // Actualizar badge específico si existe
-      const badge = document.getElementById('js-wishlist-count');
-      if (badge) {
-        badge.textContent = data.count || 0;
-        badge.style.display = (data.count > 0) ? 'inline-block' : 'none';
-      }
-      
-      console.log('✅ Wishlist count actualizado:', data.count);
-    } catch (err) {
-      console.error('Error al actualizar wishlist count:', err);
-    }
-  }
-
-  // 🔓 Exponer globalmente
-  window.updateWishlistCount = updateWishlistCount;
-
-  async function loadWishlistDrawer() {
-    try {
-      const resp = await fetch('/Wishlist/Drawer', { credentials: 'same-origin' });
-      const html = await resp.text();
-      const container = document.getElementById('wishlist-modal-content');
-      if (container) {
-        container.innerHTML = html;
-        bindWishlistRemoveButtons(container);
-      }
-    } catch (err) {
-      console.error('Error al cargar wishlist drawer:', err);
-    }
-  }
-
-  function bindWishlistRemoveButtons(container) {
-    container.querySelectorAll('.js-wishlist-remove').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        const pid = parseInt(btn.getAttribute('data-product-id'), 10);
-        if (!pid) return;
-
-        const r = await fetch('/Wishlist/Remove', {
-          method: 'POST',
-          credentials: 'same-origin',
-          headers: {
-            'Content-Type': 'application/json',
-            'RequestVerificationToken': XSRF
-          },
-          body: JSON.stringify({ productId: pid })
-        });
-
-        if (r.ok) {
-          await loadWishlistDrawer();
-          await updateWishlistCount(); // 🔴 ACTUALIZAR CONTADOR
-        }
-      });
-    });
-  }
-
-  async function openWishlistModal() {
-    await loadWishlistDrawer();
-    const modalEl = document.getElementById('wishlist-modal');
-    if (modalEl && typeof bootstrap !== 'undefined') {
-      const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-      modal.show();
-    }
-  }
-
-  document.addEventListener('DOMContentLoaded', function () {
-    // Actualizar contador al cargar la página
-    updateWishlistCount();
-
-    // Abrir modal
-    const btn = document.getElementById('btnOpenWishlist');
-    if (btn) {
-      btn.addEventListener('click', function (e) {
-        e.preventDefault();
-        openWishlistModal();
-      });
-    }
-
-    // Botón alternativo si existe
-    const btnAlt = document.getElementById('js-wishlist-open');
-    if (btnAlt) {
-      btnAlt.addEventListener('click', function (e) {
-        e.preventDefault();
-        openWishlistModal();
-      });
-    }
-  });
-
-  console.log('🎯 Script de Wishlist cargado');
-
-  // === Wishlist AJAX (CORREGIDO) ===
-(function () {
-  async function postJson(url, data) {
-    const resp = await fetch(url, {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': XSRF },
-      body: JSON.stringify(data || {})
-    });
-    if (resp.status === 401) {
-      window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(location.pathname + location.search);
-      return null;
-    }
-    try { return await resp.json(); } catch { return null; }
-  }
-
-  function markActive(btn) {
-    btn.classList.add('active');
-    btn.setAttribute('aria-pressed', 'true');
-    const i = btn.querySelector('i.fas.fa-heart');
-    if (i) i.classList.add('text-danger');
-  }
-
-  document.querySelectorAll('.js-add-wishlist').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      e.preventDefault();
-      const pid = parseInt(btn.getAttribute('data-product-id'), 10);
-      if (!pid) return;
-      
-      const res = await postJson('/Wishlist/Add', { productId: pid });
-      
-      if (res && res.ok) {
-        markActive(btn);
-        
-        // 🔴 ACTUALIZAR CONTADOR
-        if (typeof window.updateWishlistCount === 'function') {
-          await window.updateWishlistCount();
-        }
-        
-        console.log('✅ Producto agregado a wishlist');
-      }
-    });
-  });
-})();
-})();
-</script>
-
-    <!-- 🛒 Carrito: helpers globales (CORREGIDO) -->
+    <!-- Wishlist (CORREGIDO - con manejo de usuarios no autenticados) -->
     <script>
     (function () {
         const metaToken = document.querySelector('meta[name="RequestVerificationToken"]');
         const XSRF = metaToken?.content || '';
 
+        // Función para mostrar el modal de autenticación requerida
+        function showAuthRequiredModal() {
+            const modalEl = document.getElementById('authRequiredModal');
+            if (modalEl && typeof bootstrap !== 'undefined') {
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.show();
+            }
+        }
+
+        // Verificar si el usuario está autenticado
+        function isUserAuthenticated() {
+            return @((User?.Identity?.IsAuthenticated ?? false).ToString().ToLower());
+        }
+
+        // 🔴 FUNCIÓN GLOBAL para actualizar el contador
+        async function updateWishlistCount() {
+            // Si no está autenticado, no intentar cargar el contador
+            if (!isUserAuthenticated()) {
+                document.querySelectorAll('.wishlist-count').forEach(el => {
+                    el.textContent = '(0)';
+                });
+                return;
+            }
+
+            try {
+                const resp = await fetch('/Wishlist/Count', { credentials: 'same-origin' });
+                if (!resp.ok) return;
+                const data = await resp.json();
+                
+                document.querySelectorAll('.wishlist-count').forEach(el => {
+                    el.textContent = `(${data.count || 0})`;
+                });
+                
+                const badge = document.getElementById('js-wishlist-count');
+                if (badge) {
+                    badge.textContent = data.count || 0;
+                    badge.style.display = (data.count > 0) ? 'inline-block' : 'none';
+                }
+            } catch (err) {
+                console.error('Error al actualizar wishlist count:', err);
+            }
+        }
+
+        async function loadWishlistDrawer() {
+            if (!isUserAuthenticated()) {
+                showAuthRequiredModal();
+                return;
+            }
+
+            try {
+                const resp = await fetch('/Wishlist/Drawer', { credentials: 'same-origin' });
+                if (resp.status === 401) {
+                    showAuthRequiredModal();
+                    return;
+                }
+                const html = await resp.text();
+                const container = document.getElementById('wishlist-modal-content');
+                if (container) {
+                    container.innerHTML = html;
+                    bindWishlistRemoveButtons(container);
+                }
+            } catch (err) {
+                console.error('Error al cargar wishlist drawer:', err);
+            }
+        }
+
+        function bindWishlistRemoveButtons(container) {
+            container.querySelectorAll('.js-wishlist-remove').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    if (!isUserAuthenticated()) {
+                        showAuthRequiredModal();
+                        return;
+                    }
+
+                    const pid = parseInt(btn.getAttribute('data-product-id'), 10);
+                    if (!pid) return;
+
+                    const r = await fetch('/Wishlist/Remove', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': XSRF
+                        },
+                        body: JSON.stringify({ productId: pid })
+                    });
+
+                    if (r.ok) {
+                        await loadWishlistDrawer();
+                        await updateWishlistCount();
+                    }
+                });
+            });
+        }
+
+        async function openWishlistModal() {
+            if (!isUserAuthenticated()) {
+                showAuthRequiredModal();
+                return;
+            }
+            await loadWishlistDrawer();
+            const modalEl = document.getElementById('wishlist-modal');
+            if (modalEl && typeof bootstrap !== 'undefined') {
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.show();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            updateWishlistCount();
+
+            // Wishlist - Desktop
+            const btn = document.getElementById('btnOpenWishlist');
+            if (btn) {
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    openWishlistModal();
+                });
+            }
+
+            // Wishlist - Mobile
+            const mobileWishlistBtn = document.getElementById('btnOpenWishlistMobile');
+            if (mobileWishlistBtn) {
+                mobileWishlistBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    openWishlistModal();
+                });
+            }
+
+            // Botón alternativo si existe
+            const btnAlt = document.getElementById('js-wishlist-open');
+            if (btnAlt) {
+                btnAlt.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    openWishlistModal();
+                });
+            }
+        });
+
+        // === Wishlist AJAX (CORREGIDO) ===
+        (function () {
+            async function postJson(url, data) {
+                if (!isUserAuthenticated()) {
+                    showAuthRequiredModal();
+                    return null;
+                }
+
+                const resp = await fetch(url, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': XSRF },
+                    body: JSON.stringify(data || {})
+                });
+                
+                if (resp.status === 401) {
+                    showAuthRequiredModal();
+                    return null;
+                }
+                
+                try { return await resp.json(); } catch { return null; }
+            }
+
+            function markActive(btn) {
+                btn.classList.add('active');
+                btn.setAttribute('aria-pressed', 'true');
+                const i = btn.querySelector('i.fas.fa-heart');
+                if (i) i.classList.add('text-danger');
+            }
+
+            document.querySelectorAll('.js-add-wishlist').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    
+                    if (!isUserAuthenticated()) {
+                        showAuthRequiredModal();
+                        return;
+                    }
+                    
+                    const pid = parseInt(btn.getAttribute('data-product-id'), 10);
+                    if (!pid) return;
+                    
+                    const res = await postJson('/Wishlist/Add', { productId: pid });
+                    
+                    if (res && res.ok) {
+                        markActive(btn);
+                        await updateWishlistCount();
+                        console.log('✅ Producto agregado a wishlist');
+                    }
+                });
+            });
+        })();
+    })();
+    </script>
+
+    <!-- 🛒 Carrito: helpers globales (CORREGIDO con manejo de autenticación) -->
+    <script>
+    (function () {
+        const metaToken = document.querySelector('meta[name="RequestVerificationToken"]');
+        const XSRF = metaToken?.content || '';
+
+        // Función para mostrar el modal de autenticación requerida
+        function showAuthRequiredModal() {
+            const modalEl = document.getElementById('authRequiredModal');
+            if (modalEl && typeof bootstrap !== 'undefined') {
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.show();
+            }
+        }
+
+        // Verificar si el usuario está autenticado
+        function isUserAuthenticated() {
+            return @((User?.Identity?.IsAuthenticated ?? false).ToString().ToLower());
+        }
+
         async function getCartSummary() {
+            if (!isUserAuthenticated()) {
+                return { count: 0, total: 0, totalFormatted: '$0.00', hasItems: false };
+            }
+
             try {
                 const r = await fetch('/Cart/Summary', { credentials: 'same-origin' });
                 if (!r.ok) return null;
-                return await r.json(); // { count, total, totalFormatted, hasItems }
-            } catch { return null; }
+                return await r.json();
+            } catch { 
+                return { count: 0, total: 0, totalFormatted: '$0.00', hasItems: false };
+            }
         }
 
         async function refreshCartBadges() {
@@ -627,14 +715,18 @@
             if (btnBuy) btnBuy.disabled = !(s.hasItems ?? (s.count > 0));
         }
 
-        // Vincula eventos dentro del drawer (remove / clear)
         function bindCartDrawerEvents(container) {
             if (!container) return;
 
-            // Quitar línea
             container.querySelectorAll('.js-cart-remove').forEach(btn => {
                 btn.addEventListener('click', async function(e) {
                     e.preventDefault();
+                    
+                    if (!isUserAuthenticated()) {
+                        showAuthRequiredModal();
+                        return;
+                    }
+
                     const id = this.getAttribute('data-cart-item-id');
                     if (!id) return;
                     
@@ -662,11 +754,16 @@
                 });
             });
 
-            // Vaciar carrito
             const clearBtn = container.querySelector('.js-cart-clear');
             if (clearBtn) {
                 clearBtn.addEventListener('click', async function(e) {
                     e.preventDefault();
+                    
+                    if (!isUserAuthenticated()) {
+                        showAuthRequiredModal();
+                        return;
+                    }
+
                     if (!confirm('¿Vaciar todo el carrito?')) return;
                     
                     try {
@@ -687,13 +784,22 @@
         }
 
         async function loadCartDrawer() {
+            if (!isUserAuthenticated()) {
+                showAuthRequiredModal();
+                return;
+            }
+
             try {
                 const r = await fetch('/Cart/Drawer', { credentials: 'same-origin' });
+                if (r.status === 401) {
+                    showAuthRequiredModal();
+                    return;
+                }
                 const html = await r.text();
                 const container = document.getElementById('cart-drawer-container');
                 if (container) {
                     container.innerHTML = html;
-                    bindCartDrawerEvents(container); // 🔴 importante: re-bindeo eventos
+                    bindCartDrawerEvents(container);
                 }
             } catch {
                 const container = document.getElementById('cart-drawer-container');
@@ -709,14 +815,22 @@
             }
         }
 
-        // 🔓 Exponer helpers globales (usados desde Catálogo/Producto)
+        // Función para abrir carrito con verificación de autenticación
+        function openCartWithAuthCheck() {
+            if (!isUserAuthenticated()) {
+                showAuthRequiredModal();
+                return false;
+            }
+            return true;
+        }
+
         window.refreshCartBadges = refreshCartBadges;
         window.loadCartDrawer = loadCartDrawer;
-        // alias para compatibilidad con código previo del proyecto
         window.updateCartCount = refreshCartBadges;
 
-        // Abre el offcanvas recargando antes su contenido
         window.openCartAfterAdd = async function () {
+            if (!openCartWithAuthCheck()) return;
+            
             await loadCartDrawer();
             const offcanvasEl = document.getElementById('offcanvasCart');
             if (offcanvasEl && typeof bootstrap !== 'undefined') {
@@ -725,21 +839,29 @@
         }
 
         document.addEventListener('DOMContentLoaded', function () {
-            // Sincroniza totales/contador al cargar (solo clientes)
             const isAdminOrEmployee = document.querySelector('.admin-nav, .employee-nav');
             if (!isAdminOrEmployee) {
                 refreshCartBadges();
             }
 
-            // Cargar drawer al abrir el offcanvas
+            // Manejar clics en botones del carrito con verificación de autenticación
             document.querySelectorAll('[data-bs-target="#offcanvasCart"]').forEach(b => {
-                b.addEventListener('click', loadCartDrawer);
+                b.addEventListener('click', function(e) {
+                    if (!openCartWithAuthCheck()) {
+                        e.preventDefault();
+                        return;
+                    }
+                    loadCartDrawer();
+                });
             });
 
-            // Botón pagar del drawer (navega a /Checkout si hay items)
             const btnCheckout = document.getElementById('btnCartCheckout');
             if (btnCheckout) {
                 btnCheckout.addEventListener('click', () => {
+                    if (!isUserAuthenticated()) {
+                        showAuthRequiredModal();
+                        return;
+                    }
                     window.location.href = '/Checkout';
                 });
             }

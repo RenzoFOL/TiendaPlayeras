@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Slugify;
 using TiendaPlayeras.Web.Data;
 using TiendaPlayeras.Web.Models;
-using Npgsql; // Asegúrate de tener este using para PostgreSQL
+using Npgsql;
 
 namespace TiendaPlayeras.Web.Controllers
 {
@@ -55,7 +55,6 @@ namespace TiendaPlayeras.Web.Controllers
                 name = name.Trim();
                 var slug = _slug.GenerateSlug(name);
 
-                // Verificar duplicados
                 var existingCategory = await _db.Categories
                     .FirstOrDefaultAsync(c => c.Name.ToLower() == name.ToLower() || c.Slug == slug);
 
@@ -69,7 +68,7 @@ namespace TiendaPlayeras.Web.Controllers
                 { 
                     Name = name, 
                     Slug = slug, 
-                    Description = description, 
+                    Description = description?.Trim(), 
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow
                 };
@@ -82,14 +81,8 @@ namespace TiendaPlayeras.Web.Controllers
             }
             catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
             {
-                TempData["Error"] = $"Ya existe una categoría con ese nombre o slug.";
+                TempData["Error"] = "Ya existe una categoría con ese nombre o slug.";
                 _logger.LogWarning(ex, "Intento de crear categoría duplicada: {Name}", name);
-                return RedirectToAction(nameof(Tags));
-            }
-            catch (DbUpdateException ex)
-            {
-                TempData["Error"] = "Error al guardar la categoría en la base de datos.";
-                _logger.LogError(ex, "Error de BD al crear categoría: {Name}", name);
                 return RedirectToAction(nameof(Tags));
             }
             catch (Exception ex)
@@ -121,7 +114,6 @@ namespace TiendaPlayeras.Web.Controllers
                 name = name.Trim();
                 var slug = _slug.GenerateSlug(name);
 
-                // Verificar duplicados (excluyendo la categoría actual)
                 var existingCategory = await _db.Categories
                     .FirstOrDefaultAsync(cat => 
                         cat.Id != id && 
@@ -135,7 +127,7 @@ namespace TiendaPlayeras.Web.Controllers
 
                 c.Name = name;
                 c.Slug = slug;
-                c.Description = description;
+                c.Description = description?.Trim();
                 c.UpdatedAt = DateTime.UtcNow;
 
                 await _db.SaveChangesAsync();
@@ -147,12 +139,6 @@ namespace TiendaPlayeras.Web.Controllers
             {
                 TempData["Error"] = "Ya existe otra categoría con ese nombre o slug.";
                 _logger.LogWarning(ex, "Intento de editar categoría a nombre duplicado ID: {Id}", id);
-                return RedirectToAction(nameof(Tags));
-            }
-            catch (DbUpdateException ex)
-            {
-                TempData["Error"] = "Error al actualizar la categoría en la base de datos.";
-                _logger.LogError(ex, "Error de BD al editar categoría ID: {Id}", id);
                 return RedirectToAction(nameof(Tags));
             }
             catch (Exception ex)
@@ -200,13 +186,12 @@ namespace TiendaPlayeras.Web.Controllers
                 if (string.IsNullOrWhiteSpace(name))
                 {
                     TempData["Error"] = "El nombre de la etiqueta es requerido.";
-                    return RedirectToAction(nameof(Index));
+                    return RedirectToAction(nameof(Tags));
                 }
 
                 name = name.Trim();
                 var slug = _slug.GenerateSlug(name);
 
-                // Verificar duplicados
                 var existingTag = await _db.Tags
                     .FirstOrDefaultAsync(t => 
                         t.CategoryId == categoryId && 
@@ -215,7 +200,7 @@ namespace TiendaPlayeras.Web.Controllers
                 if (existingTag != null)
                 {
                     TempData["Error"] = $"Ya existe una etiqueta con el nombre '{name}' en esta categoría.";
-                    return RedirectToAction(nameof(Index));
+                    return RedirectToAction(nameof(Tags));
                 }
 
                 var t = new Tag 
@@ -231,25 +216,19 @@ namespace TiendaPlayeras.Web.Controllers
                 await _db.SaveChangesAsync();
 
                 TempData["Success"] = $"Etiqueta '{name}' creada correctamente.";
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Tags));
             }
             catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
             {
                 TempData["Error"] = "Ya existe una etiqueta con ese nombre o slug en esta categoría.";
                 _logger.LogWarning(ex, "Intento de crear etiqueta duplicada: {Name} en categoría {CategoryId}", name, categoryId);
-                return RedirectToAction(nameof(Index));
-            }
-            catch (DbUpdateException ex)
-            {
-                TempData["Error"] = "Error al guardar la etiqueta en la base de datos.";
-                _logger.LogError(ex, "Error de BD al crear etiqueta: {Name}", name);
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Tags));
             }
             catch (Exception ex)
             {
                 TempData["Error"] = "Error inesperado al crear la etiqueta.";
                 _logger.LogError(ex, "Error inesperado al crear etiqueta: {Name}", name);
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Tags));
             }
         }
 
@@ -262,19 +241,18 @@ namespace TiendaPlayeras.Web.Controllers
                 if (t == null)
                 {
                     TempData["Error"] = "Etiqueta no encontrada.";
-                    return RedirectToAction(nameof(Index));
+                    return RedirectToAction(nameof(Tags));
                 }
 
                 if (string.IsNullOrWhiteSpace(name))
                 {
                     TempData["Error"] = "El nombre de la etiqueta es requerido.";
-                    return RedirectToAction(nameof(Index));
+                    return RedirectToAction(nameof(Tags));
                 }
 
                 name = name.Trim();
                 var slug = _slug.GenerateSlug(name);
 
-                // Verificar duplicados (excluyendo la etiqueta actual)
                 var existingTag = await _db.Tags
                     .FirstOrDefaultAsync(tag => 
                         tag.Id != id && 
@@ -284,7 +262,7 @@ namespace TiendaPlayeras.Web.Controllers
                 if (existingTag != null)
                 {
                     TempData["Error"] = $"Ya existe una etiqueta con el nombre '{name}' en esta categoría.";
-                    return RedirectToAction(nameof(Index));
+                    return RedirectToAction(nameof(Tags));
                 }
 
                 t.Name = name;
@@ -295,25 +273,19 @@ namespace TiendaPlayeras.Web.Controllers
                 await _db.SaveChangesAsync();
 
                 TempData["Success"] = $"Etiqueta '{name}' actualizada correctamente.";
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Tags));
             }
             catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
             {
                 TempData["Error"] = "Ya existe una etiqueta con ese nombre o slug en esta categoría.";
                 _logger.LogWarning(ex, "Intento de editar etiqueta a nombre duplicado ID: {Id}", id);
-                return RedirectToAction(nameof(Index));
-            }
-            catch (DbUpdateException ex)
-            {
-                TempData["Error"] = "Error al actualizar la etiqueta en la base de datos.";
-                _logger.LogError(ex, "Error de BD al editar etiqueta ID: {Id}", id);
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Tags));
             }
             catch (Exception ex)
             {
                 TempData["Error"] = "Error inesperado al actualizar la etiqueta.";
                 _logger.LogError(ex, "Error inesperado al editar etiqueta ID: {Id}", id);
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Tags));
             }
         }
 
@@ -326,7 +298,7 @@ namespace TiendaPlayeras.Web.Controllers
                 if (t == null)
                 {
                     TempData["Error"] = "Etiqueta no encontrada.";
-                    return RedirectToAction(nameof(Index));
+                    return RedirectToAction(nameof(Tags));
                 }
 
                 t.IsActive = !t.IsActive;
@@ -336,13 +308,13 @@ namespace TiendaPlayeras.Web.Controllers
 
                 var action = t.IsActive ? "activada" : "desactivada";
                 TempData["Success"] = $"Etiqueta '{t.Name}' {action} correctamente.";
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Tags));
             }
             catch (Exception ex)
             {
                 TempData["Error"] = "Error al cambiar el estado de la etiqueta.";
                 _logger.LogError(ex, "Error al toggle etiqueta ID: {Id}", id);
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Tags));
             }
         }
 
@@ -370,13 +342,12 @@ namespace TiendaPlayeras.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Tags(int? categoryId, string? q)
+        public async Task<IActionResult> Tags(int? categoryId, string? q, string? categorySearch, int catPage = 1, int tagPage = 1)
         {
             try
             {
                 var cats = await _db.Categories
                     .Include(c => c.Tags)
-                    .Where(c => c.IsActive)
                     .OrderBy(c => c.Name)
                     .ToListAsync();
 
@@ -399,6 +370,9 @@ namespace TiendaPlayeras.Web.Controllers
                 ViewBag.Categories = cats;
                 ViewBag.CategoryId = categoryId;
                 ViewBag.Q = q ?? "";
+                ViewBag.CategorySearch = categorySearch ?? "";
+                ViewBag.CategoryPage = catPage;
+                ViewBag.TagPage = tagPage;
 
                 return View(tags);
             }
@@ -424,7 +398,6 @@ namespace TiendaPlayeras.Web.Controllers
                 name = name.Trim();
                 var slug = _slug.GenerateSlug(name);
 
-                // Verificar duplicados
                 var existingTag = await _db.Tags
                     .FirstOrDefaultAsync(t => 
                         t.CategoryId == categoryId && 
@@ -457,12 +430,6 @@ namespace TiendaPlayeras.Web.Controllers
                 _logger.LogWarning(ex, "Intento de crear etiqueta inline duplicada: {Name}", name);
                 return RedirectToAction(nameof(Tags), new { categoryId });
             }
-            catch (DbUpdateException ex)
-            {
-                TempData["Error"] = "Error al guardar la etiqueta en la base de datos.";
-                _logger.LogError(ex, "Error de BD al crear etiqueta inline: {Name}", name);
-                return RedirectToAction(nameof(Tags), new { categoryId });
-            }
             catch (Exception ex)
             {
                 TempData["Error"] = "Error inesperado al crear la etiqueta.";
@@ -492,7 +459,6 @@ namespace TiendaPlayeras.Web.Controllers
                 name = name.Trim();
                 var slug = _slug.GenerateSlug(name);
 
-                // Verificar duplicados (excluyendo la etiqueta actual)
                 var existingTag = await _db.Tags
                     .FirstOrDefaultAsync(tag => 
                         tag.Id != id && 
@@ -522,12 +488,6 @@ namespace TiendaPlayeras.Web.Controllers
                 _logger.LogWarning(ex, "Intento de actualizar etiqueta a nombre duplicado ID: {Id}", id);
                 return RedirectToAction(nameof(Tags), new { categoryId });
             }
-            catch (DbUpdateException ex)
-            {
-                TempData["Error"] = "Error al actualizar la etiqueta en la base de datos.";
-                _logger.LogError(ex, "Error de BD al actualizar etiqueta ID: {Id}", id);
-                return RedirectToAction(nameof(Tags), new { categoryId });
-            }
             catch (Exception ex)
             {
                 TempData["Error"] = "Error inesperado al actualizar la etiqueta.";
@@ -536,16 +496,13 @@ namespace TiendaPlayeras.Web.Controllers
             }
         }
 
-        // Método auxiliar para detectar violaciones de restricciones únicas en PostgreSQL
         private static bool IsUniqueConstraintViolation(DbUpdateException ex)
         {
             if (ex.InnerException is PostgresException postgresEx)
             {
-                // Código de error 23505 = unique_violation en PostgreSQL
                 return postgresEx.SqlState == "23505";
             }
             
-            // Fallback: verificar en el mensaje de error
             var errorMessage = ex.InnerException?.Message ?? "";
             return errorMessage.Contains("23505") || 
                    errorMessage.Contains("unique constraint") ||
