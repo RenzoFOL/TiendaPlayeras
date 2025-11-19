@@ -21,71 +21,77 @@ namespace TiendaPlayeras.Web.Controllers
 
         // GET: /AdminOrders
         public async Task<IActionResult> Index(string status = "", string search = "")
-        {
-            var query = _context.OrderTickets.AsQueryable();
+{
+    var query = _context.Orders
+        .Include(o => o.Items)
+        .Include(o => o.User)
+        .AsQueryable();
 
-            if (!string.IsNullOrEmpty(status))
-            {
-                query = query.Where(o => o.Status == status);
-            }
+    if (!string.IsNullOrEmpty(status))
+    {
+        query = query.Where(o => o.Status == status);
+    }
 
-            if (!string.IsNullOrEmpty(search))
-            {
-                query = query.Where(o => 
-                    o.ProductName.Contains(search) ||
-                    o.UserName.Contains(search) ||
-                    o.Id.ToString().Contains(search));
-            }
+    if (!string.IsNullOrEmpty(search))
+    {
+        query = query.Where(o => 
+            o.OrderNumber.Contains(search) ||
+            o.User!.UserName!.Contains(search) ||
+            o.Items.Any(i => i.ProductName.Contains(search)));
+    }
 
-            var orders = await query
-                .OrderByDescending(o => o.CreatedAt)
-                .ToListAsync();
+    var orders = await query
+        .OrderByDescending(o => o.CreatedAt)
+        .ToListAsync();
 
-            ViewBag.StatusFilter = status;
-            ViewBag.SearchFilter = search;
-            ViewBag.StatusOptions = OrderStatus.GetAllStatuses();
+    ViewBag.StatusFilter = status;
+    ViewBag.SearchFilter = search;
+    ViewBag.StatusOptions = OrderStatus.GetAllStatuses();
 
-            return View(orders);
-        }
+    return View(orders);
+}
 
         // GET: /AdminOrders/Details/5
-        public async Task<IActionResult> Details(int id)
-        {
-            var order = await _context.OrderTickets
-                .FirstOrDefaultAsync(o => o.Id == id);
+       public async Task<IActionResult> Details(int id)
+{
+    var order = await _context.Orders
+        .Include(o => o.Items)
+        .Include(o => o.User)
+        .FirstOrDefaultAsync(o => o.Id == id);
 
-            if (order == null)
-            {
-                return NotFound();
-            }
+    if (order == null)
+    {
+        return NotFound();
+    }
 
-            return View(order);
-        }
+    return View(order);
+}
 
-        // POST: /AdminOrders/UpdateStatus/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateStatus(int id, string newStatus, string? notes = null)
-        {
-            var order = await _context.OrderTickets.FindAsync(id);
-            if (order == null)
-            {
-                return NotFound();
-            }
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> UpdateStatus(int id, string newStatus, string? notes = null)
+{
+    var order = await _context.Orders.FindAsync(id);
+    if (order == null)
+    {
+        return NotFound();
+    }
 
-            var currentUser = User.FindFirstValue(ClaimTypes.Name) ?? "Usuario";
-            
-            // Actualizar estado
-            order.Status = newStatus;
-            order.AddStatusHistory(newStatus, currentUser, notes);
+    var currentUser = User.FindFirstValue(ClaimTypes.Name) ?? "Administrador";
+    
+    // Actualizar estado
+    order.Status = newStatus;
+    order.UpdatedAt = DateTime.UtcNow;
+    
+    // Aquí podrías agregar un sistema de historial para Orders si lo necesitas
+    // order.AddStatusHistory(newStatus, currentUser, notes);
 
-            await _context.SaveChangesAsync();
+    await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = $"Estado actualizado a {OrderStatus.GetDisplayName(newStatus)}";
+    TempData["SuccessMessage"] = $"Estado actualizado a {OrderStatus.GetDisplayName(newStatus)}";
 
-            return RedirectToAction(nameof(Details), new { id });
-        }
-
+    return RedirectToAction(nameof(Details), new { id });
+}
         // GET: /AdminOrders/GetStatusHistory/5
         public async Task<IActionResult> GetStatusHistory(int id)
         {

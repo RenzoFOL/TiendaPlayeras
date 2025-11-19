@@ -294,8 +294,12 @@
         </a>
 
         <!-- Card: Ver Catálogo -->
-        <a href="/catalogo" target="_blank" 
+        <a href="/catalog" target="_blank" 
            class="menu-card" data-card="catalog">
+            <div class="card-stats">
+                <i class="fas fa-store me-1"></i>
+                <span>Vista previa</span>
+            </div>
             <div class="card-content">
                 <div class="card-icon">
                     <i class="fas fa-store"></i>
@@ -304,7 +308,7 @@
                 <p class="card-description">
                     Previsualiza cómo se ven los productos en la tienda pública
                 </p>
-                <span class="card-badge">Previsualizar</span>
+                <span class="card-badge">Entrar</span>
             </div>
             <div class="card-arrow">
                 <i class="fas fa-external-link-alt"></i>
@@ -312,40 +316,22 @@
         </a>
 
         <!-- Card: Gestión de Pedidos -->
-        <a href="@Url.Action("Index", "Orders")" 
-           class="menu-card" data-card="orders">
-            <div class="card-content">
-                <div class="card-icon">
-                    <i class="fas fa-clipboard-list"></i>
+        <a href="@Url.Action("Index", "AdminOrders")" 
+               class="menu-card" data-card="orders">
+                <div class="card-content">
+                    <div class="card-icon">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <h3 class="card-title">Gestión de Pedidos</h3>
+                    <p class="card-description">
+                        Administra y procesa los pedidos de los clientes
+                    </p>
+                    <span class="card-badge">Gestionar</span>
                 </div>
-                <h3 class="card-title">Gestión de Pedidos</h3>
-                <p class="card-description">
-                    Administra y procesa los pedidos de los clientes
-                </p>
-                <span class="card-badge">Gestionar</span>
-            </div>
-            <div class="card-arrow">
-                <i class="fas fa-arrow-right"></i>
-            </div>
-        </a>
-
-        <!-- Card: Regresar a la Tienda -->
-        <a href="@Url.Content("~/")" 
-           class="menu-card" data-card="store">
-            <div class="card-content">
-                <div class="card-icon">
-                    <i class="fas fa-shopping-bag"></i>
+                <div class="card-arrow">
+                    <i class="fas fa-arrow-right"></i>
                 </div>
-                <h3 class="card-title">Ver Tienda</h3>
-                <p class="card-description">
-                    Regresa a la vista principal de la tienda en línea
-                </p>
-                <span class="card-badge">Ir a tienda</span>
-            </div>
-            <div class="card-arrow">
-                <i class="fas fa-arrow-right"></i>
-            </div>
-        </a>
+            </a>
     </div>
 </div>
 

@@ -153,7 +153,7 @@
     }
   }
 
-  // === Cargar "Mis pedidos" sin refrescar ===
+  // === Cargar "Mis pedidos" ===
   async function loadOrders(btn) {
     setActive(btn);
     content.innerHTML = `
@@ -163,7 +163,10 @@
       </div>`;
     try {
       const resp = await fetch(urls.ordersPartial, {
-        headers: { 'X-Requested-With': 'fetch' },
+        headers: { 
+          'X-Requested-With': 'fetch',
+          'RequestVerificationToken': getToken()
+        },
         cache: 'no-store'
       });
       if (!resp.ok) throw new Error('HTTP ' + resp.status);
@@ -171,11 +174,22 @@
       content.innerHTML = html;
     } catch (err) {
       console.error(err);
-      content.innerHTML = `<div class="alert alert-danger">No se pudieron cargar tus pedidos. Intenta más tarde.</div>`;
+      content.innerHTML = `
+        <div class="alert alert-danger">
+          <h5>Error al cargar pedidos</h5>
+          <p class="mb-0">No se pudieron cargar tus pedidos. Intenta más tarde.</p>
+        </div>`;
     }
   }
 
-  // === menú lateral ===
+  // === Cargar contenido del perfil ===
+  function loadProfile(btn) {
+    setActive(btn);
+    content.innerHTML = originalHTML;
+    bindProfileHandlers(); // re-enlazar eventos
+  }
+
+  // === Manejo del menú lateral ===
   menu.addEventListener('click', function (e) {
     const btn = e.target.closest('.list-group-item');
     if (!btn || btn.classList.contains('disabled')) return;
@@ -184,13 +198,12 @@
     if (action === 'orders') {
       loadOrders(btn);
     } else if (action === 'profile') {
-      setActive(btn);
-      content.innerHTML = originalHTML;
-      bindProfileHandlers(); // re-enlazar eventos
+      loadProfile(btn);
     }
+    // Los otros botones (addresses, payments) están disabled
   });
 
-  // iniciar
+  // Inicializar
   bindProfileHandlers();
 
 })();

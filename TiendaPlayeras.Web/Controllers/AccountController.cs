@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Hosting;
+using TiendaPlayeras.Web.Data;
 using System.Web;
 using System.Security.Cryptography;
 using System.Text;
@@ -25,6 +25,7 @@ namespace TiendaPlayeras.Web.Controllers
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly EmailSender _email;
         private readonly IWebHostEnvironment _env;
+        private readonly ApplicationDbContext _context;
 
         private const string SecQSessionPrefix = "SECQ_OK_";
         
@@ -50,7 +51,8 @@ namespace TiendaPlayeras.Web.Controllers
             SignInManager<ApplicationUser> signInManager,
             RoleManager<IdentityRole> roleManager,
             EmailSender email,
-            IWebHostEnvironment env)
+            IWebHostEnvironment env,
+            ApplicationDbContext context)
         {
             _userManager   = userManager;
             _signInManager = signInManager;
@@ -385,6 +387,25 @@ namespace TiendaPlayeras.Web.Controllers
 
             return Json(new { ok = true, question });
         }
+
+        // GET: /Account/OrdersPartial
+[Authorize]
+[HttpGet("account/orders-partial")]
+public async Task<IActionResult> OrdersPartial()
+{
+    var user = await _userManager.GetUserAsync(User);
+    if (user == null) return Unauthorized();
+
+    // Usar el mismo contexto que tienes en MyOrdersController
+    // Necesitarás inyectar ApplicationDbContext en AccountController
+    var orders = await _context.Orders
+        .Where(o => o.UserId == user.Id)
+        .Include(o => o.Items)
+        .OrderByDescending(o => o.CreatedAt)
+        .ToListAsync();
+
+    return PartialView("_OrdersPartial", orders);
+}
 
         [AllowAnonymous]
         [HttpPost("account/verify-security-answer")]

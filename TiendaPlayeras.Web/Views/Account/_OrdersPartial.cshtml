@@ -1,10 +1,7 @@
-@model List<Order>  
-@{
-    ViewData["Title"] = "Mis Pedidos";
-}
+@model List<Order>
 
-<div class="container my-4">
-    <h2>Mis Pedidos</h2>
+<div class="container py-5">
+    <h2 class="mb-4">Mis Pedidos</h2>
 
     @if (!Model.Any())
     {
@@ -51,7 +48,7 @@
                             </p>
                         </div>
                         <div class="card-footer">
-                            <a href="@Url.Action("Details", new { id = order.Id })" 
+                            <a href="@Url.Action("Details", "MyOrders", new { id = order.Id })" 
                                class="btn btn-outline-primary btn-sm">Ver Detalles</a>
                         </div>
                     </div>

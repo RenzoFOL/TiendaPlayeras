@@ -8,34 +8,34 @@
      data-url-update="@Url.Action("UpdateProfileField","Account")"
      data-url-changepwd="@Url.Action("ChangePassword","Account")"
      data-url-delete="@Url.Action("DeleteAccount","Account")"
-     data-url-orders-partial="/Pedidos/Partial">
+     data-url-orders-partial="/account/orders-partial">
     <div class="row">
         <!-- ===== Sidebar ===== -->
-<aside class="col-12 col-md-4 col-lg-3 mb-3">
-    <div class="account-sidebar card shadow-sm border-0">
-        <div class="card-body p-0">
-            <nav class="list-group list-group-flush" id="accountMenu">
-                <button type="button" class="list-group-item list-group-item-action active" data-action="profile">
-                    <span class="item-label">Editar perfil</span>
-                </button>
-                <button type="button" class="list-group-item list-group-item-action" data-action="orders" id="btnOrders">
-                    <span class="item-label">Mis pedidos</span>
-                </button>
-                <button type="button" class="list-group-item list-group-item-action disabled" data-action="addresses" aria-disabled="true" title="Próximamente">
-                    <span class="item-label">Direcciones</span>
-                </button>
-                <button type="button" class="list-group-item list-group-item-action disabled" data-action="payments" aria-disabled="true" title="Próximamente">
-                    <span class="item-label">Métodos de pago</span>
-                </button>
-            </nav>
-        </div>
-    </div>
-</aside>
+        <aside class="col-12 col-md-4 col-lg-3 mb-3">
+            <div class="account-sidebar card shadow-sm border-0">
+                <div class="card-body p-0">
+                    <nav class="list-group list-group-flush" id="accountMenu">
+                        <button type="button" class="list-group-item list-group-item-action active" data-action="profile">
+                            <span class="item-label">Editar perfil</span>
+                        </button>
+                        <button type="button" class="list-group-item list-group-item-action" data-action="orders" id="btnOrders">
+                            <span class="item-label">Mis pedidos</span>
+                        </button>
+                        <button type="button" class="list-group-item list-group-item-action disabled" data-action="addresses" aria-disabled="true" title="Próximamente">
+                            <span class="item-label">Direcciones</span>
+                        </button>
+                        <button type="button" class="list-group-item list-group-item-action disabled" data-action="payments" aria-disabled="true" title="Próximamente">
+                            <span class="item-label">Métodos de pago</span>
+                        </button>
+                    </nav>
+                </div>
+            </div>
+        </aside>
 
         <!-- ===== Panel derecho ===== -->
         <section class="col-12 col-md-8 col-lg-9">
-            <div id="accountContent"><!-- === CONTENIDO INICIAL: EDITAR PERFIL === -->
-
+            <div id="accountContent">
+                <!-- === CONTENIDO INICIAL: EDITAR PERFIL === -->
                 @Html.AntiForgeryToken()
 
                 <!-- Alertas Bootstrap -->
@@ -167,7 +167,6 @@
                     </div>
                   </div>
                 </div>
-
             </div><!-- /#accountContent -->
         </section>
     </div>

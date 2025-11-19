@@ -1,4 +1,4 @@
-@model List<OrderTicket>
+@model List<Order>
 @{
     ViewData["Title"] = "Gestión de Pedidos";
 }
@@ -27,7 +27,7 @@
                 <div class="col-md-4">
                     <label for="search" class="form-label">Buscar</label>
                     <input type="text" name="search" id="search" class="form-control" 
-                           value="@ViewBag.SearchFilter" placeholder="ID, producto o cliente...">
+                           value="@ViewBag.SearchFilter" placeholder="N° orden, cliente o producto...">
                 </div>
                 <div class="col-md-4 d-flex align-items-end">
                     <button type="submit" class="btn btn-primary me-2">Filtrar</button>
@@ -44,11 +44,9 @@
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Producto</th>
+                            <th>N° Orden</th>
                             <th>Cliente</th>
-                            <th>Talla</th>
-                            <th>Cantidad</th>
+                            <th>Productos</th>
                             <th>Total</th>
                             <th>Punto Entrega</th>
                             <th>Estado</th>
@@ -60,16 +58,20 @@
                         @foreach (var order in Model)
                         {
                             <tr>
-                                <td>@order.Id</td>
-                                <td>@order.ProductName</td>
+                                <td>@order.OrderNumber</td>
                                 <td>@order.UserName</td>
-                                <td>@order.Size</td>
-                                <td>@order.Quantity</td>
-                                <td>@order.TotalPrice.ToString("C")</td>
+                                <td>
+                                    <small>
+                                        @order.TotalItems producto(s)<br>
+                                        @string.Join(", ", order.Items.Take(2).Select(i => i.ProductName))
+                                        @if (order.Items.Count > 2) { <text>...</text> }
+                                    </small>
+                                </td>
+                                <td>@order.Total.ToString("C")</td>
                                 <td>@order.DeliveryPoint</td>
                                 <td>
                                     <span class="badge @GetStatusBadgeClass(order.Status)">
-                                        @OrderStatus.GetDisplayName(order.Status)
+                                        @order.StatusDisplay
                                     </span>
                                 </td>
                                 <td>@order.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>

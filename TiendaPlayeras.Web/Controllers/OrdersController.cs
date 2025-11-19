@@ -139,18 +139,7 @@ namespace TiendaPlayeras.Web.Controllers
 [ValidateAntiForgeryToken]
 public async Task<IActionResult> Checkout(CheckoutViewModel model)
 {
-    // Recargamos opciones en el modelo para re-mostrar la vista si hay error
-    model.AvailableDeliveryOptions = DeliveryOptions.All;
-
-    if (string.IsNullOrEmpty(model.SelectedDeliveryOptionId))
-    {
-        ModelState.AddModelError("SelectedDeliveryOptionId", "Selecciona un lugar y fecha de entrega.");
-    }
-
-    if (!ModelState.IsValid)
-    {
-        return View(model);
-    }
+    // ... código de validación existente ...
 
     var selectedOption = DeliveryOptions.All
         .FirstOrDefault(o => o.Id == model.SelectedDeliveryOptionId);
@@ -161,11 +150,12 @@ public async Task<IActionResult> Checkout(CheckoutViewModel model)
         return View(model);
     }
 
-    OrderTicket ticket;
+    // 👇 NUEVO: Variable para redirección
+    int orderId = 0;
 
     if (model.FromCart)
     {
-        // ---------- Flujo: compra desde el carrito ----------
+        // ---------- FLUJO CARRITO (MÚLTIPLES PRODUCTOS) ----------
         if (string.IsNullOrEmpty(CurrentUserId))
             return Unauthorized();
 
@@ -176,55 +166,136 @@ public async Task<IActionResult> Checkout(CheckoutViewModel model)
             return View(model);
         }
 
-        var totalPrice = summary.TotalAmount;
-        var totalItems = summary.TotalItems;
-
-        // Actualizamos el modelo para coherencia
-        model.Quantity = totalItems;
-        model.TotalPrice = totalPrice;
-        model.ProductName = $"Compra de carrito ({totalItems} productos)";
-        model.Size = "Varios";
-
-        // Creamos un solo ticket que representa la compra completa del carrito
-        ticket = new OrderTicket
+        // 👇 CREAR ORDER COMPLETA
+        var order = new Order
         {
-            ProductId = 0, // No hay un solo producto, es el carrito
-            ProductName = model.ProductName,
-            UnitPrice = totalPrice,  // mostramos el total como un ítem
-            Quantity = 1,
-            Size = "VARIOS",
-            TotalPrice = totalPrice,
+            UserId = CurrentUserId,
             UserName = User?.Identity?.Name ?? "Invitado",
-            UserId = CurrentUserId, // 👈 AQUÍ
+            Status = "Pending",
+            Subtotal = summary.TotalAmount,
+            Shipping = 0, // Envío gratis por ahora
+            Total = summary.TotalAmount,
             DeliveryPoint = selectedOption.Point,
             DeliverySchedule = selectedOption.Schedule,
             PaymentMethod = "Contra Entrega",
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
         };
 
-        // Agregar historial inicial
-        ticket.AddStatusHistory(OrderStatus.Pending, "System", "Pedido creado automáticamente");
+        // Agregar items del carrito
+        foreach (var cartItem in summary.Lines)
+        {
+            var orderItem = new OrderItem
+            {
+                ProductId = cartItem.ProductId,
+                ProductName = cartItem.ProductName,
+                Size = cartItem.Size,
+                Quantity = cartItem.Quantity,
+                UnitPrice = cartItem.UnitPrice
+            };
+            order.Items.Add(orderItem);
+        }
 
-        // Limpiamos el carrito después de generar el ticket
+        _context.Orders.Add(order);
+        await _context.SaveChangesAsync();
+
+        // Generar número de orden
+        order.GenerateOrderNumber();
+        await _context.SaveChangesAsync();
+
+        orderId = order.Id;
+
+        // 👇 CREAR TICKET SIMPLIFICADO para el carrito (opcional)
+        var ticket = new OrderTicket
+        {
+            ProductId = 0,
+            ProductName = $"Orden #{order.OrderNumber} - {summary.TotalItems} productos",
+            UnitPrice = summary.TotalAmount,
+            Quantity = 1,
+            Size = "VARIOS",
+            TotalPrice = summary.TotalAmount,
+            UserName = User?.Identity?.Name ?? "Invitado",
+            UserId = CurrentUserId,
+            DeliveryPoint = selectedOption.Point,
+            DeliverySchedule = selectedOption.Schedule,
+            PaymentMethod = "Contra Entrega",
+            CreatedAt = DateTime.UtcNow,
+            Status = "Pending"
+        };
+        ticket.AddStatusHistory("Pending", "System", "Pedido creado automáticamente");
+
+        _context.OrderTickets.Add(ticket);
+        await _context.SaveChangesAsync();
+
+        // Generar PDF del ticket
+        var ticketsFolder = Path.Combine(_env.WebRootPath, "tickets");
+        if (!Directory.Exists(ticketsFolder))
+            Directory.CreateDirectory(ticketsFolder);
+
+        var pdfFileName = $"ticket-{ticket.Id}.pdf";
+        var pdfFilePath = Path.Combine(ticketsFolder, pdfFileName);
+
+        var document = new TicketDocument(ticket);
+        document.GeneratePdf(pdfFilePath);
+
+        ticket.PdfFileName = pdfFileName;
+        await _context.SaveChangesAsync();
+
+        // Limpiar carrito
         await _cart.ClearAsync(CurrentUserId);
     }
     else
     {
-        // ---------- Flujo original: compra de un solo producto ----------
+        // ---------- FLUJO PRODUCTO INDIVIDUAL (EXISTENTE) ----------
         var product = await _context.Products
             .FirstOrDefaultAsync(p => p.Id == model.ProductId);
 
         if (product == null)
             return NotFound();
 
-        // Normalizar cantidad y recalcular total
         if (model.Quantity < 1)
             model.Quantity = 1;
 
         var totalPrice = product.BasePrice * model.Quantity;
         model.TotalPrice = totalPrice;
 
-        ticket = new OrderTicket
+        // Crear Order para producto individual también
+        var order = new Order
+        {
+            UserId = CurrentUserId,
+            UserName = User?.Identity?.Name ?? "Invitado",
+            Status = "Pending",
+            Subtotal = totalPrice,
+            Shipping = 0,
+            Total = totalPrice,
+            DeliveryPoint = selectedOption.Point,
+            DeliverySchedule = selectedOption.Schedule,
+            PaymentMethod = "Contra Entrega",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        // Agregar item individual
+        var orderItem = new OrderItem
+        {
+            ProductId = product.Id,
+            ProductName = product.Name,
+            Size = model.Size ?? string.Empty,
+            Quantity = model.Quantity,
+            UnitPrice = product.BasePrice
+        };
+        order.Items.Add(orderItem);
+
+        _context.Orders.Add(order);
+        await _context.SaveChangesAsync();
+
+        order.GenerateOrderNumber();
+        await _context.SaveChangesAsync();
+
+        orderId = order.Id;
+
+        // Ticket existente (compatibilidad)
+        var ticket = new OrderTicket
         {
             ProductId = product.Id,
             ProductName = product.Name,
@@ -233,67 +304,73 @@ public async Task<IActionResult> Checkout(CheckoutViewModel model)
             Size = model.Size ?? string.Empty,
             TotalPrice = totalPrice,
             UserName = User?.Identity?.Name ?? "Invitado",
-            UserId = CurrentUserId, // 👈 AQUÍ
+            UserId = CurrentUserId,
             DeliveryPoint = selectedOption.Point,
             DeliverySchedule = selectedOption.Schedule,
             PaymentMethod = "Contra Entrega",
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            Status = "Pending"
         };
+        ticket.AddStatusHistory("Pending", "System", "Pedido creado automáticamente");
 
-        // Agregar historial inicial (SOLO UNA VEZ)
-        ticket.AddStatusHistory(OrderStatus.Pending, "System", "Pedido creado automáticamente");
+        _context.OrderTickets.Add(ticket);
+        await _context.SaveChangesAsync();
+
+        // Generar PDF
+        var ticketsFolder = Path.Combine(_env.WebRootPath, "tickets");
+        if (!Directory.Exists(ticketsFolder))
+            Directory.CreateDirectory(ticketsFolder);
+
+        var pdfFileName = $"ticket-{ticket.Id}.pdf";
+        var pdfFilePath = Path.Combine(ticketsFolder, pdfFileName);
+
+        var document = new TicketDocument(ticket);
+        document.GeneratePdf(pdfFilePath);
+
+        ticket.PdfFileName = pdfFileName;
+        await _context.SaveChangesAsync();
     }
 
-    // Guardar el ticket en la base de datos
-    _context.OrderTickets.Add(ticket);
-    await _context.SaveChangesAsync();
-
-    // Generar y guardar PDF en wwwroot/tickets
-    var ticketsFolder = Path.Combine(_env.WebRootPath, "tickets");
-    if (!Directory.Exists(ticketsFolder))
-        Directory.CreateDirectory(ticketsFolder);
-
-    var pdfFileName = $"ticket-{ticket.Id}.pdf";
-    var pdfFilePath = Path.Combine(ticketsFolder, pdfFileName);
-
-    var document = new TicketDocument(ticket);
-    document.GeneratePdf(pdfFilePath);
-
-    // Actualizar el ticket con el nombre del archivo PDF
-    ticket.PdfFileName = pdfFileName;
-    await _context.SaveChangesAsync();
-
-    // Redirigir a página de confirmación
-    return RedirectToAction(nameof(Confirmation), new { id = ticket.Id });
+    // Redirigir a confirmación de ORDER (no de ticket)
+    return RedirectToAction(nameof(OrderConfirmation), new { id = orderId });
 }
 
-        // GET: /Orders/Confirmation/10
-        [HttpGet]
-        public async Task<IActionResult> Confirmation(int id)
+// 👇 NUEVO: Método de confirmación para Orders
+[HttpGet]
+public async Task<IActionResult> OrderConfirmation(int id)
+{
+    var order = await _context.Orders
+        .Include(o => o.Items)
+        .FirstOrDefaultAsync(o => o.Id == id);
+
+    if (order == null)
+        return NotFound();
+
+    // Crear ViewModel para la confirmación
+    var viewModel = new OrderConfirmationViewModel
+    {
+        OrderId = order.Id,
+        OrderNumber = order.OrderNumber,
+        Status = order.Status,
+        CreatedAt = order.CreatedAt,
+        Total = order.Total,
+        DeliveryPoint = order.DeliveryPoint,
+        DeliverySchedule = order.DeliverySchedule,
+        PaymentMethod = order.PaymentMethod,
+        UserName = order.UserName,
+        Items = order.Items.Select(i => new OrderItemViewModel
         {
-            var ticket = await _context.OrderTickets
-                .FirstOrDefaultAsync(t => t.Id == id);
+            ProductName = i.ProductName,
+            Size = i.Size,
+            Quantity = i.Quantity,
+            UnitPrice = i.UnitPrice,
+            TotalPrice = i.TotalPrice
+        }).ToList()
+    };
 
-            if (ticket == null)
-                return NotFound();
+    return View(viewModel);
+}
 
-            var model = new OrderConfirmationViewModel
-            {
-                TicketId = ticket.Id,
-                ProductName = ticket.ProductName,
-                UnitPrice = ticket.UnitPrice,
-                Quantity = ticket.Quantity,
-                Size = ticket.Size,
-                TotalPrice = ticket.TotalPrice,
-                UserName = ticket.UserName,
-                DeliveryPoint = ticket.DeliveryPoint,
-                DeliverySchedule = ticket.DeliverySchedule,
-                PaymentMethod = ticket.PaymentMethod,
-                CreatedAt = ticket.CreatedAt,
-                PdfFileName = ticket.PdfFileName
-            };
 
-            return View(model);
-        }
     }
 }

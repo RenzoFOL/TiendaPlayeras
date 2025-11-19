@@ -1,11 +1,11 @@
-@model OrderTicket
+@model Order
 @{
-    ViewData["Title"] = $"Pedido #{Model.Id}";
+    ViewData["Title"] = $"Pedido #{Model.OrderNumber}";
 }
 
 <div class="container my-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Pedido #@Model.Id</h2>
+        <h2>Pedido @Model.OrderNumber</h2>
         <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Volver a Mis Pedidos</a>
     </div>
 
@@ -16,41 +16,57 @@
                     <h5 class="card-title mb-0">Detalles del Pedido</h5>
                 </div>
                 <div class="card-body">
-                    <dl class="row">
-                        <dt class="col-sm-4">Producto:</dt>
-                        <dd class="col-sm-8">@Model.ProductName</dd>
+                    <!-- Información general -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p><strong>Número de Orden:</strong><br>@Model.OrderNumber</p>
+                            <p><strong>Total:</strong><br>@Model.Total.ToString("C")</p>
+                            <p><strong>Estado:</strong><br>
+                                <span class="badge @GetStatusBadgeClass(Model.Status)">
+                                    @Model.StatusDisplay
+                                </span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Punto de Entrega:</strong><br>@Model.DeliveryPoint</p>
+                            <p><strong>Horario:</strong><br>@Model.DeliverySchedule</p>
+                            <p><strong>Método de Pago:</strong><br>@Model.PaymentMethod</p>
+                        </div>
+                    </div>
 
-                        <dt class="col-sm-4">Talla:</dt>
-                        <dd class="col-sm-8">@Model.Size</dd>
-
-                        <dt class="col-sm-4">Cantidad:</dt>
-                        <dd class="col-sm-8">@Model.Quantity</dd>
-
-                        <dt class="col-sm-4">Precio Unitario:</dt>
-                        <dd class="col-sm-8">@Model.UnitPrice.ToString("C")</dd>
-
-                        <dt class="col-sm-4">Total:</dt>
-                        <dd class="col-sm-8"><strong>@Model.TotalPrice.ToString("C")</strong></dd>
-
-                        <dt class="col-sm-4">Punto de Entrega:</dt>
-                        <dd class="col-sm-8">@Model.DeliveryPoint</dd>
-
-                        <dt class="col-sm-4">Horario:</dt>
-                        <dd class="col-sm-8">@Model.DeliverySchedule</dd>
-
-                        <dt class="col-sm-4">Método de Pago:</dt>
-                        <dd class="col-sm-8">@Model.PaymentMethod</dd>
-
-                        <dt class="col-sm-4">Estado Actual:</dt>
-                        <dd class="col-sm-8">
-                            <span class="badge @GetStatusBadgeClass(Model.Status)">
-                                @OrderStatus.GetDisplayName(Model.Status)
-                            </span>
-                        </dd>
-
-                        <dt class="col-sm-4">Fecha del Pedido:</dt>
-                        <dd class="col-sm-8">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</dd>
-                    </dl>
+                    <!-- Productos -->
+                    <h6>Productos:</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Talla</th>
+                                    <th class="text-center">Cantidad</th>
+                                    <th class="text-end">Precio Unitario</th>
+                                    <th class="text-end">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Items)
+                                {
+                                    <tr>
+                                        <td>@item.ProductName</td>
+                                        <td>@item.Size</td>
+                                        <td class="text-center">@item.Quantity</td>
+                                        <td class="text-end">@item.UnitPrice.ToString("C")</td>
+                                        <td class="text-end">@item.TotalPrice.ToString("C")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="4" class="text-end"><strong>Total:</strong></td>
+                                    <td class="text-end"><strong>@Model.Total.ToString("C")</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -63,10 +79,11 @@
                     <div class="alert alert-info">
                         <h6><i class="fas fa-info-circle me-2"></i>Instrucciones importantes</h6>
                         <ul class="mb-0">
-                            <li>Presenta tu ticket al momento de recoger tu pedido</li>
-                            <li>Llega puntual al horario seleccionado</li>
-                            <li>Trae identificación oficial</li>
+                            <li>Presenta tu identificación al momento de recoger tu pedido</li>
+                            <li>Llega puntual al horario seleccionado: <strong>@Model.DeliverySchedule</strong></li>
+                            <li>Acude al punto: <strong>@Model.DeliveryPoint</strong></li>
                             <li>El pago se realiza al momento de la entrega</li>
+                            <li>Trae este número de orden: <strong>@Model.OrderNumber</strong></li>
                         </ul>
                     </div>
                 </div>
@@ -80,14 +97,7 @@
                     <h5 class="card-title mb-0">Acciones</h5>
                 </div>
                 <div class="card-body">
-                    @if (!string.IsNullOrEmpty(Model.PdfFileName))
-                    {
-                        <a href="@Url.Action("DownloadTicket", new { id = Model.Id })" 
-                           class="btn btn-primary w-100 mb-2" target="_blank">
-                            <i class="fas fa-download me-2"></i>Descargar Ticket
-                        </a>
-                    }
-                    
+                    <!-- Aquí puedes agregar botones para descargar tickets si los generas para Orders -->
                     @if (Model.Status == "ReadyForPickup")
                     {
                         <div class="alert alert-success">
@@ -95,6 +105,36 @@
                             <p class="mb-0">Tu pedido está listo. Acude al punto de entrega en el horario seleccionado.</p>
                         </div>
                     }
+                    
+                    @if (Model.Status == "Completed")
+                    {
+                        <div class="alert alert-secondary">
+                            <h6><i class="fas fa-flag-checkered me-2"></i>Pedido Completado</h6>
+                            <p class="mb-0">Este pedido ha sido entregado y completado.</p>
+                        </div>
+                    }
+                    
+                    @if (Model.Status == "Cancelled")
+                    {
+                        <div class="alert alert-danger">
+                            <h6><i class="fas fa-times-circle me-2"></i>Pedido Cancelado</h6>
+                            <p class="mb-0">Este pedido ha sido cancelado.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Resumen del pedido -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Resumen</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Fecha del Pedido:</strong><br>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p>
+                    <p><strong>Total de Productos:</strong><br>@Model.TotalItems producto(s)</p>
+                    <p><strong>Subtotal:</strong><br>@Model.Subtotal.ToString("C")</p>
+                    <p><strong>Envío:</strong><br>@Model.Shipping.ToString("C")</p>
+                    <p><strong>Total:</strong><br><strong>@Model.Total.ToString("C")</strong></p>
                 </div>
             </div>
 

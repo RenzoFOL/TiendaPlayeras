@@ -1,11 +1,11 @@
-@model OrderTicket
+@model Order
 @{
-    ViewData["Title"] = $"Pedido #{Model.Id}";
+    ViewData["Title"] = $"Pedido #{Model.OrderNumber}";
 }
 
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Pedido #@Model.Id</h2>
+        <h2>Pedido @Model.OrderNumber</h2>
         <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Volver</a>
     </div>
 
@@ -23,23 +23,23 @@
                 </div>
                 <div class="card-body">
                     <dl class="row">
-                        <dt class="col-sm-4">Producto:</dt>
-                        <dd class="col-sm-8">@Model.ProductName</dd>
-
-                        <dt class="col-sm-4">Talla:</dt>
-                        <dd class="col-sm-8">@Model.Size</dd>
-
-                        <dt class="col-sm-4">Cantidad:</dt>
-                        <dd class="col-sm-8">@Model.Quantity</dd>
-
-                        <dt class="col-sm-4">Precio Unitario:</dt>
-                        <dd class="col-sm-8">@Model.UnitPrice.ToString("C")</dd>
-
-                        <dt class="col-sm-4">Total:</dt>
-                        <dd class="col-sm-8"><strong>@Model.TotalPrice.ToString("C")</strong></dd>
+                        <dt class="col-sm-4">Número de Orden:</dt>
+                        <dd class="col-sm-8"><strong>@Model.OrderNumber</strong></dd>
 
                         <dt class="col-sm-4">Cliente:</dt>
                         <dd class="col-sm-8">@Model.UserName</dd>
+
+                        <dt class="col-sm-4">Total de Productos:</dt>
+                        <dd class="col-sm-8">@Model.TotalItems producto(s)</dd>
+
+                        <dt class="col-sm-4">Subtotal:</dt>
+                        <dd class="col-sm-8">@Model.Subtotal.ToString("C")</dd>
+
+                        <dt class="col-sm-4">Envío:</dt>
+                        <dd class="col-sm-8">@Model.Shipping.ToString("C")</dd>
+
+                        <dt class="col-sm-4">Total:</dt>
+                        <dd class="col-sm-8"><strong>@Model.Total.ToString("C")</strong></dd>
 
                         <dt class="col-sm-4">Punto de Entrega:</dt>
                         <dd class="col-sm-8">@Model.DeliveryPoint</dd>
@@ -50,28 +50,56 @@
                         <dt class="col-sm-4">Método de Pago:</dt>
                         <dd class="col-sm-8">@Model.PaymentMethod</dd>
 
+                        <dt class="col-sm-4">Estado:</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge @GetStatusBadgeClass(Model.Status)">
+                                @Model.StatusDisplay
+                            </span>
+                        </dd>
+
                         <dt class="col-sm-4">Fecha:</dt>
                         <dd class="col-sm-8">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</dd>
                     </dl>
                 </div>
             </div>
 
-            <!-- Ticket PDF -->
-            <div class="card">
+            <!-- Productos del pedido -->
+            <div class="card mb-4">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">Ticket</h5>
+                    <h5 class="card-title mb-0">Productos del Pedido</h5>
                 </div>
                 <div class="card-body">
-                    @if (!string.IsNullOrEmpty(Model.PdfFileName))
-                    {
-                        <a href="~/tickets/@Model.PdfFileName" target="_blank" class="btn btn-primary">
-                            <i class="fas fa-download"></i> Descargar Ticket PDF
-                        </a>
-                    }
-                    else
-                    {
-                        <span class="text-muted">No hay ticket disponible</span>
-                    }
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Talla</th>
+                                    <th class="text-center">Cantidad</th>
+                                    <th class="text-end">Precio</th>
+                                    <th class="text-end">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Items)
+                                {
+                                    <tr>
+                                        <td>@item.ProductName</td>
+                                        <td>@item.Size</td>
+                                        <td class="text-center">@item.Quantity</td>
+                                        <td class="text-end">@item.UnitPrice.ToString("C")</td>
+                                        <td class="text-end">@item.TotalPrice.ToString("C")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="4" class="text-end"><strong>Total:</strong></td>
+                                    <td class="text-end"><strong>@Model.Total.ToString("C")</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -106,34 +134,43 @@
                 </div>
             </div>
 
-            <!-- Historial de Estados -->
-            <div class="card">
+            <!-- Información adicional -->
+            <div class="card mb-4">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">Historial de Estados</h5>
+                    <h5 class="card-title mb-0">Información Adicional</h5>
                 </div>
                 <div class="card-body">
-                    <div id="statusHistory">
-                        <div class="text-center">
-                            <div class="spinner-border" role="status">
-                                <span class="visually-hidden">Cargando...</span>
-                            </div>
-                        </div>
-                    </div>
+                    <p><strong>ID del Pedido:</strong> @Model.Id</p>
+                    <p><strong>Usuario ID:</strong> @Model.UserId</p>
+                    <p><strong>Actualizado:</strong> @Model.UpdatedAt.ToString("dd/MM/yyyy HH:mm")</p>
+                    <p><strong>Estado:</strong> @Model.Status</p>
                 </div>
             </div>
+
+            <!-- Acciones rápidas -->
+            
         </div>
     </div>
 </div>
 
 @section Scripts {
 <script>
-    // Cargar historial de estados
+    // Cargar historial de estados (si existe el endpoint)
     $(document).ready(function() {
-        loadStatusHistory(@Model.Id);
+        // Solo cargar historial si el endpoint existe para Orders
+        // loadStatusHistory(@Model.Id);
     });
 
+    function updateStatus(status) {
+        if (confirm('¿Estás seguro de que quieres cambiar el estado a "' + status + '"?')) {
+            document.getElementById('newStatus').value = status;
+            document.querySelector('form').submit();
+        }
+    }
+
+    // Función para cargar historial (mantener por compatibilidad)
     function loadStatusHistory(orderId) {
-        $.get('@Url.Action("GetStatusHistory")/' + orderId, function(data) {
+        $.get('@Url.Action("GetStatusHistory", "AdminOrders")/' + orderId, function(data) {
             var html = '';
             if (data.length === 0) {
                 html = '<p class="text-muted">No hay historial disponible</p>';
@@ -155,6 +192,8 @@
                 html += '</div>';
             }
             $('#statusHistory').html(html);
+        }).fail(function() {
+            $('#statusHistory').html('<p class="text-muted">Historial no disponible</p>');
         });
     }
 </script>
@@ -193,4 +232,20 @@
         margin-left: 15px;
     }
 </style>
+}
+
+@functions {
+    string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Pending" => "bg-warning",
+            "Confirmed" => "bg-info",
+            "InProgress" => "bg-primary",
+            "ReadyForPickup" => "bg-success",
+            "Completed" => "bg-secondary",
+            "Cancelled" => "bg-danger",
+            _ => "bg-light text-dark"
+        };
+    }
 }
