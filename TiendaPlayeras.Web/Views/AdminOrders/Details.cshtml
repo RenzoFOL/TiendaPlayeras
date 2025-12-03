@@ -3,162 +3,717 @@
     ViewData["Title"] = $"Pedido #{Model.OrderNumber}";
 }
 
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Pedido @Model.OrderNumber</h2>
-        <a href="@Url.Action("Index")" class="btn btn-outline-secondary">Volver</a>
-    </div>
+<style>
+:root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    --info-gradient: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+    --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+}
 
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
-    }
+.order-details-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding: 40px 20px;
+}
 
-    <div class="row">
-        <!-- Información del pedido -->
-        <div class="col-md-6">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Información del Pedido</h5>
+.page-header {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    animation: fadeInDown 0.6s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.page-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: var(--primary-gradient);
+}
+
+.page-header h1 {
+    font-size: 36px;
+    font-weight: 700;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 5px;
+}
+
+.page-header .subtitle {
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.btn-back {
+    background: transparent;
+    border: 2px solid #e0e0e0;
+    color: #64748b;
+    border-radius: 12px;
+    padding: 10px 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-back:hover {
+    background: #f8f9fa;
+    border-color: #667eea;
+    color: #667eea;
+    transform: translateX(-5px);
+}
+
+.success-alert {
+    background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+    color: white;
+    border: none;
+    border-radius: 15px;
+    padding: 15px 25px;
+    font-weight: 600;
+    animation: slideInDown 0.5s ease;
+    box-shadow: 0 5px 20px rgba(86, 171, 47, 0.3);
+}
+
+.info-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+    transition: all 0.3s ease;
+    animation: fadeInUp 0.6s ease;
+    animation-fill-mode: both;
+}
+
+.info-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+}
+
+.card-header-custom {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 20px 25px;
+    border: none;
+}
+
+.card-header-custom h5 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.card-body-custom {
+    padding: 25px;
+}
+
+.info-row {
+    display: flex;
+    padding: 15px 0;
+    border-bottom: 1px solid #f0f0f0;
+    transition: all 0.3s ease;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-row:hover {
+    background: rgba(102, 126, 234, 0.05);
+    padding-left: 10px;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #64748b;
+    width: 40%;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-value {
+    color: #2c3e50;
+    width: 60%;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.info-value strong {
+    color: #667eea;
+    font-size: 18px;
+}
+
+.badge-custom {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+}
+
+.badge-custom.bg-warning {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%) !important;
+    color: white;
+}
+
+.badge-custom.bg-info {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+    color: white;
+}
+
+.badge-custom.bg-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white;
+}
+
+.badge-custom.bg-success {
+    background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%) !important;
+    color: white;
+}
+
+.badge-custom.bg-secondary {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%) !important;
+    color: white;
+}
+
+.badge-custom.bg-danger {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+    color: white;
+}
+
+.products-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.products-table thead {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.products-table thead th {
+    color: white;
+    padding: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 1px;
+}
+
+.products-table thead th:first-child {
+    border-radius: 12px 0 0 0;
+}
+
+.products-table thead th:last-child {
+    border-radius: 0 12px 0 0;
+}
+
+.products-table tbody tr {
+    transition: all 0.3s ease;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.products-table tbody tr:hover {
+    background: rgba(102, 126, 234, 0.05);
+    transform: scale(1.01);
+}
+
+.products-table tbody td {
+    padding: 15px;
+    color: #2c3e50;
+}
+
+.products-table tfoot {
+    background: #f8f9fa;
+}
+
+.products-table tfoot td {
+    padding: 15px;
+    font-weight: 700;
+    font-size: 16px;
+    color: #10b981;
+}
+
+.form-control-custom, .form-select-custom {
+    border-radius: 12px;
+    border: 2px solid #e0e0e0;
+    padding: 12px 18px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+}
+
+.form-control-custom:focus, .form-select-custom:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.3rem rgba(102, 126, 234, 0.15);
+    transform: translateY(-2px);
+}
+
+.form-label-custom {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 8px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-primary-custom {
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 30px;
+    font-weight: 600;
+    font-size: 15px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-primary-custom:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(102, 126, 234, 0.5);
+}
+
+.additional-info {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    border-radius: 15px;
+    padding: 20px;
+}
+
+.additional-info p {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: #2c3e50;
+}
+
+.additional-info p strong {
+    color: #667eea;
+    min-width: 120px;
+}
+
+.additional-info p i {
+    color: #667eea;
+    font-size: 16px;
+}
+
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.quick-action-btn {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+    color: #64748b;
+}
+
+.quick-action-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+}
+
+.quick-action-btn i {
+    font-size: 24px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.quick-action-btn span {
+    font-size: 13px;
+    font-weight: 600;
+    display: block;
+}
+
+.status-timeline {
+    padding: 20px 0;
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 40px;
+    padding-bottom: 30px;
+    border-left: 3px solid #e0e0e0;
+}
+
+.timeline-item:last-child {
+    border-left-color: transparent;
+}
+
+.timeline-item.current {
+    border-left-color: #667eea;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -10px;
+    top: 0;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #e0e0e0;
+    box-shadow: 0 0 0 4px white;
+}
+
+.timeline-item.current .timeline-marker {
+    background: var(--primary-gradient);
+    box-shadow: 0 0 0 4px white, 0 0 0 6px rgba(102, 126, 234, 0.2);
+}
+
+.timeline-content h6 {
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.timeline-content .text-muted {
+    font-size: 13px;
+    color: #64748b;
+}
+
+
+/* Delays para animaciones */
+.info-card:nth-child(1) { animation-delay: 0.1s; }
+.info-card:nth-child(2) { animation-delay: 0.2s; }
+.info-card:nth-child(3) { animation-delay: 0.3s; }
+.info-card:nth-child(4) { animation-delay: 0.4s; }
+.info-card:nth-child(5) { animation-delay: 0.5s; }
+
+</style>
+
+<div class="order-details-container">
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="page-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1>
+                        <i class="fas fa-receipt"></i> Pedido #@Model.OrderNumber
+                    </h1>
+                    <p class="subtitle">
+                        <i class="fas fa-calendar-alt"></i> Creado el @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                    </p>
                 </div>
-                <div class="card-body">
-                    <dl class="row">
-                        <dt class="col-sm-4">Número de Orden:</dt>
-                        <dd class="col-sm-8"><strong>@Model.OrderNumber</strong></dd>
-
-                        <dt class="col-sm-4">Cliente:</dt>
-                        <dd class="col-sm-8">@Model.UserName</dd>
-
-                        <dt class="col-sm-4">Total de Productos:</dt>
-                        <dd class="col-sm-8">@Model.TotalItems producto(s)</dd>
-
-                        <dt class="col-sm-4">Subtotal:</dt>
-                        <dd class="col-sm-8">@Model.Subtotal.ToString("C")</dd>
-
-                        <dt class="col-sm-4">Envío:</dt>
-                        <dd class="col-sm-8">@Model.Shipping.ToString("C")</dd>
-
-                        <dt class="col-sm-4">Total:</dt>
-                        <dd class="col-sm-8"><strong>@Model.Total.ToString("C")</strong></dd>
-
-                        <dt class="col-sm-4">Punto de Entrega:</dt>
-                        <dd class="col-sm-8">@Model.DeliveryPoint</dd>
-
-                        <dt class="col-sm-4">Horario:</dt>
-                        <dd class="col-sm-8">@Model.DeliverySchedule</dd>
-
-                        <dt class="col-sm-4">Método de Pago:</dt>
-                        <dd class="col-sm-8">@Model.PaymentMethod</dd>
-
-                        <dt class="col-sm-4">Estado:</dt>
-                        <dd class="col-sm-8">
-                            <span class="badge @GetStatusBadgeClass(Model.Status)">
-                                @Model.StatusDisplay
-                            </span>
-                        </dd>
-
-                        <dt class="col-sm-4">Fecha:</dt>
-                        <dd class="col-sm-8">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</dd>
-                    </dl>
-                </div>
-            </div>
-
-            <!-- Productos del pedido -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Productos del Pedido</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th>Producto</th>
-                                    <th>Talla</th>
-                                    <th class="text-center">Cantidad</th>
-                                    <th class="text-end">Precio</th>
-                                    <th class="text-end">Subtotal</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var item in Model.Items)
-                                {
-                                    <tr>
-                                        <td>@item.ProductName</td>
-                                        <td>@item.Size</td>
-                                        <td class="text-center">@item.Quantity</td>
-                                        <td class="text-end">@item.UnitPrice.ToString("C")</td>
-                                        <td class="text-end">@item.TotalPrice.ToString("C")</td>
-                                    </tr>
-                                }
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="4" class="text-end"><strong>Total:</strong></td>
-                                    <td class="text-end"><strong>@Model.Total.ToString("C")</strong></td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                </div>
+                <a href="@Url.Action("Index")" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
             </div>
         </div>
 
-        <!-- Gestión de Estado -->
-        <div class="col-md-6">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Actualizar Estado</h5>
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="success-alert">
+                <i class="fas fa-check-circle me-2"></i>
+                @TempData["SuccessMessage"]
+            </div>
+        }
+
+        <div class="row">
+            <!-- Columna Izquierda -->
+            <div class="col-lg-6">
+                <!-- Información del Pedido -->
+                <div class="info-card">
+                    <div class="card-header-custom">
+                        <h5>
+                            <i class="fas fa-info-circle"></i> Información del Pedido
+                        </h5>
+                    </div>
+                    <div class="card-body-custom">
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-hashtag"></i> Número de Orden
+                            </div>
+                            <div class="info-value">
+                                <strong>#@Model.OrderNumber</strong>
+                            </div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-user"></i> Cliente
+                            </div>
+                            <div class="info-value">@Model.UserName</div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-box"></i> Total Productos
+                            </div>
+                            <div class="info-value">@Model.TotalItems producto(s)</div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-calculator"></i> Subtotal
+                            </div>
+                            <div class="info-value">@Model.Subtotal.ToString("C")</div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-truck"></i> Envío
+                            </div>
+                            <div class="info-value">@Model.Shipping.ToString("C")</div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-dollar-sign"></i> Total
+                            </div>
+                            <div class="info-value">
+                                <strong style="color: #10b981; font-size: 20px;">@Model.Total.ToString("C")</strong>
+                            </div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-map-marker-alt"></i> Punto de Entrega
+                            </div>
+                            <div class="info-value">@Model.DeliveryPoint</div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-clock"></i> Horario
+                            </div>
+                            <div class="info-value">@Model.DeliverySchedule</div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-credit-card"></i> Método de Pago
+                            </div>
+                            <div class="info-value">@Model.PaymentMethod</div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-info-circle"></i> Estado
+                            </div>
+                            <div class="info-value">
+                                <span class="badge-custom @GetStatusBadgeClass(Model.Status)">
+                                    @Model.StatusDisplay
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-label">
+                                <i class="fas fa-calendar"></i> Fecha
+                            </div>
+                            <div class="info-value">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <form method="post" asp-action="UpdateStatus" asp-route-id="@Model.Id">
-                        @Html.AntiForgeryToken()
-                        <div class="mb-3">
-                            <label for="newStatus" class="form-label">Nuevo Estado</label>
-                            <select name="newStatus" id="newStatus" class="form-select" required>
-                                @foreach (var status in OrderStatus.GetAllStatuses())
-                                {
-                                    <option value="@status" selected="@(status == Model.Status)">
-                                        @OrderStatus.GetDisplayName(status)
-                                    </option>
-                                }
-                            </select>
+
+                <!-- Productos del Pedido -->
+                <div class="info-card">
+                    <div class="card-header-custom">
+                        <h5>
+                            <i class="fas fa-shopping-bag"></i> Productos del Pedido
+                        </h5>
+                    </div>
+                    <div class="card-body-custom">
+                        <div class="table-responsive">
+                            <table class="products-table">
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Talla</th>
+                                        <th class="text-center">Cantidad</th>
+                                        <th class="text-end">Precio</th>
+                                        <th class="text-end">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Items)
+                                    {
+                                        <tr>
+                                            <td><strong>@item.ProductName</strong></td>
+                                            <td>@item.Size</td>
+                                            <td class="text-center">
+                                                <span style="background: rgba(102, 126, 234, 0.1); padding: 4px 12px; border-radius: 10px; font-weight: 600;">
+                                                    @item.Quantity
+                                                </span>
+                                            </td>
+                                            <td class="text-end">@item.UnitPrice.ToString("C")</td>
+                                            <td class="text-end"><strong>@item.TotalPrice.ToString("C")</strong></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="4" class="text-end">
+                                            <i class="fas fa-check-circle"></i> TOTAL:
+                                        </td>
+                                        <td class="text-end">@Model.Total.ToString("C")</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
                         </div>
-                        <div class="mb-3">
-                            <label for="notes" class="form-label">Notas (opcional)</label>
-                            <textarea name="notes" id="notes" class="form-control" rows="3" 
-                                      placeholder="Agregar notas sobre el cambio de estado..."></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Actualizar Estado</button>
-                    </form>
+                    </div>
                 </div>
             </div>
 
-            <!-- Información adicional -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Información Adicional</h5>
+            <!-- Columna Derecha -->
+            <div class="col-lg-6">
+                <!-- Actualizar Estado -->
+                <div class="info-card">
+                    <div class="card-header-custom">
+                        <h5>
+                            <i class="fas fa-exchange-alt"></i> Actualizar Estado del Pedido
+                        </h5>
+                    </div>
+                    <div class="card-body-custom">
+                        <form method="post" asp-action="UpdateStatus" asp-route-id="@Model.Id">
+                            @Html.AntiForgeryToken()
+                            <div class="mb-4">
+                                <label for="newStatus" class="form-label-custom">
+                                    <i class="fas fa-tasks"></i> Nuevo Estado
+                                </label>
+                                <select name="newStatus" id="newStatus" class="form-select-custom form-control" required>
+                                    @foreach (var status in OrderStatus.GetAllStatuses())
+                                    {
+                                        <option value="@status" selected="@(status == Model.Status)">
+                                            @OrderStatus.GetDisplayName(status)
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label for="notes" class="form-label-custom">
+                                    <i class="fas fa-sticky-note"></i> Notas (opcional)
+                                </label>
+                                <textarea name="notes" id="notes" class="form-control-custom form-control" rows="4" 
+                                          placeholder="Agregar notas sobre el cambio de estado..."></textarea>
+                            </div>
+                            <button type="submit" class="btn-primary-custom w-100">
+                                <i class="fas fa-save"></i> Actualizar Estado
+                            </button>
+                        </form>
+
+                        <!-- Acciones Rápidas -->
+                        <div class="quick-actions">
+                            <button class="quick-action-btn" onclick="updateStatus('Confirmed')">
+                                <i class="fas fa-check"></i>
+                                <span>Confirmar</span>
+                            </button>
+                            <button class="quick-action-btn" onclick="updateStatus('InProgress')">
+                                <i class="fas fa-cog"></i>
+                                <span>En Proceso</span>
+                            </button>
+                            <button class="quick-action-btn" onclick="updateStatus('ReadyForPickup')">
+                                <i class="fas fa-box-open"></i>
+                                <span>Listo</span>
+                            </button>
+                            <button class="quick-action-btn" onclick="updateStatus('Completed')">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Completar</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <p><strong>ID del Pedido:</strong> @Model.Id</p>
-                    <p><strong>Usuario ID:</strong> @Model.UserId</p>
-                    <p><strong>Actualizado:</strong> @Model.UpdatedAt.ToString("dd/MM/yyyy HH:mm")</p>
-                    <p><strong>Estado:</strong> @Model.Status</p>
+
+                <!-- Información Adicional -->
+                <div class="info-card">
+                    <div class="card-header-custom">
+                        <h5>
+                            <i class="fas fa-database"></i> Información Adicional
+                        </h5>
+                    </div>
+                    <div class="card-body-custom">
+                        <div class="additional-info">
+                            <p>
+                                <i class="fas fa-fingerprint"></i>
+                                <strong>ID del Pedido:</strong> 
+                                <span>@Model.Id</span>
+                            </p>
+                            <p>
+                                <i class="fas fa-user-tag"></i>
+                                <strong>Usuario ID:</strong> 
+                                <span>@Model.UserId</span>
+                            </p>
+                            <p>
+                                <i class="fas fa-sync-alt"></i>
+                                <strong>Actualizado:</strong> 
+                                <span>@Model.UpdatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                            </p>
+                            <p>
+                                <i class="fas fa-tag"></i>
+                                <strong>Estado Actual:</strong> 
+                                <span class="badge-custom @GetStatusBadgeClass(Model.Status)" style="margin-left: 10px;">
+                                    @Model.Status
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Historial de Estados (si está disponible) -->
+                <div class="info-card">
+                    <div class="card-header-custom">
+                        <h5>
+                            <i class="fas fa-history"></i> Historial de Estados
+                        </h5>
+                    </div>
+                    <div class="card-body-custom">
+                        <div id="statusHistory" class="status-timeline">
+                            <p class="text-muted text-center">
+                                <i class="fas fa-spinner fa-spin"></i> Cargando historial...
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            <!-- Acciones rápidas -->
-            
         </div>
     </div>
 </div>
 
 @section Scripts {
 <script>
-    // Cargar historial de estados (si existe el endpoint)
     $(document).ready(function() {
-        // Solo cargar historial si el endpoint existe para Orders
-        // loadStatusHistory(@Model.Id);
+        // Intentar cargar historial si el endpoint existe
+        loadStatusHistory(@Model.Id);
+        
+        console.log('✅ Detalles del pedido cargados');
+        console.log('📦 Pedido:', '@Model.OrderNumber');
     });
 
     function updateStatus(status) {
@@ -168,23 +723,26 @@
         }
     }
 
-    // Función para cargar historial (mantener por compatibilidad)
     function loadStatusHistory(orderId) {
         $.get('@Url.Action("GetStatusHistory", "AdminOrders")/' + orderId, function(data) {
             var html = '';
             if (data.length === 0) {
-                html = '<p class="text-muted">No hay historial disponible</p>';
+                html = '<p class="text-muted text-center"><i class="fas fa-inbox"></i> No hay historial disponible</p>';
             } else {
-                html = '<div class="timeline">';
+                html = '<div class="status-timeline">';
                 data.forEach(function(entry, index) {
                     html += `
                         <div class="timeline-item ${index === 0 ? 'current' : ''}">
                             <div class="timeline-marker"></div>
                             <div class="timeline-content">
-                                <h6 class="mb-1">${entry.status}</h6>
-                                <p class="mb-1 text-muted small">Por: ${entry.changedBy}</p>
-                                <p class="mb-1 text-muted small">${new Date(entry.changedAt).toLocaleString()}</p>
-                                ${entry.notes ? `<p class="mb-0">${entry.notes}</p>` : ''}
+                                <h6>${entry.status}</h6>
+                                <p class="text-muted small mb-1">
+                                    <i class="fas fa-user"></i> Por: ${entry.changedBy}
+                                </p>
+                                <p class="text-muted small mb-1">
+                                    <i class="fas fa-clock"></i> ${new Date(entry.changedAt).toLocaleString()}
+                                </p>
+                                ${entry.notes ? `<p class="mb-0"><i class="fas fa-comment"></i> ${entry.notes}</p>` : ''}
                             </div>
                         </div>
                     `;
@@ -193,45 +751,18 @@
             }
             $('#statusHistory').html(html);
         }).fail(function() {
-            $('#statusHistory').html('<p class="text-muted">Historial no disponible</p>');
+            $('#statusHistory').html('<p class="text-muted text-center"><i class="fas fa-exclamation-triangle"></i> Historial no disponible</p>');
         });
     }
-</script>
 
-<style>
-    .timeline {
-        position: relative;
-        padding-left: 20px;
-    }
-    
-    .timeline-item {
-        position: relative;
-        padding-bottom: 20px;
-        border-left: 2px solid #dee2e6;
-    }
-    
-    .timeline-item.current {
-        border-left-color: #0d6efd;
-    }
-    
-    .timeline-marker {
-        position: absolute;
-        left: -7px;
-        top: 0;
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background: #dee2e6;
-    }
-    
-    .timeline-item.current .timeline-marker {
-        background: #0d6efd;
-    }
-    
-    .timeline-content {
-        margin-left: 15px;
-    }
-</style>
+    // Animación al cambiar el selector de estado
+    $('#newStatus').on('change', function() {
+        $(this).addClass('border-success');
+        setTimeout(() => {
+            $(this).removeClass('border-success');
+        }, 500);
+    });
+</script>
 }
 
 @functions {
